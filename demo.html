@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reese Design System — Interactive Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="icons.css">
+  <style>
+    /* Demo-specific layout tokens (not in shared tokens.css) */
+
+    /* ── RESPONSIVE / MOBILE ────────────────────────────────── */
+    @media(max-width:900px){
+      .main{grid-template-columns:40px 1fr;overflow-x:hidden}
+      .tree-panel,.inspector{display:none}
+      .tree-panel.mobile-open,.inspector.mobile-open{display:flex;position:fixed;top:60px;bottom:24px;z-index:80;width:280px;box-shadow:8px 0 32px rgba(0,0,0,0.5)}
+      .tree-panel.mobile-open{left:40px;border-right:1px solid var(--border-strong)}
+      .inspector.mobile-open{right:0;border-left:1px solid var(--border-strong)}
+      .resize-handle{display:none}
+      .viewport-stats{font-size:9px;min-width:130px;padding:4px 6px}
+      .vs-row{font-size:9px}
+      .tip-content{width:220px}
+      .quick-actions .btn span.kbd{display:none}
+      .menubar{overflow-x:auto;flex-wrap:nowrap}
+    }
+    @media(max-width:600px){
+      .titlebar{height:28px;padding:0 6px}
+      .titlebar-icon{width:14px;height:14px;font-size:8px}
+      .titlebar-text{font-size:11px}
+      .win-btn{width:36px;height:28px}
+      .menubar{height:24px;padding:0 2px}
+      .menu-item{font-size:11px;padding:2px 6px}
+      .toolbar{width:36px;padding:3px}
+      .tool-btn{width:30px;height:30px;font-size:12px}
+      .main{grid-template-columns:36px 1fr}
+      .viewport-coords{flex-wrap:wrap;gap:3px}
+      .viewport-modes{flex-wrap:wrap;gap:2px}
+      .mode-btn{font-size:9px;padding:2px 5px}
+      .viewport-stats{bottom:4px;right:4px;padding:4px;min-width:110px}
+      .cmd-box{width:calc(100vw - 32px);margin:0 16px}
+      .statusbar{font-size:10px;height:22px;padding:0 6px}
+      .statusbar-right span:last-child{display:none}
+      .toast{right:8px;bottom:28px;max-width:260px;padding:8px 10px}
+    }
+    /* Mobile panel toggle buttons */
+    .mobile-toggle{display:none;position:fixed;bottom:28px;z-index:81;width:36px;height:36px;border-radius:var(--r-sm);background:var(--canvas-surface);border:1px solid var(--border-default);color:var(--ink-secondary);font-size:14px;cursor:pointer;align-items:center;justify-content:center}
+    .mobile-toggle.tree-toggle{left:40px}
+    .mobile-toggle.insp-toggle{right:0}
+    @media(max-width:900px){.mobile-toggle{display:flex}}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font-ui);font-size:13px;color:var(--ink-primary);background:var(--canvas-void);
+      -webkit-font-smoothing:antialiased;font-feature-settings:'cv01','cv09','ss03';height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+    /* ── TITLEBAR (Windows-style) ───────────────────────────── */
+    .titlebar{display:flex;align-items:center;gap:8px;padding:0 0 0 10px;background:var(--canvas-base);border-bottom:1px solid var(--border-default);height:32px;flex-shrink:0;-webkit-app-region:drag}
+    .titlebar-icon{width:16px;height:16px;background:var(--code-action);border-radius:var(--r-xs);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+    .titlebar-text{font-size:12px;color:var(--ink-tertiary);font-weight:500;flex:1}
+    .titlebar-right{display:flex;align-items:center;gap:0;-webkit-app-region:no-drag}
+    .win-btn{width:46px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 80ms;color:var(--ink-muted);font-size:10px}
+    .win-btn:hover{background:var(--canvas-elevated);color:var(--ink-primary)}
+    .win-btn.close:hover{background:var(--code-danger);color:#fff}
+    .win-btn svg{width:10px;height:10px}
+
+    /* ── MENUBAR ───────────────────────────────────────────── */
+    .menubar{display:flex;align-items:center;gap:1px;padding:0 4px;background:var(--canvas-surface);border-bottom:1px solid var(--border-default);height:28px;flex-shrink:0}
+    .menu-item{padding:3px 8px;font-size:12px;color:var(--ink-tertiary);border-radius:var(--r-sm);cursor:pointer;font-weight:500;transition:all 80ms}
+    .menu-item:hover{color:var(--ink-primary);background:var(--canvas-raised)}
+    .menu-item.active{color:var(--code-action);background:var(--code-action-dim)}
+    .menu-spacer{flex:1}
+    .quick-actions{display:flex;gap:2px;align-items:center}
+
+    /* ── MAIN LAYOUT ───────────────────────────────────────── */
+    .main{display:grid;grid-template-columns:40px var(--tree-w,200px) 1fr var(--insp-w,240px);flex:1;overflow:hidden;background:var(--canvas-base)}
+
+    /* ── LEFT TOOLBAR ──────────────────────────────────────── */
+    .toolbar{display:flex;flex-direction:column;gap:1px;padding:4px;background:var(--canvas-surface);border-right:1px solid var(--border-default);overflow-y:auto}
+    .tool-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-sm);cursor:pointer;transition:all 80ms;color:var(--ink-tertiary);font-size:14px;border:none;background:none;position:relative}
+    .tool-btn:hover{background:var(--canvas-raised);color:var(--ink-primary)}
+    .tool-btn.active{background:var(--code-action-dim);color:var(--code-action)}
+    .tool-sep{height:1px;background:var(--border-default);margin:3px 2px}
+
+    /* ── RESIZE HANDLES ────────────────────────────────────── */
+    .resize-handle{position:absolute;top:0;bottom:0;width:4px;cursor:col-resize;z-index:10;transition:background 120ms}
+    .resize-handle:hover,.resize-handle.active{background:var(--code-action)}
+    .resize-handle-r{right:-2px}
+    .resize-handle-l{left:-2px}
+
+    /* ── FEATURE TREE ──────────────────────────────────────── */
+    .tree-panel{border-right:1px solid var(--border-default);overflow-y:auto;display:flex;flex-direction:column;background:var(--canvas-surface);position:relative}
+    .panel-header{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-bottom:1px solid var(--border-default);background:var(--canvas-raised);flex-shrink:0}
+    .panel-title{font-size:11px;font-weight:600;color:var(--ink-tertiary);text-transform:uppercase;letter-spacing:0.06em}
+    .tree-content{padding:4px;flex:1;overflow-y:auto}
+    .tree-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:var(--r-sm);font-size:12px;color:var(--ink-secondary);cursor:pointer;transition:all 60ms}
+    .tree-item:hover{background:var(--canvas-raised)}
+    background:var(--code-action-dim);color:var(--code-action)
+    .tree-indent{padding-left:18px}
+    .tree-icon{font-size:11px;width:16px;text-align:center;flex-shrink:0}
+
+    /* ── VIEWPORT ──────────────────────────────────────────── */
+    .viewport{background:#0b0c10;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-left:1px solid var(--border-default);border-right:1px solid var(--border-default)}
+    .grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--border-subtle) 1px,transparent 1px),linear-gradient(90deg,var(--border-subtle) 1px,transparent 1px);background-size:32px 32px;opacity:0.5}
+    .viewport-content{position:relative;z-index:1;text-align:center}
+    .viewport-coords{position:absolute;bottom:8px;left:8px;display:flex;gap:4px;z-index:2}
+    .coord-pill{font-family:var(--font-mono);font-size:10px;color:var(--ink-muted);background:var(--canvas-surface);padding:2px 6px;border-radius:var(--r-xs);border:1px solid var(--border-subtle)}
+    .viewport-modes{position:absolute;top:8px;right:8px;display:flex;gap:3px;z-index:2}
+    .mode-btn{font-size:10px;padding:3px 8px;border-radius:var(--r-sm);font-weight:600;cursor:pointer;transition:all 80ms;border:1px solid var(--border-default);background:rgba(20,22,27,0.8);color:var(--ink-tertiary)}
+    .mode-btn:hover{border-color:var(--border-strong);color:var(--ink-primary)}
+    .mode-btn.on{border-color:var(--code-action);color:var(--code-action);background:rgba(108,138,255,0.08)}
+
+    /* ── VIEWPORT STATS ────────────────────────────────────── */
+    .viewport-stats{position:absolute;bottom:8px;right:8px;z-index:2;background:var(--canvas-raised);border:1px solid var(--border-default);border-radius:var(--r-md);padding:6px 8px;min-width:150px;backdrop-filter:blur(8px)}
+    .vs-row{display:flex;align-items:center;justify-content:space-between;padding:2px 0;font-size:10px;gap:10px}
+    .vs-k{color:var(--ink-muted);font-weight:500}
+    .vs-v{font-family:var(--font-mono);font-weight:500;color:var(--ink-secondary);text-align:right}
+    .vs-conv{font-family:var(--font-mono);font-size:9px;color:var(--ink-ghost);text-align:right}
+    .vs-sep{height:1px;background:var(--border-subtle);margin:3px 0}
+
+    /* ── INSPECTOR ─────────────────────────────────────────── */
+    .inspector{border-left:1px solid var(--border-default);overflow-y:auto;display:flex;flex-direction:column;background:var(--canvas-surface);position:relative}
+    .inspector-body{padding:8px;flex:1;overflow-y:auto}
+    .insp-section{margin-bottom:12px}
+    .insp-label{font-size:10px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+    .insp-field{display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-size:12px}
+    .insp-field-k{color:var(--ink-tertiary)}
+    .insp-field-v{font-family:var(--font-mono);font-size:11px;color:var(--ink-primary);background:var(--canvas-raised);padding:2px 6px;border-radius:var(--r-sm)}
+    .tool-card{display:flex;align-items:center;gap:8px;padding:6px;background:var(--canvas-raised);border-radius:var(--r-md);margin-bottom:4px}
+    .tool-card-icon{width:28px;height:28px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+    .tool-card-name{font-size:12px;font-weight:600;color:var(--ink-primary)}
+    .tool-card-sub{font-size:10px;color:var(--ink-muted)}
+
+    /* ── STATUS BAR ────────────────────────────────────────── */
+    .statusbar{display:flex;align-items:center;justify-content:space-between;padding:0 10px;background:var(--canvas-raised);border-top:1px solid var(--border-default);height:24px;flex-shrink:0;font-size:11px;color:var(--ink-muted)}
+    .statusbar-left,.statusbar-right{display:flex;gap:10px;align-items:center}
+    .status-dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+    .status-dot.on{background:var(--code-success);box-shadow:0 0 6px rgba(78,203,113,0.3)}
+    .status-dot.ai{background:var(--code-ai);box-shadow:0 0 6px rgba(244,114,182,0.3);animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+    /* ── SQUARE BUTTONS (maximized, sharp) ─────────────────── */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;font-family:var(--font-ui);font-weight:600;border:none;cursor:pointer;transition:all 80ms var(--ease-out);white-space:nowrap;user-select:none}
+    .btn:active{transform:scale(0.97)}
+    .btn-lg{height:36px;padding:0 16px;font-size:12px;border-radius:var(--r-sm)}
+    .btn-md{height:28px;padding:0 10px;font-size:11px;border-radius:var(--r-sm)}
+    .btn-sm{height:22px;padding:0 6px;font-size:10px;border-radius:var(--r-xs)}
+    .btn-primary{background:var(--code-action);color:#fff}
+    .btn-primary:hover{background:#7d99ff}
+    .btn-success{background:var(--code-success);color:#0a0b0d}
+    .btn-success:hover{background:#5fd87f}
+    .btn-danger{background:var(--code-danger);color:#fff}
+    .btn-ghost{background:var(--canvas-surface);color:var(--ink-secondary);border:1px solid var(--border-default)}
+    .btn-ghost:hover{background:var(--canvas-raised);color:var(--ink-primary);border-color:var(--border-strong)}
+    .btn-surface{background:transparent;color:var(--ink-tertiary)}
+    .btn-surface:hover{background:var(--canvas-surface);color:var(--ink-primary)}
+    .kbd{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 3px;font-family:var(--font-mono);font-size:9px;font-weight:500;color:var(--ink-muted);background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:2px}
+
+    /* ── STATUS PILLS ──────────────────────────────────────── */
+    .pill{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:var(--r-sm);font-size:10px;font-weight:600}
+    .pill.green{background:var(--code-success-dim);color:var(--code-success)}
+    .pill.magenta{background:var(--code-ai-dim);color:var(--code-ai)}
+    .pill.muted{background:var(--canvas-raised);color:var(--ink-muted)}
+    .pill.blue{background:var(--code-action-dim);color:var(--code-action)}
+
+    /* ── TOGGLE (square) ───────────────────────────────────── */
+    .toggle{width:32px;height:18px;background:var(--canvas-elevated);border:1px solid var(--border-default);border-radius:var(--r-xs);cursor:pointer;transition:all 120ms;position:relative;flex-shrink:0}
+    .toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;background:var(--ink-muted);border-radius:var(--r-xs);transition:all 120ms var(--ease-out)}
+    background:var(--code-action-dim);color:var(--code-action)
+    .toggle.on::after{left:16px;background:var(--code-action)}
+
+    /* ── TOOLTIP SYSTEM ────────────────────────────────────── */
+    .tip{position:relative}
+    .tip-content{position:fixed;z-index:1000;display:none;width:280px;background:var(--canvas-raised);border:1px solid var(--border-strong);border-radius:var(--r-md);box-shadow:0 8px 32px rgba(0,0,0,0.5);padding:0;overflow:hidden;pointer-events:none;left:0;top:0}
+    .tip-content.show{display:block;animation:tipIn 120ms var(--ease-out)}
+    @keyframes tipIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    .tip-content.pos-right{}
+    .tip-content.pos-left{}
+    .tip-content.pos-bottom{}
+    .tip-content.pos-top{}
+    .tip-head{padding:8px 10px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:6px}
+    .tip-icon{width:24px;height:24px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+    .tip-name{font-size:12px;font-weight:600;color:var(--ink-primary)}
+    .tip-shortcut{margin-left:auto;font-family:var(--font-mono);font-size:9px;color:var(--ink-muted);background:var(--canvas-surface);padding:1px 4px;border-radius:2px;border:1px solid var(--border-subtle)}
+    .tip-body{padding:8px 10px}
+    .tip-desc{font-size:11px;color:var(--ink-secondary);line-height:1.5;margin-bottom:6px}
+    .tip-use{font-size:10px;color:var(--ink-muted);line-height:1.4}
+    .tip-use strong{color:var(--ink-tertiary);font-weight:600}
+    .tip-video{padding:6px 10px 8px;border-top:1px solid var(--border-subtle)}
+    .tip-video-thumb{width:100%;height:80px;background:var(--canvas-elevated);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid var(--border-subtle);transition:border-color 80ms;pointer-events:auto}
+    .tip-video-thumb:hover{border-color:var(--code-action)}
+    .tip-video-thumb span{font-size:20px;opacity:0.6}
+    .tip-video-label{font-size:9px;color:var(--ink-ghost);margin-top:3px;text-align:center}
+
+    /* ── COMMAND PALETTE ───────────────────────────────────── */
+    .cmd-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:999;display:none;align-items:flex-start;justify-content:center;padding-top:15vh;backdrop-filter:blur(4px)}
+    .cmd-overlay.open{display:flex}
+    .cmd-box{background:var(--canvas-raised);border:1px solid var(--border-strong);border-radius:var(--r-lg);box-shadow:0 16px 64px rgba(0,0,0,0.6);width:520px;max-height:400px;overflow:hidden;animation:cmdIn 120ms var(--ease-out)}
+    @keyframes cmdIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+    .cmd-search{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border-subtle)}
+    .cmd-search-icon{color:var(--ink-muted);font-size:14px}
+    .cmd-search input{flex:1;background:none;border:none;outline:none;color:var(--ink-primary);font-family:var(--font-ui);font-size:13px;font-weight:500}
+    .cmd-search input::placeholder{color:var(--ink-muted)}
+    .cmd-results{max-height:320px;overflow-y:auto;padding:3px}
+    .cmd-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--r-sm);cursor:pointer;transition:background 60ms}
+    .cmd-item:hover,.cmd-item.sel{background:var(--canvas-elevated)}
+    .cmd-item-icon{width:26px;height:26px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+    .cmd-item-text{flex:1}
+    .cmd-item-name{font-size:12px;font-weight:500;color:var(--ink-primary)}
+    .cmd-item-desc{font-size:10px;color:var(--ink-muted)}
+
+    /* ── TOAST ─────────────────────────────────────────────── */
+    .toast{position:fixed;bottom:32px;right:16px;background:var(--canvas-raised);border:1px solid var(--code-ai-mid);border-radius:var(--r-md);padding:10px 14px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:200;display:none;max-width:300px;animation:toastIn 150ms var(--ease-out)}
+    .toast.show{display:block}
+    @keyframes toastIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .toast-header{display:flex;align-items:center;gap:5px;margin-bottom:4px}
+    .toast-title{font-size:11px;font-weight:600;color:var(--code-ai)}
+    .toast-body{font-size:11px;color:var(--ink-tertiary);line-height:1.5;margin-bottom:6px}
+    .toast-actions{display:flex;gap:4px}
+    .notif-badge{position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:var(--code-danger);border-radius:50%;border:2px solid var(--canvas-surface)}
+
+    /* ── SCROLLBAR ─────────────────────────────────────────── */
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--canvas-bright);border-radius:2px}
+    ::-webkit-scrollbar-thumb{background:var(--ink-muted)}
+
+    /* ── FOCUS STYLES (keyboard-first) ──────────────────────── */
+    :focus-visible{outline:2px solid var(--code-action);outline-offset:2px}
+    button:focus-visible,.tool-btn:focus-visible,.tab:focus-visible,.tree-item:focus-visible,.mode-btn:focus-visible{outline:2px solid var(--code-action);outline-offset:1px}
+    .toggle:focus-visible{outline:2px solid var(--code-action);outline-offset:2px}
+    html.light :focus-visible{outline-color:#3366cc}
+  </style>
+</head>
+<body>
+<!-- SVG Icon Sprite -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="icon-cursor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></symbol>
+  <symbol id="icon-pan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></symbol>
+  <symbol id="icon-zoom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></symbol>
+  <symbol id="icon-line" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/></symbol>
+  <symbol id="icon-arc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12A9 9 0 0 0 6.2 5.2"/></symbol>
+  <symbol id="icon-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></symbol>
+  <symbol id="icon-spline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17c2-4 4-8 7-8s3 6 6 6 4-4 5-4"/></symbol>
+  <symbol id="icon-drill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></symbol>
+  <symbol id="icon-endmill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="3" width="10" height="18" rx="1"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="15" x2="17" y2="15"/></symbol>
+  <symbol id="icon-turn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="21"/></symbol>
+  <symbol id="icon-generate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+  <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></symbol>
+  <symbol id="icon-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+  <symbol id="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></symbol>
+  <symbol id="icon-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="icon-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+  <symbol id="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+  <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></symbol>
+  <symbol id="icon-unit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20"/><path d="M6 8v8"/><path d="M10 10v4"/><path d="M14 10v4"/><path d="M18 8v8"/></symbol>
+</svg>
+
+<!-- TITLEBAR (Windows-style) -->
+<div class="titlebar">
+  <div class="titlebar-icon">A</div>
+  <div class="titlebar-text">AI CAM 3.0 — Demo Project.cnc</div>
+  <div class="titlebar-right">
+    <div style="display:flex;gap:6px;align-items:center;margin-right:8px">
+      <div class="pill green"><span class="status-dot on"></span> Ready</div>
+      <div class="pill magenta"><span class="status-dot ai"></span> AI</div>
+    </div>
+    <div class="win-btn" title="Minimize">
+      <svg viewBox="0 0 10 10"><line x1="2" y1="5" x2="8" y2="5" stroke="currentColor" stroke-width="1"/></svg>
+    </div>
+    <div class="win-btn" title="Maximize">
+      <svg viewBox="0 0 10 10"><rect x="2" y="2" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+    </div>
+    <div class="win-btn close" title="Close">
+      <svg viewBox="0 0 10 10"><line x1="2" y1="2" x2="8" y2="8" stroke="currentColor" stroke-width="1"/><line x1="8" y1="2" x2="2" y2="8" stroke="currentColor" stroke-width="1"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- MENUBAR -->
+<div class="menubar">
+  <span class="menu-item active">File</span>
+  <span class="menu-item">Edit</span>
+  <span class="menu-item">View</span>
+  <span class="menu-item">Toolpaths</span>
+  <span class="menu-item">Simulation</span>
+  <span class="menu-item" style="color:var(--code-ai)"><svg class="icon icon-sm" style="vertical-align:middle"><use href="#icon-robot"/></svg> AI</span>
+  <span class="menu-spacer"></span>
+  <div class="quick-actions">
+    <button class="btn btn-md btn-primary tip" data-tip="generate">
+      <svg class="icon icon-sm"><use href="#icon-generate"/></svg> Generate <span class="kbd">Ctrl+G</span>
+    </button>
+    <button class="btn btn-md btn-success tip" data-tip="simulate">
+      <svg class="icon icon-sm"><use href="#icon-play"/></svg> Simulate <span class="kbd">Ctrl+⇧R</span>
+    </button>
+    <button class="btn btn-md btn-ghost tip" data-tip="post">
+      <svg class="icon icon-sm"><use href="#icon-wrench"/></svg> Post <span class="kbd">Ctrl+⇧P</span>
+    </button>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="main" id="mainLayout">
+
+  <!-- LEFT TOOLBAR -->
+  <div class="toolbar">
+    <button class="tool-btn active tip" data-tip="select" title="" aria-label="Select tool"><svg class="icon"><use href="#icon-cursor"/></svg></button>
+    <button class="tool-btn tip" data-tip="pan" title="" aria-label="Pan view"><svg class="icon"><use href="#icon-pan"/></svg></button>
+    <button class="tool-btn tip" data-tip="zoom" title="" aria-label="Zoom"><svg class="icon"><use href="#icon-zoom"/></svg></button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn tip" data-tip="line" title="" aria-label="Line tool" style="color:var(--code-view)"><svg class="icon"><use href="#icon-line"/></svg></button>
+    <button class="tool-btn tip" data-tip="arc" title="" aria-label="Arc tool" style="color:var(--code-view)"><svg class="icon"><use href="#icon-arc"/></svg></button>
+    <button class="tool-btn tip" data-tip="circle" title="" aria-label="Circle tool" style="color:var(--code-view)"><svg class="icon"><use href="#icon-circle"/></svg></button>
+    <button class="tool-btn tip" data-tip="spline" title="" aria-label="Spline tool" style="color:var(--code-view)"><svg class="icon"><use href="#icon-spline"/></svg></button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn tip" data-tip="drill" title="" aria-label="Drill operation" style="color:var(--code-tool)"><svg class="icon"><use href="#icon-drill"/></svg></button>
+    <button class="tool-btn tip" data-tip="endmill" title="" aria-label="End mill operation" style="color:var(--code-tool)"><svg class="icon"><use href="#icon-endmill"/></svg></button>
+    <button class="tool-btn tip" data-tip="turn" title="" aria-label="Turn operation" style="color:var(--code-tool)"><svg class="icon"><use href="#icon-turn"/></svg></button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn tip" data-tip="ai-optimize" title="" aria-label="AI optimize" style="color:var(--code-ai)"><svg class="icon"><use href="#icon-robot"/></svg></button>
+    <div style="flex:1"></div>
+    <button class="tool-btn tip" data-tip="unit-toggle" title="" aria-label="Toggle units" style="color:var(--code-info);font-size:10px;font-weight:700;font-family:var(--font-mono)" id="unitBtn" onclick="toggleUnit()">mm</button>
+    <button class="tool-btn" title="Toggle Dark/Light Mode" onclick="toggleTheme()" style="font-size:13px" id="themeBtn">🌙</button>
+    <button class="tool-btn tip" data-tip="settings" title="" aria-label="Settings" style="color:var(--ink-muted)"><svg class="icon"><use href="#icon-settings"/></svg></button>
+  </div>
+
+  <!-- FEATURE TREE -->
+  <div class="tree-panel" id="treePanel">
+    <div class="resize-handle resize-handle-r" data-resize="tree"></div>
+    <div class="panel-header">
+      <div class="panel-title">Features</div>
+      <button class="btn btn-sm btn-surface">+ Add</button>
+    </div>
+    <div class="tree-content">
+      <div class="tree-item active" tabindex="0"><span class="tree-icon" style="color:var(--code-view)">◇</span><span>Stock Model</span></div>
+      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-material)"><svg class="icon icon-sm"><use href="#icon-package"/></svg></span><span style="color:var(--code-material)">AL-6061</span></div>
+      <div class="tree-item" tabindex="0"><span class="tree-icon" style="color:var(--code-view)">◇</span><span>Geometry</span></div>
+      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-view)"><svg class="icon icon-sm"><use href="#icon-line"/></svg></span><span>Outer Profile</span></div>
+      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-view)"><svg class="icon icon-sm"><use href="#icon-circle"/></svg></span><span>4× Holes</span></div>
+      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-view)"><svg class="icon icon-sm"><use href="#icon-arc"/></svg></span><span>Pocket</span></div>
+      <div class="tree-item" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-endmill"/></svg></span><span style="color:var(--code-tool)">3/8" Endmill</span></div>
+      <div class="tree-item tree-indent loading"><span class="spinner" style="width:10px;height:10px;border-width:1.5px;border-top-color:var(--code-action)"></span><span style="color:var(--code-action)">Roughing</span><span style="font-size:9px;color:var(--ink-muted);margin-left:auto">computing...</span></div>
+      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-success)"><svg class="icon icon-sm"><use href="#icon-check"/></svg></span><span style="color:var(--code-success)">Finishing</span></div>
+      <div class="tree-item" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-drill"/></svg></span><span style="color:var(--code-tool)">1/4" Drill</span></div>
+      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-action)"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></span><span style="color:var(--code-action)">Drill Cycle</span></div>
+      <div class="tree-item" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-turn"/></svg></span><span style="color:var(--code-tool)">1/2" Face Mill</span></div>
+      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-action)"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></span><span style="color:var(--code-action)">Facing</span></div>
+    </div>
+  </div>
+
+  <!-- VIEWPORT -->
+  <div class="viewport" id="viewport">
+    <div class="grid-bg"></div>
+    <div class="viewport-content">
+      <svg width="320" height="200" viewBox="0 0 320 200">
+        <rect x="60" y="30" width="200" height="140" rx="2" fill="none" stroke="var(--code-view)" stroke-width="1.5" opacity="0.4"/>
+        <path d="M80,50 L240,50 L240,110 L200,110 L200,150 L120,150 L120,110 L80,110 Z" fill="rgba(163,230,53,0.04)" stroke="var(--code-view)" stroke-width="1.5"/>
+        <circle cx="100" cy="75" r="8" fill="none" stroke="var(--code-success)" stroke-width="1.5" stroke-dasharray="3,2"/>
+        <circle cx="220" cy="75" r="8" fill="none" stroke="var(--code-success)" stroke-width="1.5" stroke-dasharray="3,2"/>
+        <circle cx="100" cy="130" r="8" fill="none" stroke="var(--code-success)" stroke-width="1.5" stroke-dasharray="3,2"/>
+        <circle cx="220" cy="130" r="8" fill="none" stroke="var(--code-warning)" stroke-width="1.5" stroke-dasharray="3,2" id="hole-warning"/>
+        <rect x="130" y="115" width="60" height="30" rx="2" fill="rgba(163,230,53,0.06)" stroke="var(--code-view)" stroke-width="1" stroke-dasharray="4,2"/>
+        <line x1="60" y1="180" x2="260" y2="180" stroke="var(--ink-muted)" stroke-width="0.5"/>
+        <text x="160" y="193" text-anchor="middle" fill="var(--ink-muted)" font-family="var(--font-mono)" font-size="9">100mm</text>
+        <line x1="275" y1="30" x2="275" y2="170" stroke="var(--ink-muted)" stroke-width="0.5"/>
+        <text x="290" y="104" text-anchor="middle" fill="var(--ink-muted)" font-family="var(--font-mono)" font-size="9" transform="rotate(90,290,104)">80mm</text>
+        <circle cx="160" cy="80" r="4" fill="var(--code-action)" opacity="0.8">
+          <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+    </div>
+    <div class="viewport-coords">
+      <div class="coord-pill">X: <span id="coordX">160.000</span></div>
+      <div class="coord-pill">Y: <span id="coordY">80.000</span></div>
+      <div class="coord-pill">Z: <span id="coordZ">0.000</span></div>
+    </div>
+    <div style="position:absolute;top:8px;left:8px;z-index:2;display:flex;gap:6px;font-size:9px">
+        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-success);border-radius:1px;display:inline-block"></span> Safe</span>
+        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-warning);border-radius:1px;display:inline-block"></span> Warning</span>
+        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-danger);border-radius:1px;display:inline-block"></span> Error</span>
+      </div>
+    <div class="viewport-modes">
+      <div class="mode-btn on" tabindex="0" onclick="cycleMode(this,['Perspective','Top','Front','Side','Iso'])">Perspective</div>
+      <div class="mode-btn on" tabindex="0" onclick="cycleMode(this,['Shaded','Wire','Hidden','X-Ray'])">Shaded</div>
+      <div class="mode-btn" tabindex="0" onclick="this.classList.toggle('on')">Grid</div>
+    </div>
+    <div class="viewport-stats">
+      <div class="vs-row"><span class="vs-k">Line Length</span><span class="vs-v">160.000 mm</span></div>
+      <div class="vs-row"><span class="vs-k">Arc Radius</span><span class="vs-v">—</span></div>
+      <div class="vs-sep"></div>
+      <div class="vs-row"><span class="vs-k">Part Area</span><span class="vs-v" style="color:var(--code-view)">11,200 mm²</span></div>
+      <div class="vs-row"><span class="vs-k">Perimeter</span><span class="vs-v">520.00 mm</span></div>
+      <div class="vs-row"><span class="vs-k">Volume</span><span class="vs-v">280.0 cm³</span></div>
+      <div class="vs-sep"></div>
+      <div class="vs-row"><span class="vs-k">mm</span><span class="vs-v" style="color:var(--code-info)">in</span><span class="vs-conv">÷ 25.4</span></div>
+      <div class="vs-row"><span class="vs-k">mm²</span><span class="vs-v" style="color:var(--code-info)">in²</span><span class="vs-conv">÷ 645.16</span></div>
+      <div class="vs-row"><span class="vs-k">cm³</span><span class="vs-v" style="color:var(--code-info)">in³</span><span class="vs-conv">÷ 16.387</span></div>
+    </div>
+  </div>
+
+  <!-- INSPECTOR -->
+  <div class="inspector" id="inspectorPanel">
+    <div class="resize-handle resize-handle-l" data-resize="inspector"></div>
+    <div class="panel-header">
+      <div class="panel-title">Inspector</div>
+      <div style="position:relative">
+        <button class="btn btn-sm btn-surface" onclick="showToast()" aria-label="AI suggestions"><svg class="icon icon-sm"><use href="#icon-robot"/></svg></button>
+        <div class="notif-badge"></div>
+      </div>
+    </div>
+    <div class="inspector-body">
+        <div class="insp-section">
+          <div class="insp-label">Active Tool</div>
+          <div class="tool-card">
+            <div class="tool-card-icon" style="background:var(--code-tool-dim);color:var(--code-tool)">⊞</div>
+            <div><div class="tool-card-name">3/8" Flat Endmill</div><div class="tool-card-sub">Carbide • 4-Flute</div></div>
+          </div>
+        </div>
+        <div class="insp-section">
+          <div class="insp-label">Cutting Parameters</div>
+          <div class="insp-field"><span class="insp-field-k">Spindle Speed</span><span class="insp-field-v" style="color:var(--code-success)">24,000 RPM</span></div>
+          <div class="insp-field"><span class="insp-field-k">Feed Rate</span><span class="insp-field-v" style="color:var(--code-action)"><span class="num" data-mm="1200" data-unit="mm/min" data-in-per-mm="0.03937">1,200 mm/min<span class="num-conv">47.24 in/min</span></span></span></div>
+          <div class="insp-field"><span class="insp-field-k">Depth of Cut</span><span class="insp-field-v"><span class="num" data-mm="2.5" data-unit="mm" data-in-per-mm="0.03937">2.5 mm<span class="num-conv">0.098 in</span></span></span></div>
+          <div class="alert warning" style="margin-top:4px;margin-bottom:0;padding:5px 8px;font-size:10px">
+            <div class="alert-icon" style="font-size:12px"><svg class="icon icon-sm"><use href="#icon-alert"/></svg></div>
+            <div class="alert-body"><div class="alert-msg">Depth exceeds 80% of tool reach. Consider reduced depth or longer tool.</div></div>
+          </div>
+          <div class="insp-field"><span class="insp-field-k">Stepover</span><span class="insp-field-v">40%</span></div>
+          <div class="insp-field"><span class="insp-field-k">Coolant</span><span class="insp-field-v" style="color:var(--code-material)">Flood ON</span></div>
+          <div class="alert info" style="margin-top:4px;margin-bottom:0;padding:5px 8px;font-size:10px">
+            <div class="alert-icon" style="font-size:12px"><svg class="icon icon-sm"><use href="#icon-info"/></svg></div>
+            <div class="alert-body"><div class="alert-msg">Haas NGC post loaded. All toolpaths ready for G-code generation.</div></div>
+          </div>
+        </div>
+        <div class="insp-section">
+          <div class="insp-label">Material</div>
+          <div class="insp-field"><span class="insp-field-k">Stock</span><span class="insp-field-v" style="color:var(--code-material)">AL-6061-T6</span></div>
+          <div class="insp-field"><span class="insp-field-k">Dimensions</span><span class="insp-field-v"><span class="num" data-mm="100" data-unit="mm" data-in-per-mm="0.03937">100×80×25mm<span class="num-conv">3.94×3.15×0.98 in</span></span></span></div>
+          <div class="insp-field"><span class="insp-field-k">Hardness</span><span class="insp-field-v">95 HB</span></div>
+          <div class="alert success" style="margin-top:4px;margin-bottom:0;padding:5px 8px;font-size:10px">
+            <div class="alert-icon" style="font-size:12px"><svg class="icon icon-sm"><use href="#icon-check"/></svg></div>
+            <div class="alert-body"><div class="alert-msg">Simulation complete. No collisions. G-code ready.</div></div>
+          </div>
+        </div>
+        <div class="insp-section">
+          <div class="insp-label" style="color:var(--code-ai)">AI Recommendations</div>
+          <div style="padding:6px;background:var(--code-ai-dim);border:1px solid var(--code-ai-mid);border-radius:var(--r-md)">
+            <div style="font-size:11px;color:var(--code-ai);font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:4px"><svg class="icon icon-sm"><use href="#icon-robot"/></svg> Optimization Available</div>
+            <div style="font-size:10px;color:var(--ink-tertiary);line-height:1.5">Increase feed to 1,400 mm/min for 15% efficiency gain.</div>
+            <div style="display:flex;gap:3px;margin-top:5px">
+              <button class="btn btn-sm" style="background:var(--code-ai-dim);color:var(--code-ai);border:1px solid var(--code-ai-mid)" onclick="applyAI()">Apply</button>
+              <button class="btn btn-sm btn-surface" onclick="dismissToast()">Later</button>
+            </div>
+          </div>
+        </div>
+        <div class="insp-section">
+          <div class="insp-label">Display</div>
+          <div class="insp-field"><span class="insp-field-k">Toolpaths</span><div class="toggle on" tabindex="0" role="switch" aria-checked="true" onclick="this.classList.toggle('on')" style="cursor:pointer"></div></div>
+          <div class="insp-field"><span class="insp-field-k">Wireframe</span><div class="toggle" tabindex="0" role="switch" aria-checked="false" onclick="this.classList.toggle('on')" style="cursor:pointer"></div></div>
+          <div class="insp-field"><span class="insp-field-k">Stock</span><div class="toggle on" tabindex="0" role="switch" aria-checked="true" onclick="this.classList.toggle('on')" style="cursor:pointer"></div></div>
+          <div class="insp-field"><span class="insp-field-k">Collision</span><div class="toggle on" tabindex="0" role="switch" aria-checked="true" onclick="this.classList.toggle('on')" style="cursor:pointer"></div></div>
+        </div>
+      </div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <div class="statusbar-left">
+    <span><span class="status-dot on"></span> Ready</span>
+    <span style="color:var(--code-material)">AL-6061-T6</span>
+    <span>Tool #4</span>
+    <span style="color:var(--code-action)">Ctrl+K Command Palette</span>
+  </div>
+  <div class="statusbar-right">
+    <span>Feeds: <span style="color:var(--code-success)">OK</span></span>
+    <span>Collision: <span style="color:var(--code-success)">Clear</span></span>
+    <span style="color:var(--ink-ghost)">v3.0.1</span>
+  </div>
+</div>
+
+<!-- COMMAND PALETTE -->
+<div class="cmd-overlay" id="cmdPalette" onclick="if(event.target===this)closeCmd()">
+  <div class="cmd-box">
+    <div class="cmd-search">
+      <span class="cmd-search-icon">⊞</span>
+      <input id="cmdInput" placeholder="Type a command..." oninput="filterCmd(this.value)">
+    </div>
+    <div class="cmd-results">
+      <div class="cmd-item sel" onclick="closeCmd()"><div class="cmd-item-icon" style="background:var(--code-action-dim);color:var(--code-action)"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></div><div class="cmd-item-text"><div class="cmd-item-name">Generate Toolpath</div><div class="cmd-item-desc">Create cutting path from geometry</div></div><span class="kbd">Ctrl+G</span></div>
+      <div class="cmd-item" onclick="closeCmd()"><div class="cmd-item-icon" style="background:var(--code-success-dim);color:var(--code-success)">▶</div><div class="cmd-item-text"><div class="cmd-item-name">Run Simulation</div><div class="cmd-item-desc">Preview material removal in 3D</div></div><span class="kbd">Ctrl+⇧R</span></div>
+      <div class="cmd-item" onclick="closeCmd()"><div class="cmd-item-icon" style="background:var(--code-tool-dim);color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-wrench"/></svg></div><div class="cmd-item-text"><div class="cmd-item-name">Post Process</div><div class="cmd-item-desc">Generate G-code for machine</div></div><span class="kbd">Ctrl+⇧P</span></div>
+      <div class="cmd-item" onclick="closeCmd()"><div class="cmd-item-icon" style="background:var(--code-ai-dim);color:var(--code-ai)"><svg class="icon icon-sm"><use href="#icon-robot"/></svg></div><div class="cmd-item-text"><div class="cmd-item-name">AI Optimize</div><div class="cmd-item-desc">ML-powered feed/speed optimization</div></div><span class="kbd">Ctrl+⇧A</span></div>
+      <div class="cmd-item" onclick="closeCmd()"><div class="cmd-item-icon" style="background:var(--code-accent-dim);color:var(--code-accent)"><svg class="icon icon-sm"><use href="#icon-settings"/></svg></div><div class="cmd-item-text"><div class="cmd-item-name">Settings</div><div class="cmd-item-desc">Machine and project settings</div></div><span class="kbd">Ctrl+,</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="aiToast">
+  <div class="toast-header"><span class="status-dot ai"></span><span class="toast-title"><svg class="icon icon-sm" style="vertical-align:middle"><use href="#icon-robot"/></svg> AI Suggestion</span></div>
+  <div class="toast-body">Feed rate can increase to 1,400 mm/min — 15% faster. Apply?</div>
+  <div class="toast-actions">
+    <button class="btn btn-sm" style="background:var(--code-ai);color:#fff" onclick="applyAI()">Apply</button>
+    <button class="btn btn-sm btn-ghost" onclick="dismissToast()">Later</button>
+  </div>
+</div>
+
+<!-- TOOLTIP CONTAINER (populated by JS) -->
+<div id="tooltipContainer"></div>
+
+<!-- MOBILE PANEL TOGGLES -->
+<button class="mobile-toggle tree-toggle" onclick="document.getElementById('treePanel').classList.toggle('mobile-open');document.getElementById('inspectorPanel').classList.remove('mobile-open')">☰</button>
+<button class="mobile-toggle insp-toggle" onclick="document.getElementById('inspectorPanel').classList.toggle('mobile-open');document.getElementById('treePanel').classList.remove('mobile-open')">⚙</button>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// TOOLTIP DATA — every icon gets a rich tooltip with video
+// ═══════════════════════════════════════════════════════════════
+const TIPS = {
+  select:     { name:'Select Tool', icon:'⊹', color:'var(--code-action)', shortcut:'V',
+    desc:'Click to select geometry, toolpaths, or features in the viewport. Hold Shift for multi-select. Drag a box to area-select.',
+    use:'<strong>Use case:</strong> Select a profile to assign a toolpath, or select multiple holes for a drill cycle.',
+    video:'Selecting Geometry' },
+  pan:        { name:'Pan View', icon:'✥', color:'var(--ink-tertiary)', shortcut:'H',
+    desc:'Click and drag to pan the viewport camera. Works in all view modes.',
+    use:'<strong>Use case:</strong> Navigate large parts or zoom into specific features without changing zoom level.',
+    video:'Viewport Navigation' },
+  zoom:       { name:'Zoom', icon:'⊕', color:'var(--ink-tertiary)', shortcut:'Z',
+    desc:'Scroll wheel to zoom in/out. Click and drag up/down for smooth zoom. Double-click to fit all.',
+    use:'<strong>Use case:</strong> Zoom into tight corners to verify toolpath clearance or inspect surface finish.',
+    video:'Zoom Controls' },
+  line:       { name:'Line Tool', icon:'╱', color:'var(--code-view)', shortcut:'L',
+    desc:'Draw straight line geometry. Click start point, click end point. Hold Shift for horizontal/vertical constraint.',
+    use:'<strong>Use case:</strong> Create profile boundaries for facing operations or define custom stock outlines.',
+    video:'Drawing Lines' },
+  arc:        { name:'Arc Tool', icon:'◠', color:'var(--code-view)', shortcut:'A',
+    desc:'Draw arcs using 3-point method. Click start, mid, end. Or center-radius mode with Ctrl held.',
+    use:'<strong>Use case:</strong> Define fillet radii on pockets or create rounded corners for profiling.',
+    video:'Drawing Arcs' },
+  circle:     { name:'Circle Tool', icon:'○', color:'var(--code-view)', shortcut:'C',
+    desc:'Draw circles by center+radius or diameter. Type exact values in the command bar.',
+    use:'<strong>Use case:</strong> Define hole locations for drill cycles or create circular pockets.',
+    video:'Drawing Circles' },
+  spline:     { name:'Spline Tool', icon:'∿', color:'var(--code-view)', shortcut:'S',
+    desc:'Draw smooth curves through control points. Double-click to finish. Edit control points after creation.',
+    use:'<strong>Use case:</strong> Create organic profiles for 5-axis machining or complex contour paths.',
+    video:'Drawing Splines' },
+  drill:      { name:'Drill Operation', icon:'⌾', color:'var(--code-tool)', shortcut:'D',
+    desc:'Create drill cycles (G81-G89). Select holes, assign tool, set peck depth and retract plane.',
+    use:'<strong>Use case:</strong> Drill the 4× mounting holes with chip-breaking peck cycle at 24K RPM.',
+    video:'Drill Cycles' },
+  endmill:    { name:'End Mill Operation', icon:'⊞', color:'var(--code-tool)', shortcut:'E',
+    desc:'Create milling toolpaths — roughing, finishing, pocketing, profiling. Set stepover, stepdown, and lead-in/out.',
+    use:'<strong>Use case:</strong> Rough out the main pocket with 40% stepover, then finish with spring pass.',
+    video:'Mill Operations' },
+  turn:       { name:'Turn Operation', icon:'◎', color:'var(--code-tool)', shortcut:'T',
+    desc:'Create turning toolpaths for lathe operations — facing, OD/ID turning, threading, grooving.',
+    use:'<strong>Use case:</strong> Face the stock to length, then turn the OD to final diameter.',
+    video:'Turn Operations' },
+  'ai-optimize':{ name:'AI Optimize', icon:'🤖', color:'var(--code-ai)', shortcut:'Ctrl+⇧A',
+    desc:'Machine learning analyzes your setup and suggests optimal feeds, speeds, and toolpath strategies.',
+    use:'<strong>Use case:</strong> AI detected 15% efficiency gain by increasing feed rate. One-click apply.',
+    video:'AI Optimization' },
+  settings:   { name:'Settings', icon:'⚙', color:'var(--ink-muted)', shortcut:'Ctrl+,',
+    desc:'Configure machine parameters, post processor selection, material library, and application preferences.',
+    use:'<strong>Use case:</strong> Set up your Haas VF-2 machine definition and select the correct post processor.',
+    video:'Settings & Config' },
+  generate:   { name:'Generate Toolpath', icon:'⚡', color:'var(--code-action)', shortcut:'Ctrl+G',
+    desc:'Generate all pending toolpaths from the feature tree. Validates geometry and parameters before generating.',
+    use:'<strong>Use case:</strong> After assigning tools and strategies, generate all toolpaths with one click.',
+    video:'Generate Toolpaths' },
+  simulate:   { name:'Run Simulation', icon:'▶', color:'var(--code-success)', shortcut:'Ctrl+⇧R',
+    desc:'Run material removal simulation. Shows stock being cut in real-time with collision detection.',
+    use:'<strong>Use case:</strong> Verify no collisions before posting G-code to the machine.',
+    video:'Simulation' },
+  post:       { name:'Post Process', icon:'🔧', color:'var(--code-tool)', shortcut:'Ctrl+⇧P',
+    desc:'Convert toolpaths to machine-specific G-code using the selected post processor.',
+    use:'<strong>Use case:</strong> Generate Haas-compatible G-code ready to load via USB or DNC.',
+    video:'Post Processing' },
+  'unit-toggle':{ name:'Unit Toggle', icon:'mm', color:'var(--code-info)', shortcut:'Ctrl+U',
+    desc:'Switch the entire project between metric (mm) and imperial (inches). All dimensions, feeds, and stats convert instantly.',
+    use:'<strong>Use case:</strong> Switch to inches when working with a customer who specifies imperial dimensions.',
+    video:'Unit Conversion' },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// TOOLTIP RENDERING
+// ═══════════════════════════════════════════════════════════════
+const container = document.getElementById('tooltipContainer');
+let activeTip = null;
+
+document.querySelectorAll('.tip').forEach(el => {
+  const key = el.dataset.tip;
+  if (!key || !TIPS[key]) return;
+  const t = TIPS[key];
+
+  el.addEventListener('mouseenter', e => {
+    // Determine position
+    const rect = el.getBoundingClientRect();
+    const spaceR = window.innerWidth - rect.right;
+    const spaceL = rect.left;
+    const spaceB = window.innerHeight - rect.bottom;
+    let posClass = spaceR > 300 ? 'pos-right' : spaceL > 300 ? 'pos-left' : spaceB > 250 ? 'pos-bottom' : 'pos-top';
+
+    const tip = document.createElement('div');
+    tip.className = `tip-content ${posClass} show`;
+    // Position based on element rect
+    if (posClass === 'pos-right') { tip.style.left = (rect.right + 8) + 'px'; tip.style.top = (rect.top + rect.height/2 - 125) + 'px'; }
+    else if (posClass === 'pos-left') { tip.style.left = (rect.left - 288) + 'px'; tip.style.top = (rect.top + rect.height/2 - 125) + 'px'; }
+    else if (posClass === 'pos-bottom') { tip.style.left = (rect.left + rect.width/2 - 140) + 'px'; tip.style.top = (rect.bottom + 8) + 'px'; }
+    else { tip.style.left = (rect.left + rect.width/2 - 140) + 'px'; tip.style.top = (rect.top - 260) + 'px'; }
+    // Clamp to viewport
+    tip.style.left = Math.max(4, Math.min(window.innerWidth - 284, parseFloat(tip.style.left))) + 'px';
+    tip.style.top = Math.max(4, Math.min(window.innerHeight - 260, parseFloat(tip.style.top))) + 'px';
+    tip.innerHTML = `
+      <div class="tip-head">
+        <div class="tip-icon" style="background:${t.color}22;color:${t.color}">${t.icon}</div>
+        <div class="tip-name">${t.name}</div>
+        <div class="tip-shortcut">${t.shortcut}</div>
+      </div>
+      <div class="tip-body">
+        <div class="tip-desc">${t.desc}</div>
+        <div class="tip-use">${t.use}</div>
+      </div>
+      <div class="tip-video">
+        <div class="tip-video-thumb" onclick="event.stopPropagation()">
+          <span>▶</span>
+        </div>
+        <div class="tip-video-label">Watch: ${t.video}</div>
+      </div>`;
+    container.appendChild(tip);
+    activeTip = tip;
+  });
+
+  el.addEventListener('mouseleave', () => {
+    if (activeTip) { activeTip.remove(); activeTip = null; }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openCmd(); }
+  if (e.key === 'Escape') { closeCmd(); dismissToast(); closeActions(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'g') { e.preventDefault(); showToast(); }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') { e.preventDefault(); /* simulate */ }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') { e.preventDefault(); /* post process */ }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'u') { e.preventDefault(); toggleUnit(); }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') { e.preventDefault(); toggleTheme(); }
+  // Command palette arrow nav
+  if (document.getElementById('cmdPalette').classList.contains('open')) {
+    const items = [...document.querySelectorAll('.cmd-item')].filter(i => i.style.display !== 'none');
+    if (e.key === 'ArrowDown' || e.key === 'arrowdown') { e.preventDefault(); paletteIdx = Math.min(paletteIdx + 1, items.length - 1); highlightPaletteItem(); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); paletteIdx = Math.max(paletteIdx - 1, 0); highlightPaletteItem(); }
+    if (e.key === 'Enter' && items[paletteIdx]) { items[paletteIdx].click(); }
+  }
+});
+
+// Tool buttons
+document.querySelectorAll('.tool-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// Toggle aria-checked on toggle click
+document.querySelectorAll('.toggle').forEach(t => {
+  t.addEventListener('click', () => {
+    const on = t.classList.toggle('on');
+    t.setAttribute('aria-checked', on);
+  });
+});
+
+// Tree items
+document.querySelectorAll('.tree-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+
+// Viewport mouse tracking
+document.getElementById('viewport').addEventListener('mousemove', e => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+  const y = ((1 - (e.clientY - rect.top) / rect.height) * 80).toFixed(1);
+  document.getElementById('coordX').textContent = parseFloat(x).toFixed(3);
+  document.getElementById('coordY').textContent = parseFloat(y).toFixed(3);
+});
+
+// Command palette
+function openCmd() {
+  document.getElementById('cmdPalette').classList.add('open');
+  setTimeout(() => {
+    document.getElementById('cmdInput').focus();
+    paletteIdx = 0;
+    highlightPaletteItem();
+  }, 50);
+}
+function closeCmd() { document.getElementById('cmdPalette').classList.remove('open'); }
+let paletteIdx = 0;
+function highlightPaletteItem() {
+  const items = [...document.querySelectorAll('.cmd-item')].filter(i => i.style.display !== 'none');
+  items.forEach((it, i) => it.classList.toggle('sel', i === paletteIdx));
+}
+function filterCmd(q) {
+  const lower = q.toLowerCase();
+  const items = document.querySelectorAll('.cmd-item');
+  items.forEach(item => {
+    const name = item.querySelector('.cmd-item-name').textContent.toLowerCase();
+    item.style.display = name.includes(lower) ? '' : 'none';
+  });
+  paletteIdx = 0;
+  highlightPaletteItem();
+}
+
+// Toast
+function showToast() { document.getElementById('aiToast').classList.add('show'); }
+function dismissToast() { document.getElementById('aiToast').classList.remove('show'); }
+function applyAI() {
+  dismissToast();
+  // Update the .num element's data attribute and text, preserving the element
+  const feedNum = document.querySelector('.insp-field-v .num[data-mm="1200"]');
+  if (feedNum) {
+    feedNum.dataset.mm = '1400';
+    const convEl = feedNum.querySelector('.num-conv');
+    if (isMM) {
+      feedNum.childNodes[0].textContent = '1,400 mm/min';
+      if (convEl) convEl.textContent = '55.12 in/min';
+    } else {
+      feedNum.childNodes[0].textContent = '55.12 in/min';
+      if (convEl) convEl.textContent = '1,400 mm/min';
+    }
+    feedNum.style.background = 'rgba(78,203,113,0.15)';
+    setTimeout(() => { feedNum.style.background = ''; }, 1500);
+  }
+}
+
+// Viewport mode cycling
+function cycleMode(el, modes) {
+  let i = (modes.indexOf(el.textContent) + 1) % modes.length;
+  el.textContent = modes[i];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RESIZABLE PANELS
+// ═══════════════════════════════════════════════════════════════
+let resizeState = null;
+const main = document.getElementById('mainLayout');
+
+document.querySelectorAll('.resize-handle').forEach(handle => {
+  handle.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const target = handle.dataset.resize;
+    const startX = e.clientX;
+    const startW = target === 'tree'
+      ? parseInt(getComputedStyle(main).getPropertyValue('--tree-w')) || 200
+      : parseInt(getComputedStyle(main).getPropertyValue('--insp-w')) || 240;
+    resizeState = { target, startX, startW };
+    handle.classList.add('active');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+});
+
+document.addEventListener('mousemove', e => {
+  if (!resizeState) return;
+  const dx = e.clientX - resizeState.startX;
+  const newW = Math.max(120, Math.min(500, resizeState.startW + (resizeState.target === 'tree' ? dx : -dx)));
+  main.style.setProperty(`--${resizeState.target === 'tree' ? 'tree' : 'insp'}-w`, newW + 'px');
+});
+
+document.addEventListener('mouseup', () => {
+  if (resizeState) {
+    document.querySelectorAll('.resize-handle').forEach(h => h.classList.remove('active'));
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    resizeState = null;
+    saveState();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════════
+// DARK / LIGHT MODE
+// ═══════════════════════════════════════════════════════════════
+let isDark = true;
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.classList.toggle('light', !isDark);
+  document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UNIT TOGGLE (mm ↔ in)
+// ═══════════════════════════════════════════════════════════════
+let isMM = true;
+const MM_TO_IN = 0.03937;
+const IN_TO_MM = 25.4;
+
+function toggleUnit() {
+  isMM = !isMM;
+  const btn = document.getElementById('unitBtn');
+  btn.textContent = isMM ? 'mm' : 'in';
+  document.documentElement.style.setProperty('--unit', isMM ? 'mm' : 'in');
+
+  // Update all .num elements — swap displayed value with conversion
+  document.querySelectorAll('.num').forEach(el => {
+    const mmVal = parseFloat(el.dataset.mm);
+    const unit = el.dataset.unit;
+    const convEl = el.querySelector('.num-conv');
+    if (isMM) {
+      // Show mm value, conv shows inches
+      const inVal = (mmVal * MM_TO_IN).toFixed(unit.includes('/') ? 1 : 2);
+      el.childNodes[0].textContent = formatNum(mmVal) + ' ' + unit;
+      if (convEl) convEl.textContent = formatNum(parseFloat(inVal)) + ' ' + unit.replace('mm','in');
+    } else {
+      // Show inches value, conv shows mm
+      const inVal = mmVal * MM_TO_IN;
+      const displayUnit = unit.replace('mm/min','in/min').replace('mm','in');
+      el.childNodes[0].textContent = formatNum(inVal) + ' ' + displayUnit;
+      if (convEl) convEl.textContent = formatNum(mmVal) + ' ' + unit;
+    }
+  });
+
+  // Update viewport stats
+  updateViewportStats();
+}
+
+function formatNum(n) {
+  if (n >= 1000) return n.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 1});
+  return n.toFixed(n < 10 ? 3 : n < 100 ? 2 : 1);
+}
+
+function updateViewportStats() {
+  const stats = document.querySelector('.viewport-stats');
+  if (!stats) return;
+  const rows = stats.querySelectorAll('.vs-row');
+  if (isMM) {
+    if (rows[0]) rows[0].querySelector('.vs-v').textContent = '160.000 mm';
+    if (rows[3]) rows[3].querySelector('.vs-v').textContent = '11,200 mm²';
+    if (rows[4]) rows[4].querySelector('.vs-v').textContent = '520.00 mm';
+    if (rows[5]) rows[5].querySelector('.vs-v').textContent = '280.0 cm³';
+  } else {
+    if (rows[0]) rows[0].querySelector('.vs-v').textContent = '6.299 in';
+    if (rows[3]) rows[3].querySelector('.vs-v').textContent = '17.36 in²';
+    if (rows[4]) rows[4].querySelector('.vs-v').textContent = '20.47 in';
+    if (rows[5]) rows[5].querySelector('.vs-v').textContent = '17.09 in³';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PLATFORM-AWARE SHORTCUT LABELS
+// ═══════════════════════════════════════════════════════════════
+const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+const modKey = isMac ? '⌘' : 'Ctrl+';
+document.querySelectorAll('.kbd').forEach(el => {
+  el.textContent = el.textContent.replace('Ctrl+', modKey);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// LOCALSTORAGE PERSISTENCE
+// ═══════════════════════════════════════════════════════════════
+function saveState() {
+  localStorage.setItem('ds-theme', isDark ? 'dark' : 'light');
+  localStorage.setItem('ds-unit', isMM ? 'mm' : 'in');
+  localStorage.setItem('ds-tree-w', getComputedStyle(main).getPropertyValue('--tree-w'));
+  localStorage.setItem('ds-insp-w', getComputedStyle(main).getPropertyValue('--insp-w'));
+}
+function loadState() {
+  const theme = localStorage.getItem('ds-theme');
+  if (theme === 'light') { isDark = false; document.documentElement.classList.add('light'); document.getElementById('themeBtn').textContent = '☀'; }
+  const unit = localStorage.getItem('ds-unit');
+  if (unit === 'in' && isMM) toggleUnit();
+  const tw = localStorage.getItem('ds-tree-w'); if (tw) main.style.setProperty('--tree-w', tw);
+  const iw = localStorage.getItem('ds-insp-w'); if (iw) main.style.setProperty('--insp-w', iw);
+}
+loadState();
+
+// Persist on change
+const origToggle = toggleTheme; toggleTheme = function() { origToggle(); saveState(); };
+const origUnit = toggleUnit; toggleUnit = function() { origUnit(); saveState(); };
+
+// ═══════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUT OVERLAY (shows on modifier hold)
+// ═══════════════════════════════════════════════════════════════
+const SHORTCUTS = {
+  'Ctrl': [
+    {key:'K', label:'Command Palette', color:'var(--code-action)'},
+    {key:'G', label:'Generate Toolpath', color:'var(--code-action)'},
+    {key:'⇧R', label:'Simulate', color:'var(--code-success)'},
+    {key:'⇧P', label:'Post Process', color:'var(--code-tool)'},
+    {key:'U', label:'Toggle Units', color:'var(--code-info)'},
+    {key:'L', label:'Toggle Theme', color:'var(--code-accent)'},
+    {key:'Z', label:'Undo', color:'var(--ink-secondary)'},
+    {key:'⇧Z', label:'Redo', color:'var(--ink-secondary)'},
+  ],
+  'Alt': [
+    {key:'H', label:'Help / Shortcuts', color:'var(--code-warning)'},
+    {key:'T', label:'Toggle Toolpaths', color:'var(--code-view)'},
+    {key:'W', label:'Toggle Wireframe', color:'var(--code-view)'},
+    {key:'S', label:'Toggle Stock', color:'var(--code-material)'},
+    {key:'C', label:'Collision Check', color:'var(--code-danger)'},
+    {key:'1', label:'Top View', color:'var(--code-info)'},
+    {key:'2', label:'Front View', color:'var(--code-info)'},
+    {key:'3', label:'Side View', color:'var(--code-info)'},
+    {key:'0', label:'Perspective', color:'var(--code-info)'},
+  ],
+};
+
+let shortcutOverlay = null;
+let overlayVisible = false;
+
+function createShortcutOverlay() {
+  if (shortcutOverlay) return shortcutOverlay;
+  const overlay = document.createElement('div');
+  overlay.id = 'shortcutOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:998;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px)';
+  overlay.innerHTML = '<div style="display:flex;gap:32px;flex-wrap:wrap;justify-content:center;max-width:800px;padding:32px" id="shortcutGrid"></div>';
+  overlay.addEventListener('click', () => hideShortcuts());
+  document.body.appendChild(overlay);
+  shortcutOverlay = overlay;
+  return overlay;
+}
+
+function showShortcuts(modifier) {
+  const overlay = createShortcutOverlay();
+  const grid = document.getElementById('shortcutGrid');
+  const shortcuts = SHORTCUTS[modifier] || [];
+  grid.innerHTML = shortcuts.map(s => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;min-width:200px">
+      <span class="kbd" style="font-size:12px;min-width:32px;height:24px;padding:0 6px;border-color:rgba(255,255,255,0.15)">${modifier}+${s.key}</span>
+      <span style="font-size:13px;color:${s.color};font-weight:500">${s.label}</span>
+    </div>
+  `).join('');
+  overlay.style.display = 'flex';
+  overlayVisible = true;
+}
+
+function hideShortcuts() {
+  if (shortcutOverlay) { shortcutOverlay.style.display = 'none'; overlayVisible = false; }
+}
+
+// Modifier key detection
+let ctrlHeld = false, altHeld = false;
+document.addEventListener('keydown', e => {
+  if (e.key === 'Control' || e.key === 'Meta') { ctrlHeld = true; if (!altHeld) showShortcuts('Ctrl'); }
+  if (e.key === 'Alt') { e.preventDefault(); altHeld = true; showShortcuts('Alt'); }
+});
+document.addEventListener('keyup', e => {
+  if (e.key === 'Control' || e.key === 'Meta') { ctrlHeld = false; if (!altHeld) hideShortcuts(); }
+  if (e.key === 'Alt') { altHeld = false; if (!ctrlHeld) hideShortcuts(); }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// UNDO / REDO SYSTEM
+// ═══════════════════════════════════════════════════════════════
+const undoStack = [];
+const redoStack = [];
+const MAX_UNDO = 50;
+
+function pushUndo(action) {
+  undoStack.push(action);
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+  redoStack.length = 0;
+}
+
+function undo() {
+  if (undoStack.length === 0) return;
+  const action = undoStack.pop();
+  action.undo();
+  redoStack.push(action);
+  showToastMessage('Undo: ' + action.label);
+}
+
+function redo() {
+  if (redoStack.length === 0) return;
+  const action = redoStack.pop();
+  action.redo();
+  undoStack.push(action);
+  showToastMessage('Redo: ' + action.label);
+}
+
+// Wrap toggle to track undo
+const origToggleFn = toggleTheme;
+toggleTheme = function() {
+  const wasDark = isDark;
+  pushUndo({
+    label: 'Toggle theme',
+    undo: () => { isDark = wasDark; document.documentElement.classList.toggle('light', !isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; },
+    redo: () => { isDark = !wasDark; document.documentElement.classList.toggle('light', !isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; }
+  });
+  origToggleFn();
+};
+
+// Wrap unit toggle
+const origUnitFn = toggleUnit;
+toggleUnit = function() {
+  const wasMM = isMM;
+  pushUndo({
+    label: 'Toggle units',
+    undo: () => { isMM = wasMM; /* restore unit state */ },
+    redo: () => { isMM = !wasMM; /* re-apply unit state */ }
+  });
+  origUnitFn();
+};
+
+function showToastMessage(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:var(--canvas-raised);border:1px solid var(--border-strong);border-radius:6px;padding:6px 14px;font-size:12px;color:var(--ink-secondary);z-index:300;animation:fadeSlideIn 150ms var(--ease-out)';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1500);
+}
+
+// Add Ctrl+Z/Y handlers
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && e.shiftKey) { e.preventDefault(); redo(); }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
+  if (e.key === 'h' && altHeld) { e.preventDefault(); toggleHelp(); }
+  if (e.key === 't' && altHeld) { e.preventDefault(); /* toggle toolpaths */ }
+  if (e.key === 'w' && altHeld) { e.preventDefault(); /* toggle wireframe */ }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// HELP OVERLAY
+// ═══════════════════════════════════════════════════════════════
+let helpOverlay = null;
+
+function toggleHelp() {
+  if (helpOverlay) { helpOverlay.remove(); helpOverlay = null; return; }
+  helpOverlay = document.createElement('div');
+  helpOverlay.style.cssText = 'position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)';
+  helpOverlay.innerHTML = '<div style="background:var(--canvas-raised);border:1px solid var(--border-strong);border-radius:8px;width:600px;max-height:80vh;overflow:auto;padding:24px;box-shadow:0 16px 64px rgba(0,0,0,0.5)">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">' +
+    '<h2 style="font-size:18px;font-weight:700">Keyboard Shortcuts</h2>' +
+    '<button onclick="this.closest('.fixed').parentElement.remove()" style="background:none;border:none;color:var(--ink-muted);cursor:pointer;font-size:18px">✕</button></div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+    Object.entries(SHORTCUTS).map(([mod, shortcuts]) => `
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">${mod} Key</div>
+        ${shortcuts.map(s => `<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span class="kbd" style="min-width:50px;text-align:center">${mod}+${s.key}</span><span style="font-size:12px;color:var(--ink-secondary)">${s.label}</span></div>`).join('')}
+      </div>
+    `).join('') +
+    '</div>' +
+    '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border-subtle);font-size:11px;color:var(--ink-muted);text-align:center">Hold Ctrl or Alt to see shortcuts. Press ? or Alt+H for this help.</div>' +
+    '</div>';
+  helpOverlay.addEventListener('click', e => { if (e.target === helpOverlay) { helpOverlay.remove(); helpOverlay = null; } });
+  document.body.appendChild(helpOverlay);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ONBOARDING TOUR (first visit)
+// ═══════════════════════════════════════════════════════════════
+function checkOnboarding() {
+  if (localStorage.getItem('ds-onboarded')) return;
+  setTimeout(() => startOnboarding(), 800);
+}
+
+function startOnboarding() {
+  const steps = [
+    { title:'Welcome to AI CAM 3.0', msg:'This is a modern CAM interface. Every feature is visible — no hidden menus.', target:null },
+    { title:'Color-Coded Tools', msg:'Blue = actions, Orange = machining, Green = view, Magenta = AI. Colors mean the same thing everywhere.', target:'.toolbar' },
+    { title:'Keyboard First', msg:'Hold Ctrl or Alt to see all shortcuts. Press Ctrl+K for the command palette.', target:null },
+    { title:'Viewport Stats', msg:'Hover any number to see unit conversion. Click mm/in to switch project-wide.', target:'.viewport-stats' },
+    { title:'AI Assistant', msg:'AI suggestions appear inline — right where you need them, not in a separate tab.', target:'.alert.ai' },
+  ];
+
+  let step = 0;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  document.body.appendChild(overlay);
+
+  function showStep() {
+    if (step >= steps.length) { overlay.remove(); localStorage.setItem('ds-onboarded', '1'); return; }
+    const s = steps[step];
+    overlay.innerHTML = '<div style="background:var(--canvas-raised);border:1px solid var(--border-strong);border-radius:8px;padding:20px 24px;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4)">' +
+      `<div style="font-size:14px;font-weight:700;margin-bottom:6px">${s.title}</div>` +
+      `<div style="font-size:12px;color:var(--ink-tertiary);line-height:1.5;margin-bottom:12px">${s.msg}</div>` +
+      `<div style="display:flex;justify-content:space-between;align-items:center">` +
+      `<span style="font-size:10px;color:var(--ink-muted)">${step+1}/${steps.length}</span>` +
+      `<div style="display:flex;gap:6px">` +
+      `<button onclick="localStorage.setItem('ds-onboarded','1');this.closest('[style*=fixed]').remove()" style="background:none;border:none;color:var(--ink-muted);cursor:pointer;font-size:11px">Skip</button>` +
+      `<button class="btn btn-sm btn-primary" onclick="window._nextStep()" style="height:28px">${step<steps.length-1?'Next':'Get Started'}</button>` +
+      `</div></div></div>`;
+  }
+
+  window._nextStep = () => { step++; showStep(); };
+  showStep();
+}
+
+// Check onboarding on load
+checkOnboarding();
+</script>
+<!-- Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

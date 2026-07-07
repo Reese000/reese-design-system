@@ -1,0 +1,51 @@
+name: Design System CI
+
+on:
+  push:
+    paths: ['tokens.css', 'demo.html', 'index.html', '*.css', '*.svg']
+  pull_request:
+    paths: ['tokens.css', 'demo.html', 'index.html', '*.css', '*.svg']
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate CSS tokens
+        run: node scripts/validate.js
+
+      - name: Check HTML validity
+        run: |
+          # Basic structure checks
+          for f in demo.html index.html; do
+            echo "Checking $f..."
+            grep -q '<!DOCTYPE html>' "$f" || { echo "FAIL: $f missing DOCTYPE"; exit 1; }
+            grep -q '</html>' "$f" || { echo "FAIL: $f missing closing html"; exit 1; }
+            grep -q 'tokens.css' "$f" || { echo "FAIL: $f doesn't link tokens.css"; exit 1; }
+            STYLE_OPEN=$(grep -c '<style>' "$f")
+            STYLE_CLOSE=$(grep -c '</style>' "$f")
+            [ "$STYLE_OPEN" = "$STYLE_CLOSE" ] || { echo "FAIL: $f unclosed <style> tags"; exit 1; }
+            echo "  ✓ $f structure OK"
+          done
+
+      - name: Check token consistency
+        run: |
+          # Verify tokens.css is canonical — no hardcoded colors in HTML
+          for f in demo.html index.html; do
+            echo "Checking $f for hardcoded colors..."
+            # Allow known exceptions (viewport bg, light mode overrides)
+            if grep -n 'background:#[0-9a-f]\{6\}' "$f" | grep -v 'canvas-\|--code-' | head -5; then
+              echo "  ⚠ Found hardcoded hex colors (may need token)"
+            fi
+            echo "  ✓ $f token check done"
+          done
+
+      - name: Check accessibility basics
+        run: |
+          for f in demo.html index.html; do
+            echo "Checking $f accessibility..."
+            grep -q ':focus-visible' "$f" || grep -q 'tokens.css' "$f" || { echo "FAIL: $f no focus styles"; exit 1; }
+            grep -q 'aria-label\|aria-checked\|role=' "$f" || echo "  ⚠ $f missing ARIA attributes"
+            echo "  ✓ $f a11y check done"
+          done

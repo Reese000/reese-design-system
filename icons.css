@@ -1,0 +1,22 @@
+/* ═══════════════════════════════════════════════════════════════
+   REESE DESIGN SYSTEM — SVG Icon Styles
+   All icons use currentColor for automatic theming.
+   ═══════════════════════════════════════════════════════════════ */
+
+.icon{width:16px;height:16px;display:inline-block;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.icon-sm{width:12px;height:12px}
+.icon-lg{width:20px;height:20px}
+.icon-xl{width:24px;height:24px}
+
+/* Icon button wrapper */
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--r-sm);border:none;background:none;color:var(--ink-tertiary);cursor:pointer;transition:all 80ms}
+.icon-btn:hover{background:var(--canvas-raised);color:var(--ink-primary)}
+.icon-btn.active{background:rgba(108,138,255,0.12);color:var(--code-action)}
+
+/* Alert icons */
+.alert .icon{width:16px;height:16px}
+.alert.info .icon{color:var(--code-info)}
+.alert.success .icon{color:var(--code-success)}
+.alert.warning .icon{color:var(--code-warning)}
+.alert.error .icon{color:var(--code-danger)}
+.alert.ai .icon{color:var(--code-ai)}

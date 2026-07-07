@@ -1,0 +1,2431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reese Design System — Utilitarian UI Template</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       REESE DESIGN SYSTEM v1.0
+       Surface: Operate + Command/Inspect hybrid
+       Philosophy: Every feature visible. Zero hidden menus.
+       Maximize action space. Color-code everything.
+       ═══════════════════════════════════════════════════════════════ */
+
+    :root {
+      /* ── CANVAS ─────────────────────────────────────────────── */
+      --canvas-void:     #0e1013;
+      --canvas-base:     #14161b;
+      --canvas-surface:  #1b1d24;
+      --canvas-raised:   #23252d;
+      --canvas-elevated: #2c2e38;
+      --canvas-bright:   #363840;
+
+      /* ── TEXT HIERARCHY ──────────────────────────────────────── */
+      --ink-primary:     #e8eaef;
+      --ink-secondary:   #a8adb8;
+      --ink-tertiary:    #7c8294;
+      --ink-muted:       #5a5f72;
+      --ink-ghost:       #42465a;
+
+      /* ── SEMANTIC COLOR CODING (13 categories) ──────────────── */
+      --code-action:     #6c8aff;   /* Primary actions — blue */
+      --code-action-dim: #6c8aff22;
+      --code-action-mid: #6c8aff55;
+      --code-danger:     #ff6b6b;   /* Destructive / error — red */
+      --code-danger-dim: #ff6b6b22;
+      --code-danger-mid: #ff6b6b55;
+      --code-success:    #4ecb71;   /* Success / complete — green */
+      --code-success-dim:#4ecb7122;
+      --code-success-mid:#4ecb7155;
+      --code-warning:    #ffba42;   /* Warning / caution — amber */
+      --code-warning-dim:#ffba4222;
+      --code-warning-mid:#ffba4255;
+      --code-info:       #7ce0ff;   /* Info / reference — cyan */
+      --code-info-dim:   #7ce0ff22;
+      --code-info-mid:   #7ce0ff55;
+      --code-accent:     #c084fc;   /* Accent / brand — purple */
+      --code-accent-dim: #c084fc22;
+      --code-accent-mid: #c084fc55;
+      --code-tool:       #ff9a5c;   /* Tool/operation — orange */
+      --code-tool-dim:   #ff9a5c22;
+      --code-tool-mid:   #ff9a5c55;
+      --code-material:   #5ce1e6;   /* Material/supply — teal */
+      --code-material-dim:#5ce1e622;
+      --code-data:       #ff6baa;   /* Data/metrics — pink */
+      --code-data-dim:   #ff6baaa22;
+      --code-view:       #a3e635;   /* View/viewport — lime */
+      --code-view-dim:   #a3e63522;
+      --code-config:     #fbbf24;   /* Configuration — gold */
+      --code-config-dim: #fbbf2422;
+      --code-process:    #818cf8;   /* Process/workflow — indigo */
+      --code-process-dim:#818cf822;
+      --code-ai:         #f472b6;   /* AI/ML — magenta */
+      --code-ai-dim:     #f472b622;
+
+      /* ── BORDERS & DIVIDERS ─────────────────────────────────── */
+      --border-subtle:   rgba(255,255,255,0.06);
+      --border-default:  rgba(255,255,255,0.09);
+      --border-strong:   rgba(255,255,255,0.14);
+      --border-vivid:    rgba(255,255,255,0.20);
+
+      /* ── SHADOWS (dark-mode native) ─────────────────────────── */
+      --shadow-ring:     0 0 0 1px var(--border-default);
+      --shadow-lift:     0 0 0 1px var(--border-default), 0 2px 4px rgba(0,0,0,0.3);
+      --shadow-float:    0 0 0 1px var(--border-default), 0 4px 12px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-dialog:   0 0 0 1px var(--border-strong), 0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+      --shadow-inset:    inset 0 1px 2px rgba(0,0,0,0.3);
+
+      /* ── TYPOGRAPHY ─────────────────────────────────────────── */
+      --font-ui:         'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      --font-mono:       'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+      --text-xs:    0.6875rem;  /* 11px */
+      --text-sm:    0.75rem;    /* 12px */
+      --text-base:  0.8125rem;  /* 13px */
+      --text-md:    0.875rem;   /* 14px */
+      --text-lg:    1rem;       /* 16px */
+      --text-xl:    1.25rem;    /* 20px */
+      --text-2xl:   1.5rem;     /* 24px */
+      --text-3xl:   2rem;       /* 32px */
+      --text-4xl:   2.75rem;    /* 44px */
+
+      /* ── SPACING (4px base grid) ────────────────────────────── */
+      --sp-1: 4px;   --sp-2: 8px;   --sp-3: 12px;  --sp-4: 16px;
+      --sp-5: 20px;  --sp-6: 24px;  --sp-8: 32px;  --sp-10: 40px;
+      --sp-12: 48px; --sp-16: 64px;
+
+      /* ── RADII ──────────────────────────────────────────────── */
+      --r-sm: 4px;
+      --r-md: 6px;
+      --r-lg: 8px;
+      --r-xl: 12px;
+      --r-full: 9999px;
+
+      /* ── MOTION ─────────────────────────────────────────────── */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --duration-fast: 120ms;
+      --duration-normal: 200ms;
+      --duration-slow: 350ms;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESET & BASE
+       ═══════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-ui);
+      font-size: var(--text-md);
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--ink-primary);
+      background: var(--canvas-void);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-feature-settings: 'cv01', 'cv09', 'ss03';
+      letter-spacing: 0.01em;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       DESIGN SYSTEM NAVIGATION
+       ═══════════════════════════════════════════════════════════════ */
+    .ds-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: var(--canvas-base);
+      border-bottom: 1px solid var(--border-default);
+      padding: 0 var(--sp-6);
+      height: 48px;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-6);
+    }
+
+    .ds-nav-brand {
+      font-weight: 700;
+      font-size: var(--text-md);
+      color: var(--ink-primary);
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .ds-nav-brand span { color: var(--code-action); }
+
+    .ds-nav-links {
+      display: flex;
+      gap: var(--sp-1);
+      flex: 1;
+      overflow-x: auto;
+    }
+
+    .ds-nav-links a {
+      color: var(--ink-tertiary);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      padding: var(--sp-2) var(--sp-3);
+      border-radius: var(--r-md);
+      white-space: nowrap;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .ds-nav-links a:hover {
+      color: var(--ink-primary);
+      background: var(--canvas-surface);
+    }
+
+    .ds-nav-links a.active {
+      color: var(--code-action);
+      background: var(--code-action-dim);
+    }
+
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 5px;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      color: var(--ink-tertiary);
+      background: var(--canvas-surface);
+      border: 1px solid var(--border-default);
+      border-radius: 3px;
+      box-shadow: 0 1px 0 var(--border-default);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       LAYOUT
+       ═══════════════════════════════════════════════════════════════ */
+    .ds-page { padding: 64px var(--sp-8) var(--sp-16); max-width: 1400px; margin: 0 auto; }
+
+    .ds-section {
+      margin-bottom: var(--sp-16);
+      scroll-margin-top: 64px;
+    }
+
+    .ds-section-header {
+      display: flex;
+      align-items: baseline;
+      gap: var(--sp-3);
+      margin-bottom: var(--sp-6);
+      padding-bottom: var(--sp-3);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .ds-section-title {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--ink-primary);
+      letter-spacing: -0.03em;
+    }
+
+    .ds-section-badge {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 2px 8px;
+      border-radius: var(--r-full);
+      background: var(--code-action-dim);
+      color: var(--code-action);
+    }
+
+    .ds-section-desc {
+      font-size: var(--text-md);
+      color: var(--ink-tertiary);
+      margin-bottom: var(--sp-6);
+      max-width: 700px;
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COLOR SYSTEM — SEMANTIC COLOR CODING
+       ═══════════════════════════════════════════════════════════════ */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: var(--sp-3);
+    }
+
+    .color-card {
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      background: var(--canvas-surface);
+    }
+
+    .color-swatch {
+      height: 56px;
+      display: flex;
+      align-items: flex-end;
+      padding: var(--sp-2) var(--sp-3);
+    }
+
+    .color-swatch span {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .color-info {
+      padding: var(--sp-3);
+    }
+
+    .color-name {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--ink-primary);
+      margin-bottom: 2px;
+    }
+
+    .color-role {
+      font-size: var(--text-xs);
+      color: var(--ink-tertiary);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       MAXIMIZED ACTION BUTTONS
+       ═══════════════════════════════════════════════════════════════ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--sp-2);
+      font-family: var(--font-ui);
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+      white-space: nowrap;
+      user-select: none;
+      position: relative;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    /* XL — Primary actions (save, generate, execute) */
+    .btn-xl {
+      height: 52px;
+      padding: 0 var(--sp-8);
+      font-size: var(--text-lg);
+      border-radius: var(--r-lg);
+      letter-spacing: -0.01em;
+    }
+
+    /* LG — Secondary actions (open, load, configure) */
+    .btn-lg {
+      height: 44px;
+      padding: 0 var(--sp-6);
+      font-size: var(--text-md);
+      border-radius: var(--r-lg);
+    }
+
+    /* MD — Standard toolbar buttons */
+    .btn-md {
+      height: 36px;
+      padding: 0 var(--sp-4);
+      font-size: var(--text-base);
+      border-radius: var(--r-md);
+    }
+
+    /* SM — Compact inline actions */
+    .btn-sm {
+      height: 28px;
+      padding: 0 var(--sp-3);
+      font-size: var(--text-sm);
+      border-radius: var(--r-sm);
+    }
+
+    /* Icon-only — maximized touch target */
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: var(--r-md);
+    }
+
+    .btn-icon-lg {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: var(--r-lg);
+    }
+
+    /* Button Variants */
+    .btn-primary {
+      background: var(--code-action);
+      color: #fff;
+      box-shadow: 0 0 0 1px rgba(108,138,255,0.3), 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .btn-primary:hover { background: #7d99ff; box-shadow: 0 0 0 1px rgba(108,138,255,0.5), 0 4px 8px rgba(0,0,0,0.3); }
+
+    .btn-danger {
+      background: var(--code-danger);
+      color: #fff;
+      box-shadow: 0 0 0 1px rgba(255,107,107,0.3), 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .btn-danger:hover { background: #ff8080; }
+
+    .btn-success {
+      background: var(--code-success);
+      color: #0a0b0d;
+      box-shadow: 0 0 0 1px rgba(78,203,113,0.3), 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .btn-success:hover { background: #5fd87f; }
+
+    .btn-warning {
+      background: var(--code-warning);
+      color: #0a0b0d;
+      box-shadow: 0 0 0 1px rgba(255,186,66,0.3), 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .btn-ghost {
+      background: var(--canvas-surface);
+      color: var(--ink-secondary);
+      border: 1px solid var(--border-default);
+    }
+    .btn-ghost:hover { background: var(--canvas-raised); color: var(--ink-primary); border-color: var(--border-strong); }
+
+    .btn-surface {
+      background: transparent;
+      color: var(--ink-tertiary);
+    }
+    .btn-surface:hover { background: var(--canvas-surface); color: var(--ink-primary); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       TOOLBAR PATTERN — everything visible
+       ═══════════════════════════════════════════════════════════════ */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-1);
+      padding: var(--sp-1) var(--sp-2);
+      background: var(--canvas-base);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--r-lg);
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .toolbar-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border-default);
+      margin: 0 var(--sp-2);
+    }
+
+    .toolbar-label {
+      font-size: var(--text-xs);
+      color: var(--ink-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0 var(--sp-2);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       ACTION PANEL — maximized button grid
+       ═══════════════════════════════════════════════════════════════ */
+    .action-grid {
+      display: grid;
+      gap: var(--sp-2);
+    }
+
+    .action-grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .action-grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .action-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+    .action-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--sp-2);
+      padding: var(--sp-4);
+      background: var(--canvas-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--r-lg);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+      text-align: center;
+      min-height: 80px;
+    }
+
+    .action-card:hover {
+      background: var(--canvas-raised);
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+
+    .action-card-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .action-card-label {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--ink-primary);
+    }
+
+    .action-card-shortcut {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--ink-muted);
+    }
+
+    /* Color-coded action cards */
+    .action-card[data-color="blue"]   { border-color: var(--code-action-mid); }
+    .action-card[data-color="blue"]:hover   { background: var(--code-action-dim); border-color: var(--code-action); }
+    .action-card[data-color="red"]    { border-color: var(--code-danger-mid); }
+    .action-card[data-color="red"]:hover    { background: var(--code-danger-dim); border-color: var(--code-danger); }
+    .action-card[data-color="green"]  { border-color: var(--code-success-mid); }
+    .action-card[data-color="green"]:hover  { background: var(--code-success-dim); border-color: var(--code-success); }
+    .action-card[data-color="amber"]  { border-color: var(--code-warning-mid); }
+    .action-card[data-color="amber"]:hover  { background: var(--code-warning-dim); border-color: var(--code-warning); }
+    .action-card[data-color="purple"] { border-color: var(--code-accent-mid); }
+    .action-card[data-color="purple"]:hover { background: var(--code-accent-dim); border-color: var(--code-accent); }
+    .action-card[data-color="orange"] { border-color: var(--code-tool-mid); }
+    .action-card[data-color="orange"]:hover { background: var(--code-tool-dim); border-color: var(--code-tool); }
+    .action-card[data-color="cyan"]   { border-color: var(--code-material-mid); }
+    .action-card[data-color="cyan"]:hover   { background: var(--code-material-dim); border-color: var(--code-material); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       STATUS INDICATOR SYSTEM
+       ═══════════════════════════════════════════════════════════════ */
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .status-dot.active   { background: var(--code-success); box-shadow: 0 0 6px var(--code-success-mid); }
+    .status-dot.warning  { background: var(--code-warning); box-shadow: 0 0 6px var(--code-warning-mid); }
+    .status-dot.error    { background: var(--code-danger); box-shadow: 0 0 6px var(--code-danger-mid); }
+    .status-dot.idle     { background: var(--ink-muted); }
+    .status-dot.ai       { background: var(--code-ai); box-shadow: 0 0 6px rgba(244,114,182,0.3); animation: pulse-ai 2s ease-in-out infinite; }
+
+    @keyframes pulse-ai {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Status Pill */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px 3px 8px;
+      border-radius: var(--r-full);
+      font-size: var(--text-xs);
+      font-weight: 600;
+    }
+
+    .status-pill.active   { background: var(--code-success-dim); color: var(--code-success); }
+    .status-pill.warning  { background: var(--code-warning-dim); color: var(--code-warning); }
+    .status-pill.error    { background: var(--code-danger-dim); color: var(--code-danger); }
+    .status-pill.info     { background: var(--code-info-dim); color: var(--code-info); }
+    .status-pill.ai       { background: rgba(244,114,182,0.12); color: var(--code-ai); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PANEL / CARD SYSTEM
+       ═══════════════════════════════════════════════════════════════ */
+    .panel {
+      background: var(--canvas-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-3) var(--sp-4);
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--canvas-base);
+    }
+
+    .panel-title {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--ink-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .panel-body { padding: var(--sp-4); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COMMAND PALETTE
+       ═══════════════════════════════════════════════════════════════ */
+    .cmd-palette {
+      background: var(--canvas-raised);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-dialog);
+      max-width: 560px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .cmd-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      padding: var(--sp-3) var(--sp-4);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .cmd-input-icon { color: var(--ink-muted); font-size: var(--text-lg); }
+
+    .cmd-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--ink-primary);
+      font-family: var(--font-ui);
+      font-size: var(--text-md);
+      font-weight: 500;
+    }
+
+    .cmd-input::placeholder { color: var(--ink-muted); }
+
+    .cmd-results { max-height: 320px; overflow-y: auto; padding: var(--sp-1); }
+
+    .cmd-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: var(--sp-2) var(--sp-3);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: background var(--duration-fast);
+    }
+
+    .cmd-item:hover, .cmd-item.selected { background: var(--canvas-elevated); }
+
+    .cmd-item-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-sm);
+      flex-shrink: 0;
+    }
+
+    .cmd-item-text { flex: 1; }
+    .cmd-item-name { font-size: var(--text-base); font-weight: 500; color: var(--ink-primary); }
+    .cmd-item-desc { font-size: var(--text-xs); color: var(--ink-muted); }
+    .cmd-item-shortcut { display: flex; gap: 3px; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       METRIC CARDS — data density
+       ═══════════════════════════════════════════════════════════════ */
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: var(--sp-3);
+    }
+
+    .metric-card {
+      padding: var(--sp-3) var(--sp-4);
+      background: var(--canvas-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--r-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .metric-card[data-color="blue"]::before    { background: var(--code-action); }
+    .metric-card[data-color="green"]::before   { background: var(--code-success); }
+    .metric-card[data-color="red"]::before     { background: var(--code-danger); }
+    .metric-card[data-color="amber"]::before   { background: var(--code-warning); }
+    .metric-card[data-color="purple"]::before  { background: var(--code-accent); }
+    .metric-card[data-color="cyan"]::before    { background: var(--code-material); }
+    .metric-card[data-color="pink"]::before    { background: var(--code-data); }
+    .metric-card[data-color="orange"]::before  { background: var(--code-tool); }
+
+    .metric-label {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-tertiary);
+      margin-bottom: var(--sp-1);
+    }
+
+    .metric-value {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      color: var(--ink-primary);
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric-change {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .metric-change.up { color: var(--code-success); }
+    .metric-change.down { color: var(--code-danger); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PROGRESS BAR
+       ═══════════════════════════════════════════════════════════════ */
+    .progress-bar {
+      height: 6px;
+      background: var(--canvas-elevated);
+      border-radius: var(--r-full);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: var(--r-full);
+      transition: width var(--duration-slow) var(--ease-out);
+    }
+
+    .progress-fill.blue   { background: var(--code-action); }
+    .progress-fill.green  { background: var(--code-success); }
+    .progress-fill.red    { background: var(--code-danger); }
+    .progress-fill.amber  { background: var(--code-warning); }
+    .progress-fill.purple { background: var(--code-accent); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       DATA TABLE — dense information
+       ═══════════════════════════════════════════════════════════════ */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--text-sm);
+    }
+
+    .data-table th {
+      text-align: left;
+      font-weight: 600;
+      color: var(--ink-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: var(--text-xs);
+      padding: var(--sp-2) var(--sp-3);
+      border-bottom: 1px solid var(--border-default);
+      position: sticky;
+      top: 0;
+      background: var(--canvas-surface);
+    }
+
+    .data-table td {
+      padding: var(--sp-2) var(--sp-3);
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--ink-secondary);
+    }
+
+    .data-table tr:hover td { background: var(--canvas-raised); }
+
+    .data-table td.mono {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--ink-tertiary);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       TOGGLE / SWITCH
+       ═══════════════════════════════════════════════════════════════ */
+    .toggle {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      background: var(--canvas-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-full);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      background: var(--ink-muted);
+      border-radius: 50%;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .toggle.on { background: var(--code-action-dim); border-color: var(--code-action); }
+    .toggle.on::after { left: 18px; background: var(--code-action); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       TOOLTIP / HINT SYSTEM
+       ═══════════════════════════════════════════════════════════════ */
+    .hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: var(--text-xs);
+      color: var(--ink-muted);
+    }
+
+    .hint-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--ink-ghost);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       TYPOGRAPHY SPECIMEN
+       ═══════════════════════════════════════════════════════════════ */
+    .type-specimen {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-4);
+    }
+
+    .type-row {
+      display: flex;
+      align-items: baseline;
+      gap: var(--sp-4);
+      padding: var(--sp-3) 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .type-label {
+      flex-shrink: 0;
+      width: 100px;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--ink-muted);
+      text-align: right;
+    }
+
+    .type-sample { color: var(--ink-primary); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       APPLICATION PREVIEW — CAM SOFTWARE
+       ═══════════════════════════════════════════════════════════════ */
+    .app-preview {
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      background: var(--canvas-base);
+    }
+
+    .app-titlebar {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: var(--sp-2) var(--sp-4);
+      background: var(--canvas-void);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .app-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .app-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .app-dot.r { background: #ff5f57; }
+    .app-dot.y { background: #febc2e; }
+    .app-dot.g { background: #28c840; }
+
+    .app-titlebar-text {
+      font-size: var(--text-xs);
+      color: var(--ink-muted);
+      font-weight: 500;
+    }
+
+    .app-body {
+      display: grid;
+      min-height: 420px;
+    }
+
+    /* CAM App Layout */
+    .cam-layout {
+      grid-template-columns: 48px 220px 1fr 260px;
+      grid-template-rows: 40px 1fr 28px;
+    }
+
+    .cam-menubar {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-1);
+      padding: 0 var(--sp-3);
+      background: var(--canvas-surface);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .cam-menu-item {
+      padding: var(--sp-1) var(--sp-2);
+      font-size: var(--text-xs);
+      color: var(--ink-tertiary);
+      border-radius: var(--r-sm);
+      cursor: pointer;
+    }
+
+    .cam-menu-item:hover { color: var(--ink-primary); background: var(--canvas-raised); }
+
+    .cam-toolbar {
+      grid-column: 1;
+      grid-row: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: var(--sp-2);
+      background: var(--canvas-surface);
+      border-right: 1px solid var(--border-subtle);
+    }
+
+    .cam-tool-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--r-md);
+      font-size: var(--text-md);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+      color: var(--ink-tertiary);
+      border: none;
+      background: none;
+    }
+
+    .cam-tool-btn:hover { background: var(--canvas-raised); color: var(--ink-primary); }
+    .cam-tool-btn.active { background: var(--code-action-dim); color: var(--code-action); }
+
+    .cam-tree {
+      grid-column: 2;
+      grid-row: 2;
+      border-right: 1px solid var(--border-subtle);
+      padding: var(--sp-2);
+      overflow-y: auto;
+    }
+
+    .cam-viewport {
+      grid-column: 3;
+      grid-row: 2;
+      background: #0b0c10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cam-viewport-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border-subtle) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.4;
+    }
+
+    .cam-viewport-label {
+      position: absolute;
+      bottom: var(--sp-3);
+      left: var(--sp-3);
+      display: flex;
+      gap: var(--sp-2);
+    }
+
+    .cam-viewport-stats {
+      position: absolute;
+      bottom: var(--sp-3);
+      right: var(--sp-3);
+      background: rgba(20, 22, 27, 0.92);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-lg);
+      padding: var(--sp-2) var(--sp-3);
+      min-width: 160px;
+      backdrop-filter: blur(8px);
+    }
+
+    .cam-viewport-stats .vs-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 0;
+      font-size: var(--text-xs);
+      gap: 12px;
+    }
+
+    .cam-viewport-stats .vs-k {
+      color: var(--ink-muted);
+      font-weight: 500;
+    }
+
+    .cam-viewport-stats .vs-v {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--ink-secondary);
+      text-align: right;
+    }
+
+    .cam-viewport-stats .vs-conv {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-ghost);
+      text-align: right;
+    }
+
+    .cam-viewport-stats .vs-sep {
+      height: 1px;
+      background: var(--border-subtle);
+      margin: 3px 0;
+    }
+
+    .cam-inspector {
+      grid-column: 4;
+      grid-row: 2;
+      border-left: 1px solid var(--border-subtle);
+      padding: var(--sp-3);
+      overflow-y: auto;
+    }
+
+    .cam-statusbar {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--sp-3);
+      background: var(--canvas-surface);
+      border-top: 1px solid var(--border-subtle);
+      font-size: var(--text-xs);
+      color: var(--ink-muted);
+    }
+
+    /* Tree items */
+    .tree-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      padding: 3px var(--sp-2);
+      border-radius: var(--r-sm);
+      font-size: var(--text-sm);
+      color: var(--ink-secondary);
+      cursor: pointer;
+    }
+
+    .tree-item:hover { background: var(--canvas-raised); }
+    .tree-item.active { background: var(--code-action-dim); color: var(--code-action); }
+
+    .tree-indent { padding-left: var(--sp-4); }
+
+    .tree-icon { font-size: 12px; width: 16px; text-align: center; flex-shrink: 0; }
+
+    /* Inspector sections */
+    .inspector-section {
+      margin-bottom: var(--sp-4);
+    }
+
+    .inspector-label {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: var(--sp-2);
+    }
+
+    .inspector-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-1) 0;
+      font-size: var(--text-sm);
+    }
+
+    .inspector-field-label { color: var(--ink-tertiary); }
+
+    .inspector-field-value {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--ink-primary);
+      background: var(--canvas-raised);
+      padding: 2px 6px;
+      border-radius: var(--r-sm);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESPONSIVE GRID DEMO
+       ═══════════════════════════════════════════════════════════════ */
+    .responsive-demo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--sp-3);
+    }
+
+    .responsive-card {
+      padding: var(--sp-4);
+      background: var(--canvas-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--r-lg);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SPACING GUIDE
+       ═══════════════════════════════════════════════════════════════ */
+    .spacing-demo {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+    }
+
+    .spacing-row {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+    }
+
+    .spacing-bar {
+      height: 12px;
+      background: var(--code-action);
+      border-radius: 2px;
+      opacity: 0.6;
+    }
+
+    .spacing-label {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--ink-muted);
+      width: 60px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCROLLBAR
+       ═══════════════════════════════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--canvas-bright); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--ink-muted); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       ANIMATION
+       ═══════════════════════════════════════════════════════════════ */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-in { animation: fadeIn var(--duration-normal) var(--ease-out) both; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PRINT-FRIENDLY
+       ═══════════════════════════════════════════════════════════════ */
+    @media print {
+      .ds-nav { display: none; }
+      body { background: #fff; color: #000; }
+      .panel, .app-preview { border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     NAVIGATION
+     ═══════════════════════════════════════════════════════════════ -->
+<nav class="ds-nav">
+  <div class="ds-nav-brand"><span>◆</span> Reese Design System</div>
+  <div class="ds-nav-links">
+    <a href="#principles" class="active">Principles</a>
+    <a href="#colors">Colors</a>
+    <a href="#typography">Type</a>
+    <a href="#buttons">Buttons</a>
+    <a href="#components">Components</a>
+    <a href="#cam-preview">CAM App</a>
+    <a href="#dashboard-preview">Dashboard</a>
+    <a href="#spacing">Spacing</a>
+    <a href="#guidelines">Guidelines</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE CONTENT
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="ds-page">
+
+  <!-- HERO -->
+  <section class="ds-section" id="principles">
+    <div style="margin-bottom: var(--sp-8);">
+      <div style="font-size: var(--text-4xl); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; margin-bottom: var(--sp-4);">
+        Utilitarian<br>Interface System
+      </div>
+      <div style="font-size: var(--text-lg); color: var(--ink-tertiary); max-width: 600px; line-height: 1.6;">
+        Every feature visible. Zero hidden menus. Maximized action space.
+        Color-coded semantics. Keyboard-first. Built for complex software
+        that users need to master fast.
+      </div>
+    </div>
+
+    <div class="metric-row" style="margin-bottom: var(--sp-8);">
+      <div class="metric-card" data-color="blue">
+        <div class="metric-label">Core Principle</div>
+        <div style="font-size: var(--text-lg); font-weight: 700; color: var(--code-action);">Zero-Menu</div>
+        <div class="metric-change" style="color: var(--ink-tertiary);">All features on screen</div>
+      </div>
+      <div class="metric-card" data-color="green">
+        <div class="metric-label">Interaction</div>
+        <div style="font-size: var(--text-lg); font-weight: 700; color: var(--code-success);">Keyboard-First</div>
+        <div class="metric-change" style="color: var(--ink-tertiary);">Cmd+K command palette</div>
+      </div>
+      <div class="metric-card" data-color="purple">
+        <div class="metric-label">Visual System</div>
+        <div style="font-size: var(--text-lg); font-weight: 700; color: var(--code-accent);">12-Color Code</div>
+        <div class="metric-change" style="color: var(--ink-tertiary);">Semantic color coding</div>
+      </div>
+      <div class="metric-card" data-color="amber">
+        <div class="metric-label">Learning Curve</div>
+        <div style="font-size: var(--text-lg); font-weight: 700; color: var(--code-warning);">Immediate</div>
+        <div class="metric-change" style="color: var(--ink-tertiary);">Affordances everywhere</div>
+      </div>
+    </div>
+
+    <!-- Design Principles -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Design Principles</div>
+        <div class="status-pill active"><span class="status-dot active"></span> Active</div>
+      </div>
+      <div class="panel-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-4);">
+          <div>
+            <div style="font-size: var(--text-md); font-weight: 600; color: var(--code-action); margin-bottom: var(--sp-1);">1. Maximized Action Space</div>
+            <div style="font-size: var(--text-sm); color: var(--ink-tertiary); line-height: 1.6;">Buttons are large, tappable, and always visible. Primary actions get XL (52px) buttons. Secondary actions get LG (44px). Nothing is smaller than 28px. Every action has a visible keyboard shortcut.</div>
+          </div>
+          <div>
+            <div style="font-size: var(--text-md); font-weight: 600; color: var(--code-success); margin-bottom: var(--sp-1);">2. Zero Hidden Menus</div>
+            <div style="font-size: var(--text-sm); color: var(--ink-tertiary); line-height: 1.6;">All features exist on screen simultaneously. Toolbar buttons, action grids, inspector panels — everything is one click or one keypress away. Progressive complexity through color, not through nesting.</div>
+          </div>
+          <div>
+            <div style="font-size: var(--text-md); font-weight: 600; color: var(--code-accent); margin-bottom: var(--sp-1);">3. Semantic Color Coding</div>
+            <div style="font-size: var(--text-sm); color: var(--ink-tertiary); line-height: 1.6;">12 distinct color categories map every type of action and data. Blue = actions, red = danger, green = success, amber = warning, cyan = materials, orange = tools, purple = config, pink = data, lime = viewports, magenta = AI.</div>
+          </div>
+          <div>
+            <div style="font-size: var(--text-md); font-weight: 600; color: var(--code-warning); margin-bottom: var(--sp-1);">4. Keyboard-First Navigation</div>
+            <div style="font-size: var(--text-sm); color: var(--ink-tertiary); line-height: 1.6;">Cmd+K opens a command palette for instant access. Shortcuts displayed inline on every button. Focus rings on all interactive elements. Tab order follows visual hierarchy.</div>
+          </div>
+          <div>
+            <div style="font-size: var(--text-md); font-weight: 600; color: var(--code-tool); margin-bottom: var(--sp-1);">5. Density Without Clutter</div>
+            <div style="font-size: var(--text-sm); color: var(--ink-tertiary); line-height: 1.6;">Information-dense panels use color, spacing, and subtle borders to separate — not cards within cards. Monospace for data, proportional for labels. Tabular alignment for numbers.</div>
+          </div>
+          <div>
+            <div style="font-size: var(--text-md); font-weight: 600; color: var(--code-data); margin-bottom: var(--sp-1);">6. Dark-Mode Native</div>
+            <div style="font-size: var(--text-sm); color: var(--ink-tertiary); line-height: 1.6;">Built for dark mode first. Near-black canvas with luminance-stepped surfaces. Semi-transparent white borders. Never pure black or pure white. Eyes stay comfortable during long sessions.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       COLOR SYSTEM
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="ds-section" id="colors">
+    <div class="ds-section-header">
+      <h2 class="ds-section-title">Semantic Color System</h2>
+      <span class="ds-section-badge">13 categories</span>
+    </div>
+    <p class="ds-section-desc">Every color has a semantic meaning. Users learn the color language once and apply it across every application. Colors are never decorative — they always communicate.</p>
+
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-action);"><span>#6c8aff</span></div>
+        <div class="color-info">
+          <div class="color-name">Action Blue</div>
+          <div class="color-role">Primary actions, CTAs, active states</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-danger);"><span>#ff6b6b</span></div>
+        <div class="color-info">
+          <div class="color-name">Danger Red</div>
+          <div class="color-role">Destructive actions, errors, critical</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-success);"><span>#4ecb71</span></div>
+        <div class="color-info">
+          <div class="color-name">Success Green</div>
+          <div class="color-role">Completed, verified, ready</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-warning);"><span>#ffba42</span></div>
+        <div class="color-info">
+          <div class="color-name">Warning Amber</div>
+          <div class="color-role">Caution, attention needed</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-info);"><span>#7ce0ff</span></div>
+        <div class="color-info">
+          <div class="color-name">Info Cyan</div>
+          <div class="color-role">Informational, reference, help</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-accent);"><span>#c084fc</span></div>
+        <div class="color-info">
+          <div class="color-name">Accent Purple</div>
+          <div class="color-role">Configuration, settings, brand</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-tool);"><span>#ff9a5c</span></div>
+        <div class="color-info">
+          <div class="color-name">Tool Orange</div>
+          <div class="color-role">Tools, operations, machining</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-material);"><span>#5ce1e6</span></div>
+        <div class="color-info">
+          <div class="color-name">Material Teal</div>
+          <div class="color-role">Materials, supply chain, stock</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-data);"><span>#ff6baa</span></div>
+        <div class="color-info">
+          <div class="color-name">Data Pink</div>
+          <div class="color-role">Metrics, measurements, analytics</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-view);"><span>#a3e635</span></div>
+        <div class="color-info">
+          <div class="color-name">View Lime</div>
+          <div class="color-role">Viewport, camera, display modes</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-config);"><span>#fbbf24</span></div>
+        <div class="color-info">
+          <div class="color-name">Config Gold</div>
+          <div class="color-role">Configuration, parameters, tuning</div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-ai);"><span>#f472b6</span></div>
+        <div class="color-info">
+          <div class="color-name">AI Magenta</div>
+          <div class="color-role">AI/ML, neural nets, generation</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Surface Colors -->
+    <div style="margin-top: var(--sp-6);">
+      <div class="inspector-label">Surface Luminance Scale</div>
+      <div style="display: flex; gap: var(--sp-2); margin-top: var(--sp-2); flex-wrap: wrap;">
+        <div style="width: 80px; text-align: center;">
+          <div style="height: 40px; background: var(--canvas-void); border: 1px solid var(--border-subtle); border-radius: var(--r-md); margin-bottom: 4px;"></div>
+          <div style="font-size: var(--text-xs); color: var(--ink-muted); font-family: var(--font-mono);">Void</div>
+          <div style="font-size: 10px; color: var(--ink-ghost);">#0e1013</div>
+        </div>
+        <div style="width: 80px; text-align: center;">
+          <div style="height: 40px; background: var(--canvas-base); border: 1px solid var(--border-subtle); border-radius: var(--r-md); margin-bottom: 4px;"></div>
+          <div style="font-size: var(--text-xs); color: var(--ink-muted); font-family: var(--font-mono);">Base</div>
+          <div style="font-size: 10px; color: var(--ink-ghost);">#14161b</div>
+        </div>
+        <div style="width: 80px; text-align: center;">
+          <div style="height: 40px; background: var(--canvas-surface); border: 1px solid var(--border-subtle); border-radius: var(--r-md); margin-bottom: 4px;"></div>
+          <div style="font-size: var(--text-xs); color: var(--ink-muted); font-family: var(--font-mono);">Surface</div>
+          <div style="font-size: 10px; color: var(--ink-ghost);">#1b1d24</div>
+        </div>
+        <div style="width: 80px; text-align: center;">
+          <div style="height: 40px; background: var(--canvas-raised); border: 1px solid var(--border-subtle); border-radius: var(--r-md); margin-bottom: 4px;"></div>
+          <div style="font-size: var(--text-xs); color: var(--ink-muted); font-family: var(--font-mono);">Raised</div>
+          <div style="font-size: 10px; color: var(--ink-ghost);">#23252d</div>
+        </div>
+        <div style="width: 80px; text-align: center;">
+          <div style="height: 40px; background: var(--canvas-elevated); border: 1px solid var(--border-subtle); border-radius: var(--r-md); margin-bottom: 4px;"></div>
+          <div style="font-size: var(--text-xs); color: var(--ink-muted); font-family: var(--font-mono);">Elevated</div>
+          <div style="font-size: 10px; color: var(--ink-ghost);">#2c2e38</div>
+        </div>
+        <div style="width: 80px; text-align: center;">
+          <div style="height: 40px; background: var(--canvas-bright); border: 1px solid var(--border-subtle); border-radius: var(--r-md); margin-bottom: 4px;"></div>
+          <div style="font-size: var(--text-xs); color: var(--ink-muted); font-family: var(--font-mono);">Bright</div>
+          <div style="font-size: 10px; color: var(--ink-ghost);">#363840</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       TYPOGRAPHY
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="ds-section" id="typography">
+    <div class="ds-section-header">
+      <h2 class="ds-section-title">Typography</h2>
+      <span class="ds-section-badge">Inter + JetBrains Mono</span>
+    </div>
+    <p class="ds-section-desc">Inter for all UI text with OpenType features cv01, cv09, ss03 enabled. JetBrains Mono for data, code, and technical labels. Aggressive negative letter-spacing at display sizes.</p>
+
+    <div class="panel">
+      <div class="panel-body">
+        <div class="type-specimen">
+          <div class="type-row">
+            <div class="type-label">4xl / 800</div>
+            <div class="type-sample" style="font-size: var(--text-4xl); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05;">AI CAM 3.0</div>
+          </div>
+          <div class="type-row">
+            <div class="type-label">3xl / 700</div>
+            <div class="type-sample" style="font-size: var(--text-3xl); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1;">Toolpath Generation</div>
+          </div>
+          <div class="type-row">
+            <div class="type-label">2xl / 700</div>
+            <div class="type-sample" style="font-size: var(--text-2xl); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2;">Inspector Panel</div>
+          </div>
+          <div class="type-row">
+            <div class="type-label">xl / 600</div>
+            <div class="type-sample" style="font-size: var(--text-xl); font-weight: 600; letter-spacing: -0.01em;">Machine Parameters</div>
+          </div>
+          <div class="type-row">
+            <div class="type-label">lg / 600</div>
+            <div class="type-sample" style="font-size: var(--text-lg); font-weight: 600;">Spindle Speed (RPM)</div>
+          </div>
+          <div class="type-row">
+            <div class="type-label">md / 400</div>
+            <div class="type-sample" style="font-size: var(--text-md); font-weight: 400; color: var(--ink-secondary);">The feed rate determines how fast the tool moves through material during cutting operations.</div>
+          </div>
+          <div class="type-row">
+            <div class="type-label">sm / 500</div>
+            <div class="type-sample" style="font-size: var(--text-sm); font-weight: 500; color: var(--ink-tertiary);">Last modified 3 minutes ago</div>
+          </div>
+          <div class="type-row">
+            <div class="type-label">xs / 600</div>
+            <div class="type-sample" style="font-size: var(--text-xs); font-weight: 600; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em;">TOOL #4 — 3/8" ENDMILL</div>
+          </div>
+          <div class="type-row">
+            <div class="type-label">mono / 500</div>
+            <div class="type-sample" style="font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 500; color: var(--code-action);">G01 X24.500 Y12.750 F1200</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       BUTTONS & ACTION SYSTEM
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="ds-section" id="buttons">
+    <div class="ds-section-header">
+      <h2 class="ds-section-title">Maximized Action Buttons</h2>
+      <span class="ds-section-badge">5 sizes</span>
+    </div>
+    <p class="ds-section-desc">Every button is large enough to be a clear target. Primary actions are XL (52px tall). Nothing below SM (28px). All buttons show their keyboard shortcut.</p>
+
+    <div class="panel" style="margin-bottom: var(--sp-4);">
+      <div class="panel-header">
+        <div class="panel-title">Button Sizes</div>
+      </div>
+      <div class="panel-body">
+        <div style="display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;">
+          <button class="btn btn-xl btn-primary">
+            <span>⚡</span> Generate Toolpath
+            <span class="kbd" style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">⌘G</span>
+          </button>
+          <button class="btn btn-lg btn-ghost">
+            <span>📂</span> Load Project
+            <span class="kbd">⌘O</span>
+          </button>
+          <button class="btn btn-md btn-primary">
+            <span>💾</span> Save
+            <span class="kbd">⌘S</span>
+          </button>
+          <button class="btn btn-sm btn-ghost">
+            Copy Path
+          </button>
+          <button class="btn btn-icon btn-surface" title="Settings">⚙</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom: var(--sp-4);">
+      <div class="panel-header">
+        <div class="panel-title">Button Variants</div>
+      </div>
+      <div class="panel-body">
+        <div style="display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;">
+          <button class="btn btn-lg btn-primary">Primary Action</button>
+          <button class="btn btn-lg btn-danger">Delete</button>
+          <button class="btn btn-lg btn-success">✓ Complete</button>
+          <button class="btn btn-lg btn-warning">⚠ Caution</button>
+          <button class="btn btn-lg btn-ghost">Secondary</button>
+          <button class="btn btn-lg btn-surface">Ghost</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Grid Demo -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Action Grid — Color-Coded Quick Actions</div>
+        <div class="hint"><span class="hint-dot"></span> Click any action</div>
+      </div>
+      <div class="panel-body">
+        <div class="action-grid action-grid-4">
+          <div class="action-card" data-color="blue">
+            <div class="action-card-icon">⚡</div>
+            <div class="action-card-label">Generate</div>
+            <div class="action-card-shortcut"><span class="kbd">⌘G</span></div>
+          </div>
+          <div class="action-card" data-color="green">
+            <div class="action-card-icon">▶</div>
+            <div class="action-card-label">Simulate</div>
+            <div class="action-card-shortcut"><span class="kbd">⌘R</span></div>
+          </div>
+          <div class="action-card" data-color="orange">
+            <div class="action-card-icon">🔧</div>
+            <div class="action-card-label">Post Process</div>
+            <div class="action-card-shortcut"><span class="kbd">⌘P</span></div>
+          </div>
+          <div class="action-card" data-color="purple">
+            <div class="action-card-icon">⚙</div>
+            <div class="action-card-label">Configure</div>
+            <div class="action-card-shortcut"><span class="kbd">⌘,</span></div>
+          </div>
+          <div class="action-card" data-color="cyan">
+            <div class="action-card-icon">📦</div>
+            <div class="action-card-label">Stock Setup</div>
+            <div class="action-card-shortcut"><span class="kbd">⌘K</span></div>
+          </div>
+          <div class="action-card" data-color="amber">
+            <div class="action-card-icon">⚠</div>
+            <div class="action-card-label">Collision Check</div>
+            <div class="action-card-shortcut"><span class="kbd">⌘⇧C</span></div>
+          </div>
+          <div class="action-card" data-color="red">
+            <div class="action-card-icon">🗑</div>
+            <div class="action-card-label">Clear All</div>
+            <div class="action-card-shortcut"><span class="kbd">⌘⌫</span></div>
+          </div>
+          <div class="action-card" data-color="purple">
+            <div class="action-card-icon">🤖</div>
+            <div class="action-card-label">AI Optimize</div>
+            <div class="action-card-shortcut"><span class="kbd">⌘⇧A</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       COMPONENTS
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="ds-section" id="components">
+    <div class="ds-section-header">
+      <h2 class="ds-section-title">Components</h2>
+      <span class="ds-section-badge">Building blocks</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--sp-4);">
+
+      <!-- Status Pills -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Status Indicators</div></div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+            <div style="display: flex; gap: var(--sp-3); flex-wrap: wrap;">
+              <div class="status-pill active"><span class="status-dot active"></span> Active</div>
+              <div class="status-pill warning"><span class="status-dot warning"></span> Warning</div>
+              <div class="status-pill error"><span class="status-dot error"></span> Error</div>
+              <div class="status-pill info"><span class="status-dot idle"></span> Idle</div>
+              <div class="status-pill ai"><span class="status-dot ai"></span> AI Processing</div>
+            </div>
+            <div style="display: flex; gap: var(--sp-3); align-items: center;">
+              <span style="font-size: var(--text-sm); color: var(--ink-tertiary);">Status dots:</span>
+              <span class="status-dot active"></span>
+              <span class="status-dot warning"></span>
+              <span class="status-dot error"></span>
+              <span class="status-dot idle"></span>
+              <span class="status-dot ai"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Command Palette -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Command Palette</div></div>
+        <div class="panel-body">
+          <div class="cmd-palette">
+            <div class="cmd-input-wrap">
+              <span class="cmd-input-icon">⌘</span>
+              <input class="cmd-input" placeholder="Type a command..." readonly>
+            </div>
+            <div class="cmd-results">
+              <div class="cmd-item selected">
+                <div class="cmd-item-icon" style="background: var(--code-action-dim); color: var(--code-action);">⚡</div>
+                <div class="cmd-item-text">
+                  <div class="cmd-item-name">Generate Toolpath</div>
+                  <div class="cmd-item-desc">Create cutting path from selected geometry</div>
+                </div>
+                <div class="cmd-item-shortcut"><span class="kbd">⌘G</span></div>
+              </div>
+              <div class="cmd-item">
+                <div class="cmd-item-icon" style="background: var(--code-success-dim); color: var(--code-success);">▶</div>
+                <div class="cmd-item-text">
+                  <div class="cmd-item-name">Run Simulation</div>
+                  <div class="cmd-item-desc">Preview material removal in 3D</div>
+                </div>
+                <div class="cmd-item-shortcut"><span class="kbd">⌘R</span></div>
+              </div>
+              <div class="cmd-item">
+                <div class="cmd-item-icon" style="background: var(--code-ai-dim); color: var(--code-ai);">🤖</div>
+                <div class="cmd-item-text">
+                  <div class="cmd-item-name">AI Optimize Parameters</div>
+                  <div class="cmd-item-desc">Use ML to suggest optimal feeds and speeds</div>
+                </div>
+                <div class="cmd-item-shortcut"><span class="kbd">⌘⇧A</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Metric Cards</div></div>
+        <div class="panel-body">
+          <div class="metric-row">
+            <div class="metric-card" data-color="blue">
+              <div class="metric-label">Feed Rate</div>
+              <div class="metric-value">1200</div>
+              <div class="metric-change up">mm/min</div>
+            </div>
+            <div class="metric-card" data-color="green">
+              <div class="metric-label">Spindle</div>
+              <div class="metric-value">24K</div>
+              <div class="metric-change up">RPM ✓</div>
+            </div>
+            <div class="metric-card" data-color="amber">
+              <div class="metric-label">Tool Life</div>
+              <div class="metric-value">67%</div>
+              <div class="metric-change down">↓ 3% today</div>
+            </div>
+            <div class="metric-card" data-color="purple">
+              <div class="metric-label">AI Score</div>
+              <div class="metric-value">94.2</div>
+              <div class="metric-change up">↑ 2.1 pts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Progress Indicators</div></div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-4);">
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--sp-1);">
+                <span style="font-size: var(--text-sm); color: var(--ink-secondary);">Toolpath Generation</span>
+                <span style="font-size: var(--text-sm); color: var(--code-action); font-family: var(--font-mono);">78%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill blue" style="width: 78%;"></div></div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--sp-1);">
+                <span style="font-size: var(--text-sm); color: var(--ink-secondary);">Simulation</span>
+                <span style="font-size: var(--text-sm); color: var(--code-success); font-family: var(--font-mono);">100%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill green" style="width: 100%;"></div></div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--sp-1);">
+                <span style="font-size: var(--text-sm); color: var(--ink-secondary);">AI Optimization</span>
+                <span style="font-size: var(--text-sm); color: var(--code-accent); font-family: var(--font-mono);">45%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill purple" style="width: 45%;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toggles -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Toggles & Controls</div></div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: var(--text-sm); color: var(--ink-secondary);">Show Toolpaths</span>
+              <div class="toggle on"></div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: var(--text-sm); color: var(--ink-secondary);">Wireframe Mode</span>
+              <div class="toggle"></div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: var(--text-sm); color: var(--ink-secondary);">AI Suggestions</span>
+              <div class="toggle on"></div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: var(--text-sm); color: var(--ink-secondary);">Collision Detection</span>
+              <div class="toggle on"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Toolbar Pattern</div></div>
+        <div class="panel-body">
+          <div class="toolbar" style="margin-bottom: var(--sp-3);">
+            <div class="toolbar-group">
+              <button class="cam-tool-btn active" title="Select">⊹</button>
+              <button class="cam-tool-btn" title="Pan">✥</button>
+              <button class="cam-tool-btn" title="Zoom">⊕</button>
+            </div>
+            <div class="toolbar-sep"></div>
+            <div class="toolbar-group">
+              <button class="cam-tool-btn" title="Line" style="color: var(--code-view);">╱</button>
+              <button class="cam-tool-btn" title="Arc" style="color: var(--code-view);">◠</button>
+              <button class="cam-tool-btn" title="Circle" style="color: var(--code-view);">○</button>
+            </div>
+            <div class="toolbar-sep"></div>
+            <div class="toolbar-group">
+              <button class="cam-tool-btn" title="Drill" style="color: var(--code-tool);">⌾</button>
+              <button class="cam-tool-btn" title="Mill" style="color: var(--code-tool);">⊞</button>
+              <button class="cam-tool-btn" title="Turn" style="color: var(--code-tool);">◎</button>
+            </div>
+            <div style="flex:1;"></div>
+            <div class="toolbar-group">
+              <button class="cam-tool-btn" title="Undo">↶</button>
+              <button class="cam-tool-btn" title="Redo">↷</button>
+            </div>
+          </div>
+          <div style="font-size: var(--text-xs); color: var(--ink-muted);">All buttons 36×36px. Color-coded by category: <span style="color: var(--code-view);">View</span>, <span style="color: var(--code-tool);">Tool</span>, <span style="color: var(--ink-tertiary);">General</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       CAM APPLICATION PREVIEW
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="ds-section" id="cam-preview">
+    <div class="ds-section-header">
+      <h2 class="ds-section-title">CAM Software Layout</h2>
+      <span class="ds-section-badge">Full application</span>
+    </div>
+    <p class="ds-section-desc">Complete CAM interface using the design system. Toolbar on left, feature tree, 3D viewport center, inspector right. Every tool visible, zero menus.</p>
+
+    <div class="app-preview">
+      <div class="app-titlebar">
+        <div class="app-dots"><div class="app-dot r"></div><div class="app-dot y"></div><div class="app-dot g"></div></div>
+        <div class="app-titlebar-text">AI CAM 3.0 — Untitled Project.cnc</div>
+        <div style="flex:1;"></div>
+        <div style="display: flex; gap: var(--sp-2); align-items: center;">
+          <div class="status-pill active" style="font-size: 10px; padding: 2px 6px;"><span class="status-dot active" style="width: 6px; height: 6px;"></span> Ready</div>
+          <div class="status-pill ai" style="font-size: 10px; padding: 2px 6px;"><span class="status-dot ai" style="width: 6px; height: 6px;"></span> AI Active</div>
+        </div>
+      </div>
+      <div class="app-body cam-layout">
+        <!-- Menu Bar -->
+        <div class="cam-menubar">
+          <span class="cam-menu-item" style="color: var(--code-action); font-weight: 600;">File</span>
+          <span class="cam-menu-item">Edit</span>
+          <span class="cam-menu-item">View</span>
+          <span class="cam-menu-item">Toolpaths</span>
+          <span class="cam-menu-item">Simulation</span>
+          <span class="cam-menu-item" style="color: var(--code-ai);">AI</span>
+          <span style="flex:1;"></span>
+          <div style="display: flex; gap: var(--sp-2); align-items: center;">
+            <button class="btn btn-sm btn-primary" style="height: 26px; font-size: 11px;">
+              ⚡ Generate
+              <span class="kbd" style="font-size: 9px; height: 16px; min-width: 16px; padding: 0 3px;">⌘G</span>
+            </button>
+            <button class="btn btn-sm btn-success" style="height: 26px; font-size: 11px;">
+              ▶ Simulate
+              <span class="kbd" style="font-size: 9px; height: 16px; min-width: 16px; padding: 0 3px;">⌘R</span>
+            </button>
+            <button class="btn btn-sm btn-ghost" style="height: 26px; font-size: 11px;">
+              🔧 Post
+              <span class="kbd" style="font-size: 9px; height: 16px; min-width: 16px; padding: 0 3px;">⌘P</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Left Toolbar -->
+        <div class="cam-toolbar">
+          <button class="cam-tool-btn active" title="Select (V)">⊹</button>
+          <button class="cam-tool-btn" title="Pan (H)">✥</button>
+          <button class="cam-tool-btn" title="Zoom (Z)">⊕</button>
+          <div style="height: 1px; background: var(--border-default); margin: 4px 0;"></div>
+          <button class="cam-tool-btn" title="Line (L)" style="color: var(--code-view);">╱</button>
+          <button class="cam-tool-btn" title="Arc (A)" style="color: var(--code-view);">◠</button>
+          <button class="cam-tool-btn" title="Circle (C)" style="color: var(--code-view);">○</button>
+          <button class="cam-tool-btn" title="Spline (S)" style="color: var(--code-view);">∿</button>
+          <div style="height: 1px; background: var(--border-default); margin: 4px 0;"></div>
+          <button class="cam-tool-btn" title="Drill (D)" style="color: var(--code-tool);">⌾</button>
+          <button class="cam-tool-btn" title="End Mill (E)" style="color: var(--code-tool);">⊞</button>
+          <button class="cam-tool-btn" title="Turn (T)" style="color: var(--code-tool);">◎</button>
+          <div style="height: 1px; background: var(--border-default); margin: 4px 0;"></div>
+          <button class="cam-tool-btn" title="AI Optimize" style="color: var(--code-ai);">🤖</button>
+          <div style="flex:1;"></div>
+          <button class="cam-tool-btn" title="Settings" style="color: var(--ink-muted);">⚙</button>
+        </div>
+
+        <!-- Feature Tree -->
+        <div class="cam-tree">
+          <div class="inspector-label" style="margin-bottom: var(--sp-2);">Features</div>
+          <div class="tree-item active">
+            <span class="tree-icon" style="color: var(--code-view);">◇</span>
+            <span>Stock Model</span>
+          </div>
+          <div class="tree-item tree-indent">
+            <span class="tree-icon" style="color: var(--code-material);">📦</span>
+            <span style="color: var(--code-material);">AL-6061</span>
+          </div>
+          <div class="tree-item">
+            <span class="tree-icon" style="color: var(--code-view);">◇</span>
+            <span>Geometry</span>
+          </div>
+          <div class="tree-item tree-indent">
+            <span class="tree-icon" style="color: var(--code-view);">╱</span>
+            <span>Outer Profile</span>
+          </div>
+          <div class="tree-item tree-indent">
+            <span class="tree-icon" style="color: var(--code-view);">○</span>
+            <span>4× Holes</span>
+          </div>
+          <div class="tree-item tree-indent">
+            <span class="tree-icon" style="color: var(--code-view);">◠</span>
+            <span>Pocket</span>
+          </div>
+          <div class="tree-item">
+            <span class="tree-icon" style="color: var(--code-tool);">⊞</span>
+            <span style="color: var(--code-tool);">3/8" Endmill</span>
+          </div>
+          <div class="tree-item tree-indent">
+            <span class="tree-icon" style="color: var(--code-action);">⚡</span>
+            <span style="color: var(--code-action);">Roughing</span>
+          </div>
+          <div class="tree-item tree-indent">
+            <span class="tree-icon" style="color: var(--code-success);">✓</span>
+            <span style="color: var(--code-success);">Finishing</span>
+          </div>
+          <div class="tree-item">
+            <span class="tree-icon" style="color: var(--code-tool);">⌾</span>
+            <span style="color: var(--code-tool);">1/4" Drill</span>
+          </div>
+          <div class="tree-item tree-indent">
+            <span class="tree-icon" style="color: var(--code-action);">⚡</span>
+            <span style="color: var(--code-action);">Drill Cycle</span>
+          </div>
+        </div>
+
+        <!-- Viewport -->
+        <div class="cam-viewport">
+          <div class="cam-viewport-grid"></div>
+          <!-- Simulated 3D viewport content -->
+          <div style="position: relative; z-index: 1; text-align: center;">
+            <div style="width: 200px; height: 120px; border: 2px solid var(--code-action); border-radius: 4px; display: flex; align-items: center; justify-content: center; background: rgba(108,138,255,0.05); margin: 0 auto var(--sp-3);">
+              <div style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--code-action);">3D VIEWPORT</div>
+            </div>
+            <div style="display: flex; gap: var(--sp-2); justify-content: center;">
+              <div class="status-pill" style="background: var(--code-action-dim); color: var(--code-action); font-size: 10px;">Perspective</div>
+              <div class="status-pill" style="background: var(--code-view-dim); color: var(--code-view); font-size: 10px;">Shaded</div>
+              <div class="status-pill" style="background: var(--code-success-dim); color: var(--code-success); font-size: 10px;">Stock Visible</div>
+            </div>
+          </div>
+          <div class="cam-viewport-label">
+            <div class="status-pill" style="background: var(--canvas-surface); color: var(--ink-muted); font-size: 9px; padding: 1px 6px;">
+              <span style="font-family: var(--font-mono);">X: 24.500</span>
+              <span style="color: var(--border-strong);">|</span>
+              <span style="font-family: var(--font-mono);">Y: 12.750</span>
+              <span style="color: var(--border-strong);">|</span>
+              <span style="font-family: var(--font-mono);">Z: 0.000</span>
+            </div>
+          </div>
+          <!-- Viewport Stats (bottom-right) -->
+          <div class="cam-viewport-stats">
+            <div class="vs-row"><span class="vs-k">Line Length</span><span class="vs-v">160.000 mm</span></div>
+            <div class="vs-row"><span class="vs-k">Arc Radius</span><span class="vs-v">—</span></div>
+            <div class="vs-sep"></div>
+            <div class="vs-row"><span class="vs-k">Part Area</span><span class="vs-v" style="color: var(--code-view);">11,200 mm²</span></div>
+            <div class="vs-row"><span class="vs-k">Perimeter</span><span class="vs-v">520.00 mm</span></div>
+            <div class="vs-row"><span class="vs-k">Volume</span><span class="vs-v">280.0 cm³</span></div>
+            <div class="vs-sep"></div>
+            <div class="vs-row"><span class="vs-k">mm</span><span class="vs-v" style="color: var(--code-info);">in</span><span class="vs-conv">÷ 25.4</span></div>
+            <div class="vs-row"><span class="vs-k">mm²</span><span class="vs-v" style="color: var(--code-info);">in²</span><span class="vs-conv">÷ 645.16</span></div>
+            <div class="vs-row"><span class="vs-k">cm³</span><span class="vs-v" style="color: var(--code-info);">in³</span><span class="vs-conv">÷ 16.387</span></div>
+          </div>
+        </div>
+
+        <!-- Inspector Panel -->
+        <div class="cam-inspector">
+          <div class="inspector-section">
+            <div class="inspector-label">Active Tool</div>
+            <div style="display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-2); background: var(--canvas-raised); border-radius: var(--r-md); margin-bottom: var(--sp-2);">
+              <div style="width: 32px; height: 32px; background: var(--code-tool-dim); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; color: var(--code-tool); font-size: 16px;">⊞</div>
+              <div>
+                <div style="font-size: var(--text-sm); font-weight: 600; color: var(--ink-primary);">3/8" Flat Endmill</div>
+                <div style="font-size: var(--text-xs); color: var(--ink-muted);">Carbide • 4-Flute</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="inspector-section">
+            <div class="inspector-label">Cutting Parameters</div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Spindle Speed</span>
+              <span class="inspector-field-value" style="color: var(--code-success);">24,000 RPM</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Feed Rate</span>
+              <span class="inspector-field-value" style="color: var(--code-action);">1,200 mm/min</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Depth of Cut</span>
+              <span class="inspector-field-value">2.5 mm</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Stepover</span>
+              <span class="inspector-field-value">40%</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Coolant</span>
+              <span class="inspector-field-value" style="color: var(--code-material);">Flood ON</span>
+            </div>
+          </div>
+
+          <div class="inspector-section">
+            <div class="inspector-label">Material</div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Stock</span>
+              <span class="inspector-field-value" style="color: var(--code-material);">AL-6061-T6</span>
+            </div>
+            <div class="inspector-field">
+              <span class="inspector-field-label">Dimensions</span>
+              <span class="inspector-field-value">100×80×25mm</span>
+            </div>
+          </div>
+
+          <div class="inspector-section">
+            <div class="inspector-label">AI Recommendations</div>
+            <div style="padding: var(--sp-2); background: var(--code-ai-dim); border: 1px solid rgba(244,114,182,0.2); border-radius: var(--r-md);">
+              <div style="font-size: var(--text-xs); color: var(--code-ai); font-weight: 600; margin-bottom: 4px;">🤖 AI Suggestion</div>
+              <div style="font-size: var(--text-xs); color: var(--ink-tertiary); line-height: 1.5;">Increase feed to 1,400 mm/min for 15% efficiency gain. Tool wear remains within safe limits.</div>
+              <button class="btn btn-sm" style="margin-top: var(--sp-2); background: rgba(244,114,182,0.15); color: var(--code-ai); border: 1px solid rgba(244,114,182,0.3); height: 24px; font-size: 10px;">Apply Suggestion</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="cam-statusbar">
+          <div style="display: flex; gap: var(--sp-4); align-items: center;">
+            <span><span class="status-dot active" style="width: 6px; height: 6px;"></span> Ready</span>
+            <span class="mono" style="color: var(--ink-muted);">AL-6061-T6</span>
+            <span class="mono" style="color: var(--ink-muted);">Tool #4</span>
+          </div>
+          <div style="display: flex; gap: var(--sp-4); align-items: center;">
+            <span style="color: var(--code-action);">⌘K Command Palette</span>
+            <span style="color: var(--ink-muted);">v3.0.1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       DASHBOARD PREVIEW
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="ds-section" id="dashboard-preview">
+    <div class="ds-section-header">
+      <h2 class="ds-section-title">Dashboard Layout</h2>
+      <span class="ds-section-badge">Monitor surface</span>
+    </div>
+    <p class="ds-section-desc">Data-dense monitoring dashboard. All metrics visible at a glance. Color-coded status indicators. Keyboard navigation throughout.</p>
+
+    <div class="app-preview">
+      <div class="app-titlebar">
+        <div class="app-dots"><div class="app-dot r"></div><div class="app-dot y"></div><div class="app-dot g"></div></div>
+        <div class="app-titlebar-text">Evolution Engine — Cycle Monitor</div>
+        <div style="flex:1;"></div>
+        <div style="display: flex; gap: var(--sp-2); align-items: center;">
+          <div class="status-pill active" style="font-size: 10px; padding: 2px 6px;"><span class="status-dot active" style="width: 6px; height: 6px;"></span> Cycle 205</div>
+          <div class="status-pill ai" style="font-size: 10px; padding: 2px 6px;"><span class="status-dot ai" style="width: 6px; height: 6px;"></span> Evolving</div>
+        </div>
+      </div>
+      <div style="padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-4);">
+        <!-- Top Metrics Row -->
+        <div class="metric-row">
+          <div class="metric-card" data-color="blue">
+            <div class="metric-label">Total Cycles</div>
+            <div class="metric-value">205</div>
+            <div class="metric-change up">↑ 12 today</div>
+          </div>
+          <div class="metric-card" data-color="green">
+            <div class="metric-label">Archive Size</div>
+            <div class="metric-value">251</div>
+            <div class="metric-change up">↑ 3 new</div>
+          </div>
+          <div class="metric-card" data-color="purple">
+            <div class="metric-label">Val Loss</div>
+            <div class="metric-value">0.1256</div>
+            <div class="metric-change down">↓ 0.003</div>
+          </div>
+          <div class="metric-card" data-color="amber">
+            <div class="metric-label">MG Ratio</div>
+            <div class="metric-value">0.30</div>
+            <div class="metric-change" style="color: var(--ink-muted);">Optimal</div>
+          </div>
+          <div class="metric-card" data-color="cyan">
+            <div class="metric-label">Cycle Time</div>
+            <div class="metric-value">1.4m</div>
+            <div class="metric-change up">↑ 0.2m faster</div>
+          </div>
+          <div class="metric-card" data-color="pink">
+            <div class="metric-label">Tests Pass</div>
+            <div class="metric-value">1,269</div>
+            <div class="metric-change" style="color: var(--code-success);">100%</div>
+          </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Recent Cycles</div>
+            <div style="display: flex; gap: var(--sp-2);">
+              <button class="btn btn-sm btn-ghost" style="height: 24px; font-size: 11px;">Filter</button>
+              <button class="btn btn-sm btn-ghost" style="height: 24px; font-size: 11px;">Export</button>
+            </div>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Cycle</th>
+                  <th>Status</th>
+                  <th>Val Loss</th>
+                  <th>Archive</th>
+                  <th>MG Ratio</th>
+                  <th>Duration</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="mono">#205</td>
+                  <td><span class="status-pill active" style="font-size: 10px; padding: 1px 6px;"><span class="status-dot active" style="width: 5px; height: 5px;"></span> Complete</span></td>
+                  <td class="mono" style="color: var(--code-success);">0.1256</td>
+                  <td class="mono">251</td>
+                  <td class="mono">0.30</td>
+                  <td class="mono">1m 24s</td>
+                  <td><button class="btn btn-sm btn-surface" style="height: 22px; font-size: 10px;">View</button></td>
+                </tr>
+                <tr>
+                  <td class="mono">#204</td>
+                  <td><span class="status-pill active" style="font-size: 10px; padding: 1px 6px;"><span class="status-dot active" style="width: 5px; height: 5px;"></span> Complete</span></td>
+                  <td class="mono" style="color: var(--code-success);">0.1278</td>
+                  <td class="mono">248</td>
+                  <td class="mono">0.28</td>
+                  <td class="mono">1m 31s</td>
+                  <td><button class="btn btn-sm btn-surface" style="height: 22px; font-size: 10px;">View</button></td>
+                </tr>
+                <tr>
+                  <td class="mono">#203</td>
+                  <td><span class="status-pill warning" style="font-size: 10px; padding: 1px 6px;"><span class="status-dot warning" style="width: 5px; height: 5px;"></span> Plateau</span></td>
+                  <td class="mono" style="color: var(--code-warning);">0.1289</td>
+                  <td class="mono">246</td>
+                  <td class="mono">0.32</td>
+                  <td class="mono">1m 28s</td>
+                  <td><button class="btn btn-sm btn-surface" style="height: 22px; font-size: 10px;">View</button></td>
+                </tr>
+                <tr>
+                  <td class="mono">#202</td>
+                  <td><span class="status-pill active" style="font-size: 10px; padding: 1px 6px;"><span class="status-dot active" style="width: 5px; height: 5px;"></span> Complete</span></td>
+                  <td class="mono" style="color: var(--code-success);">0.1294</td>
+                  <td class="mono">244</td>
+                  <td class="mono">0.30</td>
+                  <td class="mono">1m 19s</td>
+                  <td><button class="btn btn-sm btn-surface" style="height: 22px; font-size: 10px;">View</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       SPACING SYSTEM
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="ds-section" id="spacing">
+    <div class="ds-section-header">
+      <h2 class="ds-section-title">Spacing System</h2>
+      <span class="ds-section-badge">4px grid</span>
+    </div>
+
+    <div class="panel">
+      <div class="panel-body">
+        <div class="spacing-demo">
+          <div class="spacing-row">
+            <div class="spacing-label">4px</div>
+            <div class="spacing-bar" style="width: 4px;"></div>
+            <div style="font-size: var(--text-xs); color: var(--ink-muted);">--sp-1 • Micro gap</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">8px</div>
+            <div class="spacing-bar" style="width: 8px;"></div>
+            <div style="font-size: var(--text-xs); color: var(--ink-muted);">--sp-2 • Tight gap</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">12px</div>
+            <div class="spacing-bar" style="width: 12px;"></div>
+            <div style="font-size: var(--text-xs); color: var(--ink-muted);">--sp-3 • Small gap</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">16px</div>
+            <div class="spacing-bar" style="width: 16px;"></div>
+            <div style="font-size: var(--text-xs); color: var(--ink-muted);">--sp-4 • Default gap</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">24px</div>
+            <div class="spacing-bar" style="width: 24px;"></div>
+            <div style="font-size: var(--text-xs); color: var(--ink-muted);">--sp-6 • Section gap</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">32px</div>
+            <div class="spacing-bar" style="width: 32px;"></div>
+            <div style="font-size: var(--text-xs); color: var(--ink-muted);">--sp-8 • Large gap</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">48px</div>
+            <div class="spacing-bar" style="width: 48px;"></div>
+            <div style="font-size: var(--text-xs); color: var(--ink-muted);">--sp-12 • Section break</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">64px</div>
+            <div class="spacing-bar" style="width: 64px;"></div>
+            <div style="font-size: var(--text-xs); color: var(--ink-muted);">--sp-16 • Major break</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       DESIGN GUIDELINES
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="ds-section" id="guidelines">
+    <div class="ds-section-header">
+      <h2 class="ds-section-title">Implementation Guidelines</h2>
+      <span class="ds-section-badge">Rules</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: var(--sp-4);">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title" style="color: var(--code-success);">✓ DO</div>
+        </div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-2); font-size: var(--text-sm); color: var(--ink-secondary); line-height: 1.6;">
+            <div>✓ Use XL (52px) buttons for primary actions</div>
+            <div>✓ Show keyboard shortcuts on every button</div>
+            <div>✓ Color-code categories consistently across all apps</div>
+            <div>✓ Use monospace for all numeric/data values</div>
+            <div>✓ Place the most-used actions in the top-left toolbar</div>
+            <div>✓ Use status dots + pills for state communication</div>
+            <div>✓ Enable Cmd+K command palette in every application</div>
+            <div>✓ Use the 6-level surface luminance scale for depth</div>
+            <div>✓ Apply tabular-nums for aligned number columns</div>
+            <div>✓ Use semi-transparent white borders on dark surfaces</div>
+            <div>✓ Keep all features visible — no hamburger menus on desktop</div>
+            <div>✓ Use the inset shadow for recessed/pressed elements</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title" style="color: var(--code-danger);">✗ DON'T</div>
+        </div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-2); font-size: var(--text-sm); color: var(--ink-secondary); line-height: 1.6;">
+            <div>✗ Hide features behind dropdown menus</div>
+            <div>✗ Use color decoratively — every color has meaning</div>
+            <div>✗ Mix color categories (orange for data, blue for tools)</div>
+            <div>✗ Use proportional fonts for numeric data</div>
+            <div>✗ Make buttons smaller than 28px (SM size)</div>
+            <div>✗ Use pure black (#000) or pure white (#fff) for text</div>
+            <div>✗ Add gradients or glassmorphism to functional UI</div>
+            <div>✗ Use bold (700) weight for body text — 600 max</div>
+            <div>✗ Create nested cards (cards inside cards)</div>
+            <div>✗ Use positive letter-spacing on body text</div>
+            <div>✗ Force users to remember where features are</div>
+            <div>✗ Add decorative icons that don't improve scanning</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cross-Project Mapping -->
+    <div class="panel" style="margin-top: var(--sp-4);">
+      <div class="panel-header">
+        <div class="panel-title">Color Category → Project Mapping</div>
+      </div>
+      <div class="panel-body">
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Color</th>
+                <th>Category</th>
+                <th>AI CAM 3.0</th>
+                <th>Deepnest</th>
+                <th>Web DFM</th>
+                <th>Evolution Engine</th>
+                <th>reesecnc.com</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span style="display: inline-block; width: 12px; height: 12px; background: var(--code-action); border-radius: 2px; vertical-align: middle;"></span></td>
+                <td>Action Blue</td>
+                <td>Generate toolpath</td>
+                <td>Start nesting</td>
+                <td>Analyze part</td>
+                <td>Run cycle</td>
+                <td>CTA buttons</td>
+              </tr>
+              <tr>
+                <td><span style="display: inline-block; width: 12px; height: 12px; background: var(--code-tool); border-radius: 2px; vertical-align: middle;"></span></td>
+                <td>Tool Orange</td>
+                <td>Endmill, drill</td>
+                <td>Part geometry</td>
+                <td>CAD features</td>
+                <td>Mutation ops</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span style="display: inline-block; width: 12px; height: 12px; background: var(--code-material); border-radius: 2px; vertical-align: middle;"></span></td>
+                <td>Material Teal</td>
+                <td>Stock material</td>
+                <td>Sheet size</td>
+                <td>Material type</td>
+                <td>Model architecture</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span style="display: inline-block; width: 12px; height: 12px; background: var(--code-view); border-radius: 2px; vertical-align: middle;"></span></td>
+                <td>View Lime</td>
+                <td>3D viewport</td>
+                <td>Nest preview</td>
+                <td>Three.js viewer</td>
+                <td>Training viz</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span style="display: inline-block; width: 12px; height: 12px; background: var(--code-ai); border-radius: 2px; vertical-align: middle;"></span></td>
+                <td>AI Magenta</td>
+                <td>AI optimization</td>
+                <td>—</td>
+                <td>AI DFM rules</td>
+                <td>Neural net</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><span style="display: inline-block; width: 12px; height: 12px; background: var(--code-data); border-radius: 2px; vertical-align: middle;"></span></td>
+                <td>Data Pink</td>
+                <td>Cutting data</td>
+                <td>Density %</td>
+                <td>Measurements</td>
+                <td>val_loss, metrics</td>
+                <td>Analytics</td>
+              </tr>
+              <tr>
+                <td><span style="display: inline-block; width: 12px; height: 12px; background: var(--code-config); border-radius: 2px; vertical-align: middle;"></span></td>
+                <td>Config Gold</td>
+                <td>Machine params</td>
+                <td>Nesting params</td>
+                <td>Analysis settings</td>
+                <td>Hyperparams</td>
+                <td>Site config</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="padding: var(--sp-8) 0; border-top: 1px solid var(--border-subtle); text-align: center;">
+    <div style="font-size: var(--text-sm); color: var(--ink-muted);">
+      Reese Design System v1.0 — Utilitarian Interface Template
+    </div>
+    <div style="font-size: var(--text-xs); color: var(--ink-ghost); margin-top: var(--sp-2);">
+      Built for: AI CAM 3.0 • Deepnest • Web DFM • Evolution Engine • reesecnc.com
+    </div>
+  </footer>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+  // Smooth scroll for nav links
+  document.querySelectorAll('.ds-nav-links a').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      document.querySelectorAll('.ds-nav-links a').forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+    const id = link.getAttribute('href').slice(1);
+    if (id) history.pushState(null, '', '#' + id);
+    });
+  });
+
+  // Active nav tracking on scroll
+  const sections = document.querySelectorAll('.ds-section[id]');
+  const navLinks = document.querySelectorAll('.ds-nav-links a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.ds-nav-links a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-80px 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+
+// Copy-to-clipboard
+function copySnippet(btn) {
+  const code = btn.closest('pre')?.textContent || btn.closest('.snippet')?.textContent;
+  if (code) {
+    navigator.clipboard.writeText(code.trim()).then(() => {
+      btn.textContent = '✓ Copied';
+      setTimeout(() => { btn.textContent = '📋'; }, 1500);
+    });
+  }
+}
+
+  // Toggle switches
+  document.querySelectorAll('.toggle').forEach(t => {
+    t.addEventListener('click', () => t.classList.toggle('on'));
+  });
+
+  // Action card hover feedback
+  document.querySelectorAll('.action-card').forEach(card => {
+    card.addEventListener('click', () => {
+      card.style.transform = 'scale(0.95)';
+      setTimeout(() => card.style.transform = '', 150);
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // COMMAND PALETTE (Ctrl+K)
+  // ═══════════════════════════════════════════════════════════════
+  const SECTIONS = [
+    {name:'Principles', id:'principles', desc:'Design philosophy and core rules'},
+    {name:'Colors', id:'colors', desc:'13 semantic color categories'},
+    {name:'Typography', id:'typography', desc:'Font hierarchy and scales'},
+    {name:'Buttons', id:'buttons', desc:'Maximized action buttons'},
+    {name:'Components', id:'components', desc:'Component library specimens'},
+    {name:'CAM Preview', id:'cam-preview', desc:'Full CAM application layout'},
+    {name:'Dashboard', id:'dashboard-preview', desc:'Data monitoring layout'},
+    {name:'Spacing', id:'spacing', desc:'4px grid system'},
+    {name:'Guidelines', id:'guidelines', desc:'Implementation rules'},
+  ];
+
+  // Create command palette overlay
+  const cmdPalette = document.createElement('div');
+  cmdPalette.id = 'cmdPalette';
+  cmdPalette.style.cssText = 'position:fixed;inset:0;z-index:999;display:none;align-items:flex-start;justify-content:center;padding-top:15vh;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px)';
+  cmdPalette.onclick = e => { if (e.target === cmdPalette) cmdPalette.style.display = 'none'; };
+  cmdPalette.innerHTML = '<div style="background:var(--canvas-raised);border:1px solid var(--border-strong);border-radius:8px;width:520px;max-height:400px;overflow:hidden;box-shadow:0 16px 64px rgba(0,0,0,0.5)">' +
+    '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border-subtle)">' +
+    '<span style="color:var(--ink-muted);font-size:16px">⊞</span>' +
+    '<input id="cmdInput" style="flex:1;background:none;border:none;outline:none;color:var(--ink-primary);font-size:14px;font-weight:500" placeholder="Jump to section...">' +
+    '</div>' +
+    '<div id="cmdResults" style="max-height:320px;overflow-y:auto;padding:4px"></div>' +
+    '</div>';
+  document.body.appendChild(cmdPalette);
+
+  let cmdIdx = 0;
+  function renderCmd(query) {
+    const q = query.toLowerCase();
+    const items = SECTIONS.filter(s => s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q));
+    const el = document.getElementById('cmdResults');
+    cmdIdx = 0;
+    el.innerHTML = items.map((s, i) => '<div class="cmd-item" style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:4px;cursor:pointer;transition:background 80ms' + (i===0?';background:var(--canvas-elevated)':'') + '" onclick="document.getElementById('' + s.id + '').scrollIntoView({behavior:'smooth'});document.getElementById('cmdPalette').style.display='none'">' +
+      '<div style="width:28px;height:28px;border-radius:4px;background:var(--code-action-dim);color:var(--code-action);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">§</div>' +
+      '<div><div style="font-size:13px;font-weight:500;color:var(--ink-primary)">' + s.name + '</div><div style="font-size:11px;color:var(--ink-muted)">' + s.desc + '</div></div>' +
+      '<span class="kbd" style="margin-left:auto">Enter</span></div>').join('');
+    el.querySelectorAll('.cmd-item').forEach((item, i) => {
+      item.onmouseenter = () => { el.querySelectorAll('.cmd-item').forEach(x => x.style.background=''); item.style.background='var(--canvas-elevated)'; cmdIdx=i; };
+    });
+  }
+  renderCmd('');
+
+  document.getElementById('cmdInput').addEventListener('input', e => renderCmd(e.target.value));
+  document.getElementById('cmdInput').addEventListener('keydown', e => {
+    const items = document.querySelectorAll('#cmdResults .cmd-item');
+    if (e.key === 'ArrowDown') { e.preventDefault(); cmdIdx = Math.min(cmdIdx+1, items.length-1); items.forEach((x,i) => x.style.background = i===cmdIdx?'var(--canvas-elevated)':''); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); cmdIdx = Math.max(cmdIdx-1, 0); items.forEach((x,i) => x.style.background = i===cmdIdx?'var(--canvas-elevated)':''); }
+    if (e.key === 'Enter' && items[cmdIdx]) items[cmdIdx].click();
+    if (e.key === 'Escape') cmdPalette.style.display = 'none';
+  });
+
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      cmdPalette.style.display = cmdPalette.style.display === 'flex' ? 'none' : 'flex';
+      if (cmdPalette.style.display === 'flex') {
+        document.getElementById('cmdInput').value = '';
+        renderCmd('');
+        setTimeout(() => document.getElementById('cmdInput').focus(), 50);
+      }
+    }
+  });
+</script>
+</body>
+</html>
