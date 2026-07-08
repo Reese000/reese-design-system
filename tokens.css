@@ -96,10 +96,16 @@
   --text-3xl:   2rem;       /* 32px */
   --text-4xl:   2.75rem;    /* 44px */
 
+  /* ── FONT WEIGHTS ──────────────────────────────────────── */
+  --w-normal: 400;   /* Reading, body text */
+  --w-medium: 500;   /* UI labels, navigation */
+  --w-bold: 700;     /* Headings, emphasis */
+
   /* ── SPACING (4px grid) ────────────────────────────────── */
+  --sp-0: 0px;
   --sp-1: 4px;   --sp-2: 8px;   --sp-3: 12px;  --sp-4: 16px;
-  --sp-5: 20px;  --sp-6: 24px;  --sp-8: 32px;  --sp-10: 40px;
-  --sp-12: 48px; --sp-16: 64px;
+  --sp-5: 24px;  --sp-6: 32px;  --sp-8: 48px;  --sp-10: 64px;
+  --sp-12: 80px; --sp-16: 96px;
 
   /* ── RADII ──────────────────────────────────────────────── */
   --r-xs: 2px;
@@ -340,6 +346,16 @@ body {
 .num:hover .num-conv{display:block;animation:fadeSlideIn 80ms var(--ease-out)}
 
 /* ═══════════════════════════════════════════════════════════════
+   UNIVERSAL INTERACTIVE STATES
+   ═══════════════════════════════════════════════════════════════ */
+.tree-item:hover,.tab:hover,.alert:hover,.cmd-item:hover,.breadcrumb-item:hover,.radio-option:hover,.mode-btn:hover{transition:background 120ms var(--ease-out),color 120ms var(--ease-out)}
+.tree-item:active,.tab:active,.alert:active{transform:scale(0.99)}
+.toggle:hover{box-shadow:0 0 0 2px var(--code-action-dim)}
+.input:hover,.select:hover{border-color:var(--border-strong)}
+.alert.closeable:hover{border-color:var(--border-strong)}
+.alert-close:hover{opacity:1;transform:scale(1.1)}
+
+/* ═══════════════════════════════════════════════════════════════
    INLINE ALERTS (v1.3 — contextual feedback)
    ═══════════════════════════════════════════════════════════════ */
 .alert.inline{margin:4px 0;padding:5px 8px;font-size:10px;border-radius:var(--r-sm)}
@@ -376,6 +392,11 @@ body {
   a{color:#000;text-decoration:underline}
   .icon{stroke:#000}
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL TRANSITIONS
+   ═══════════════════════════════════════════════════════════════ */
+button,a,.toggle,.input,.select,.tab,.tree-item,.alert,.mode-btn,.breadcrumb-item,.radio-option,.stepper-btn,.cmd-item{transition:background var(--duration-fast) var(--ease-out),color var(--duration-fast) var(--ease-out),border-color var(--duration-fast) var(--ease-out),box-shadow var(--duration-fast) var(--ease-out)}
 
 /* ═══════════════════════════════════════════════════════════════
    BREADCRUMB
@@ -514,3 +535,19 @@ html.light .breadcrumb-item.active{color:#1a1c20}
 html.light .confirm-icon.danger{background:rgba(200,40,40,0.08)}
 html.light .confirm-icon.warning{background:rgba(200,120,0,0.08)}
 html.light .confirm-icon.info{background:rgba(0,100,200,0.06)}
+
+/* ── Light mode semantic color contrast fixes ──────────────── */
+html.light .pill.green{color:#2d8a4e}
+html.light .pill.blue{color:#3355aa}
+html.light .pill.magenta{color:#aa3377}
+html.light .pill.amber{color:#996600}
+html.light .pill.red{color:#aa3333}
+html.light .pill.muted{color:#6b7088}
+html.light .alert.success{color:#2d7a44}
+html.light .alert.info{color:#0066aa}
+html.light .alert.warning{color:#885500}
+html.light .alert.error{color:#aa2222}
+html.light .alert.ai{color:#993377}
+html.light .status-dot.on{box-shadow:0 0 4px rgba(45,138,78,0.4)}
+html.light .status-dot.warning{box-shadow:0 0 4px rgba(153,102,0,0.4)}
+html.light .status-dot.error{box-shadow:0 0 4px rgba(170,34,34,0.4)}
