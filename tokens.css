@@ -169,6 +169,12 @@ body {
   outline: 2px solid var(--code-action);
   outline-offset: 2px;
 }
+/* Focus within for grouped elements */
+.tree-item:focus-visible,.tab:focus-visible,.alert:focus-visible,.cmd-item:focus-visible,.radio-option:focus-visible,.breadcrumb-item:focus-visible{outline-offset:-2px}
+/* Focus ring for inputs */
+.input:focus-visible,.select:focus-visible,.stepper-value:focus-visible{outline:none;border-color:var(--code-action);box-shadow:0 0 0 1px var(--code-action)}
+/* Focus for toggles */
+.toggle:focus-visible{outline-offset:3px}
 
 /* ── PREFERS REDUCED MOTION ─────────────────────────────────── */
 @media(prefers-reduced-motion:reduce){
@@ -222,7 +228,7 @@ body {
 /* ═══════════════════════════════════════════════════════════════
    INPUTS / SELECTS / SLIDERS
    ═══════════════════════════════════════════════════════════════ */
-.input{height:var(--h-lg);padding:0 var(--sp-3);background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-sm);color:var(--ink-primary);font-family:var(--font-ui);font-size:var(--text-base);outline:none;transition:border-color 80ms}
+.input,.select,.stepper-value{width:100%;height:var(--h-lg);padding:0 var(--sp-3);background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-sm);color:var(--ink-primary);font-family:var(--font-ui);font-size:var(--text-base);outline:none;transition:border-color 80ms;font-feature-settings:'cv01','cv09','ss03'}
 .input:focus{border-color:var(--code-action);box-shadow:0 0 0 1px var(--code-action)}
 .input::placeholder{color:var(--ink-muted)}
 .input-sm{height:var(--h-sm);padding:0 var(--sp-2);font-size:var(--text-sm)}
