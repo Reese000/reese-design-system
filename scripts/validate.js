@@ -84,7 +84,12 @@ check('All keyframes defined', missingKf.length === 0, `Missing: ${missingKf.joi
 
 // 6. Check component classes exist
 const components = ['.btn', '.input', '.select', '.slider', '.toggle', '.alert', '.tab', '.spinner', '.skeleton', '.modal', '.tip', '.num'];
-let missingComp = components.filter(c => !tokens.includes(c + '{') && !tokens.includes(c + ' {'));
+let missingComp = components.filter(c => {
+  // Check for standalone or grouped selector
+  const standalone = tokens.includes(c + '{') || tokens.includes(c + ' {');
+  const grouped = tokens.includes(c + ',') && tokens.includes('{');
+  return !standalone && !grouped;
+});
 check('All component classes defined', missingComp.length === 0, `Missing: ${missingComp.join(', ')}`);
 
 console.log(`\n  ${errors === 0 ? '✅ PASS' : '❌ FAIL'} — ${errors} errors, ${warnings} warnings`);
