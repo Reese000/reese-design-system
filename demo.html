@@ -154,17 +154,11 @@
     .btn-surface:hover{background:var(--canvas-surface);color:var(--ink-primary)}
     .kbd{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 3px;font-family:var(--font-mono);font-size:9px;font-weight:500;color:var(--ink-muted);background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:2px}
 
-    /* ── STATUS PILLS ──────────────────────────────────────── */
-    .pill{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:var(--r-sm);font-size:10px;font-weight:600}
-    .pill.green{background:var(--code-success-dim);color:var(--code-success)}
-    .pill.magenta{background:var(--code-ai-dim);color:var(--code-ai)}
-    .pill.muted{background:var(--canvas-raised);color:var(--ink-muted)}
-    .pill.blue{background:var(--code-action-dim);color:var(--code-action)}
-
     /* ── TOGGLE (square) ───────────────────────────────────── */
     .toggle{width:32px;height:18px;background:var(--canvas-elevated);border:1px solid var(--border-default);border-radius:var(--r-xs);cursor:pointer;transition:all 120ms;position:relative;flex-shrink:0}
     .toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;background:var(--ink-muted);border-radius:var(--r-xs);transition:all 120ms var(--ease-out)}
     background:var(--code-action-dim);color:var(--code-action)
+    .toggle.on{background:var(--code-action-dim);border-color:var(--code-action)}
     .toggle.on::after{left:16px;background:var(--code-action)}
 
     /* ── TOOLTIP SYSTEM ────────────────────────────────────── */
