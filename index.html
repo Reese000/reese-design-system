@@ -8,100 +8,13 @@
   <link rel="stylesheet" href="tokens.css">
   <style>
     /* ═══════════════════════════════════════════════════════════════
-       REESE DESIGN SYSTEM v1.0
+       REESE DESIGN SYSTEM v1.2.0
        Surface: Operate + Command/Inspect hybrid
        Philosophy: Every feature visible. Zero hidden menus.
        Maximize action space. Color-code everything.
        ═══════════════════════════════════════════════════════════════ */
 
-    :root {
-      /* ── CANVAS ─────────────────────────────────────────────── */
-      --canvas-void:     #0e1013;
-      --canvas-base:     #14161b;
-      --canvas-surface:  #1b1d24;
-      --canvas-raised:   #23252d;
-      --canvas-elevated: #2c2e38;
-      --canvas-bright:   #363840;
 
-      /* ── TEXT HIERARCHY ──────────────────────────────────────── */
-      --ink-primary:     #e8eaef;
-      --ink-secondary:   #a8adb8;
-      --ink-tertiary:    #7c8294;
-      /* --ink-muted / --ink-ghost inherited from tokens.css (v1.2 contrast) */
-
-      /* ── SEMANTIC COLOR CODING (13 categories) ──────────────── */
-      --code-action:     #6c8aff;   /* Primary actions — blue */
-      --code-action-dim: #6c8aff22;
-      --code-action-mid: #6c8aff55;
-      --code-danger:     #ff6b6b;   /* Destructive / error — red */
-      --code-danger-dim: #ff6b6b22;
-      --code-danger-mid: #ff6b6b55;
-      --code-success:    #4ecb71;   /* Success / complete — green */
-      --code-success-dim:#4ecb7122;
-      --code-success-mid:#4ecb7155;
-      --code-warning:    #ffba42;   /* Warning / caution — amber */
-      --code-warning-dim:#ffba4222;
-      --code-warning-mid:#ffba4255;
-      --code-info:       #7ce0ff;   /* Info / reference — cyan */
-      --code-info-dim:   #7ce0ff22;
-      --code-info-mid:   #7ce0ff55;
-      --code-accent:     #c084fc;   /* Accent / brand — purple */
-      --code-accent-dim: #c084fc22;
-      --code-accent-mid: #c084fc55;
-      --code-tool:       #ff9a5c;   /* Tool/operation — orange */
-      --code-tool-dim:   #ff9a5c22;
-      --code-tool-mid:   #ff9a5c55;
-      --code-material:   #5ce1e6;   /* Material/supply — teal */
-      --code-material-dim:#5ce1e622;
-      --code-data:       #ff6baa;   /* Data/metrics — pink; -dim inherited from tokens.css */
-      --code-view:       #a3e635;   /* View/viewport — lime */
-      --code-view-dim:   #a3e63522;
-      --code-config:     #fbbf24;   /* Configuration — gold */
-      --code-config-dim: #fbbf2422;
-      --code-process:    #818cf8;   /* Process/workflow — indigo */
-      --code-process-dim:#818cf822;
-      --code-ai:         #f472b6;   /* AI/ML — magenta */
-      --code-ai-dim:     #f472b622;
-
-      /* ── BORDERS & DIVIDERS ─────────────────────────────────── */
-      --border-subtle:   rgba(255,255,255,0.06);
-      --border-default:  rgba(255,255,255,0.09);
-      --border-strong:   rgba(255,255,255,0.14);
-      --border-vivid:    rgba(255,255,255,0.20);
-
-      /* ── SHADOWS (dark-mode native) ─────────────────────────── */
-      --shadow-ring:     0 0 0 1px var(--border-default);
-      --shadow-lift:     0 0 0 1px var(--border-default), 0 2px 4px rgba(0,0,0,0.3);
-      --shadow-float:    0 0 0 1px var(--border-default), 0 4px 12px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
-      --shadow-dialog:   0 0 0 1px var(--border-strong), 0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
-      --shadow-inset:    inset 0 1px 2px rgba(0,0,0,0.3);
-
-      /* ── TYPOGRAPHY ─────────────────────────────────────────── */
-      --font-ui:         'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-      --font-mono:       'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-
-      --text-xs:    0.6875rem;  /* 11px */
-      --text-sm:    0.75rem;    /* 12px */
-      --text-base:  0.8125rem;  /* 13px */
-      --text-md:    0.875rem;   /* 14px */
-      --text-lg:    1rem;       /* 16px */
-      --text-xl:    1.25rem;    /* 20px */
-      --text-2xl:   1.5rem;     /* 24px */
-      --text-3xl:   2rem;       /* 32px */
-      --text-4xl:   2.75rem;    /* 44px */
-
-      /* ── SPACING (4px base grid; --sp-5+ inherited from tokens.css) ── */
-      --sp-1: 4px;   --sp-2: 8px;   --sp-3: 12px;  --sp-4: 16px;
-
-      /* ── RADII (sm/md/lg/xl inherited from tokens.css) ──────── */
-      --r-full: 9999px;
-
-      /* ── MOTION ─────────────────────────────────────────────── */
-      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-      --duration-fast: 120ms;
-      --duration-normal: 200ms;
-      --duration-slow: 350ms;
-    }
 
     /* ═══════════════════════════════════════════════════════════════
        RESET & BASE
@@ -2309,7 +2222,7 @@
   <!-- FOOTER -->
   <footer style="padding: var(--sp-8) 0; border-top: 1px solid var(--border-subtle); text-align: center;">
     <div style="font-size: var(--text-sm); color: var(--ink-muted);">
-      Reese Design System v1.0 — Utilitarian Interface Template
+      Reese Design System v1.2.0 — Utilitarian Interface Template
     </div>
     <div style="font-size: var(--text-xs); color: var(--ink-ghost); margin-top: var(--sp-2);">
       Built for: AI CAM 3.0 • Deepnest • Web DFM • Evolution Engine • reesecnc.com
