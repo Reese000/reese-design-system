@@ -15,50 +15,9 @@
 ```css
 :root {
   /* Canvas */
-  --canvas-void:     #08090b;
-  --canvas-base:     #0d0e11;
-  --canvas-surface:  #13141a;
-  --canvas-raised:   #1a1b22;
-  --canvas-elevated: #22232c;
-  --canvas-bright:   #2a2c36;
-
-  /* Text */
-  --ink-primary:     #eef0f4;
-  --ink-secondary:   #b0b4c0;
-  --ink-tertiary:    #787c8a;
-  --ink-muted:       #52556a;
-  --ink-ghost:       #3a3d50;
-
-  /* Semantic Colors */
-  --code-action:     #6c8aff;   /* Primary actions */
-  --code-danger:     #ff6b6b;   /* Destructive */
-  --code-success:    #4ecb71;   /* Complete/safe */
-  --code-warning:    #ffba42;   /* Caution */
-  --code-info:       #7ce0ff;   /* Reference */
-  --code-accent:     #c084fc;   /* Configuration */
-  --code-tool:       #ff9a5c;   /* Tools/operations */
-  --code-material:   #5ce1e6;   /* Materials/supply */
-  --code-data:       #ff6baa;   /* Metrics/analytics */
-  --code-view:       #a3e635;   /* Viewport/display */
-  --code-config:     #fbbf24;   /* Parameters/tuning */
-  --code-ai:         #f472b6;   /* AI/ML */
-
-  /* Borders */
-  --border-subtle:   rgba(255,255,255,0.04);
-  --border-default:  rgba(255,255,255,0.07);
-  --border-strong:   rgba(255,255,255,0.12);
-  --border-vivid:    rgba(255,255,255,0.20);
-
-  /* Typography */
-  --font-ui:         'Inter', system-ui, sans-serif;
-  --font-mono:       'JetBrains Mono', ui-monospace, monospace;
-
-  /* Radii */
-  --r-sm: 4px;
-  --r-md: 6px;
-  --r-lg: 8px;
-  --r-xl: 12px;
-  --r-full: 9999px;
+/* tokens.css is the single source of truth for all tokens. */
+/* Copy the :root block from there into your project. */
+/* See: https://github.com/Reese000/reese-design-system/tokens.css}
 }
 ```
 
@@ -176,7 +135,7 @@ Apply dense tier: wrap container in `.dense` scope or use `--h-sm` tokens direct
   <div class="action-card" data-color="blue">
     <div class="action-card-icon">⚡</div>
     <div class="action-card-label">Generate</div>
-    <div class="action-card-shortcut"><span class="kbd">⌘G</span></div>
+    <div class="action-card-shortcut"><span class="kbd">Ctrl+G</span></div>
   </div>
 </div>
 ```
@@ -185,7 +144,7 @@ Apply dense tier: wrap container in `.dense` scope or use `--h-sm` tokens direct
 ```html
 <div class="cmd-palette">
   <div class="cmd-input-wrap">
-    <span class="cmd-input-icon">⌘</span>
+    <span class="cmd-input-icon">Ctrl</span>
     <input class="cmd-input" placeholder="Type a command...">
   </div>
   <div class="cmd-results">
@@ -195,7 +154,7 @@ Apply dense tier: wrap container in `.dense` scope or use `--h-sm` tokens direct
         <div class="cmd-item-name">Generate Toolpath</div>
         <div class="cmd-item-desc">Create cutting path</div>
       </div>
-      <div class="cmd-item-shortcut"><span class="kbd">⌘G</span></div>
+      <div class="cmd-item-shortcut"><span class="kbd">Ctrl+G</span></div>
     </div>
   </div>
 </div>
@@ -302,7 +261,7 @@ When applying this design system to a new project:
 - [ ] Use semantic color categories consistently
 - [ ] Make primary action buttons XL (52px)
 - [ ] Show keyboard shortcuts on all buttons
-- [ ] Implement Cmd+K command palette
+- [ ] Implement Ctrl+K command palette
 - [ ] Use monospace for all numeric data
 - [ ] Apply status dots + pills for state
 - [ ] Use the 6-level surface luminance scale
@@ -367,7 +326,7 @@ Updates all `.num` elements, viewport stats, and inspector values.
 |----------|--------|
 | `Ctrl+K` | Command Palette |
 | `Ctrl+G` | Generate Toolpath |
-| `Ctrl+R` | Run Simulation |
+| `Ctrl+⇧R` | Run Simulation |
 | `Ctrl+P` | Post Process |
 | `Ctrl+U` | Toggle Units (mm/in) |
 | `Ctrl+L` | Toggle Dark/Light |
@@ -388,4 +347,4 @@ Design-System/
 
 ---
 
-*Reese Design System v1.0 — Built for: AI CAM 3.0 • Deepnest • Web DFM • Evolution Engine • reesecnc.com*
+*Reese Design System v1.2.0 — Built for: AI CAM 3.0 • Deepnest • Web DFM • Evolution Engine • reesecnc.com*
