@@ -13,12 +13,8 @@
 ### CSS Variables (copy into any project)
 
 ```css
-:root {
-  /* Canvas */
-/* tokens.css is the single source of truth for all tokens. */
-/* Copy the :root block from there into your project. */
-/* See: https://github.com/Reese000/reese-design-system/tokens.css}
-}
+/* Tokens defined in tokens.css — copy the :root block from there */
+/* https://github.com/Reese000/reese-design-system/blob/main/tokens.css */
 ```
 
 ---
