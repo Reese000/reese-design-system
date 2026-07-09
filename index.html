@@ -27,8 +27,7 @@
       --ink-primary:     #e8eaef;
       --ink-secondary:   #a8adb8;
       --ink-tertiary:    #7c8294;
-      --ink-muted:       #5a5f72;
-      --ink-ghost:       #42465a;
+      /* --ink-muted / --ink-ghost inherited from tokens.css (v1.2 contrast) */
 
       /* ── SEMANTIC COLOR CODING (13 categories) ──────────────── */
       --code-action:     #6c8aff;   /* Primary actions — blue */
@@ -54,8 +53,7 @@
       --code-tool-mid:   #ff9a5c55;
       --code-material:   #5ce1e6;   /* Material/supply — teal */
       --code-material-dim:#5ce1e622;
-      --code-data:       #ff6baa;   /* Data/metrics — pink */
-      --code-data-dim:   #ff6baaa22;
+      --code-data:       #ff6baa;   /* Data/metrics — pink; -dim inherited from tokens.css */
       --code-view:       #a3e635;   /* View/viewport — lime */
       --code-view-dim:   #a3e63522;
       --code-config:     #fbbf24;   /* Configuration — gold */
@@ -92,16 +90,10 @@
       --text-3xl:   2rem;       /* 32px */
       --text-4xl:   2.75rem;    /* 44px */
 
-      /* ── SPACING (4px base grid) ────────────────────────────── */
+      /* ── SPACING (4px base grid; --sp-5+ inherited from tokens.css) ── */
       --sp-1: 4px;   --sp-2: 8px;   --sp-3: 12px;  --sp-4: 16px;
-      --sp-5: 20px;  --sp-6: 24px;  --sp-8: 32px;  --sp-10: 40px;
-      --sp-12: 48px; --sp-16: 64px;
 
-      /* ── RADII ──────────────────────────────────────────────── */
-      --r-sm: 4px;
-      --r-md: 6px;
-      --r-lg: 8px;
-      --r-xl: 12px;
+      /* ── RADII (sm/md/lg/xl inherited from tokens.css) ──────── */
       --r-full: 9999px;
 
       /* ── MOTION ─────────────────────────────────────────────── */
@@ -1475,7 +1467,7 @@
           <button class="btn btn-sm btn-ghost">
             Copy Path
           </button>
-          <button class="btn btn-icon btn-surface" title="Settings">⚙</button>
+          <button class="btn btn-icon btn-surface" title="Settings" aria-label="Settings">⚙</button>
         </div>
       </div>
     </div>
@@ -1591,7 +1583,7 @@
           <div class="cmd-palette">
             <div class="cmd-input-wrap">
               <span class="cmd-input-icon">⌘</span>
-              <input class="cmd-input" placeholder="Type a command..." readonly>
+              <input class="cmd-input" placeholder="Type a command..." aria-label="Command palette search" readonly>
             </div>
             <div class="cmd-results">
               <div class="cmd-item selected">
@@ -1689,19 +1681,19 @@
           <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <span style="font-size: var(--text-sm); color: var(--ink-secondary);">Show Toolpaths</span>
-              <div class="toggle on"></div>
+              <div class="toggle on" role="switch" aria-checked="true" aria-label="Show Toolpaths" tabindex="0"></div>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <span style="font-size: var(--text-sm); color: var(--ink-secondary);">Wireframe Mode</span>
-              <div class="toggle"></div>
+              <div class="toggle" role="switch" aria-checked="false" aria-label="Wireframe Mode" tabindex="0"></div>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <span style="font-size: var(--text-sm); color: var(--ink-secondary);">AI Suggestions</span>
-              <div class="toggle on"></div>
+              <div class="toggle on" role="switch" aria-checked="true" aria-label="AI Suggestions" tabindex="0"></div>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <span style="font-size: var(--text-sm); color: var(--ink-secondary);">Collision Detection</span>
-              <div class="toggle on"></div>
+              <div class="toggle on" role="switch" aria-checked="true" aria-label="Collision Detection" tabindex="0"></div>
             </div>
           </div>
         </div>
@@ -2350,7 +2342,11 @@ function copySnippet(btn) {
 
   // Toggle switches
   document.querySelectorAll('.toggle').forEach(t => {
-    t.addEventListener('click', () => t.classList.toggle('on'));
+    const flip = () => t.setAttribute('aria-checked', t.classList.toggle('on'));
+    t.addEventListener('click', flip);
+    t.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+    });
   });
 
   // Action card hover feedback
@@ -2396,10 +2392,20 @@ function copySnippet(btn) {
     const items = SECTIONS.filter(s => s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q));
     const el = document.getElementById('cmdResults');
     cmdIdx = 0;
-    el.innerHTML = items.map((s, i) => '<div class="cmd-item" style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:4px;cursor:pointer;transition:background 80ms' + (i===0?';background:var(--canvas-elevated)':'') + '" onclick="document.getElementById('' + s.id + '').scrollIntoView({behavior:'smooth'});document.getElementById('cmdPalette').style.display='none'">' +
+    el.innerHTML = items.map((s, i) => '<div class="cmd-item" data-idx="' + i + '" style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:4px;cursor:pointer;transition:background 80ms' + (i===0?';background:var(--canvas-elevated)':'') + '">' +
       '<div style="width:28px;height:28px;border-radius:4px;background:var(--code-action-dim);color:var(--code-action);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">§</div>' +
       '<div><div style="font-size:13px;font-weight:500;color:var(--ink-primary)">' + s.name + '</div><div style="font-size:11px;color:var(--ink-muted)">' + s.desc + '</div></div>' +
       '<span class="kbd" style="margin-left:auto">Enter</span></div>').join('');
+    // Attach click handlers via dataset (avoids quote-nesting bugs)
+    el.querySelectorAll('.cmd-item').forEach((item, i) => {
+      item.addEventListener('click', () => {
+        const section = items[parseInt(item.dataset.idx)];
+        if (section) {
+          document.getElementById(section.id).scrollIntoView({behavior:'smooth'});
+          document.getElementById('cmdPalette').style.display = 'none';
+        }
+      });
+    });
     el.querySelectorAll('.cmd-item').forEach((item, i) => {
       item.onmouseenter = () => { el.querySelectorAll('.cmd-item').forEach(x => x.style.background=''); item.style.background='var(--canvas-elevated)'; cmdIdx=i; };
     });

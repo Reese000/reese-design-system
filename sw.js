@@ -32,24 +32,30 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch — cache-first, fallback to network
+// Fetch — network-first for HTML (avoid sticky broken builds), cache-first for assets
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // Cache successful responses
-        if (response.ok) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
+  if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+    // Network-first for HTML — always get latest
+    event.respondWith(
+      fetch(event.request).then(response => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         return response;
-      }).catch(() => {
-        // Offline fallback
-        if (event.request.mode === 'navigate') {
-          return caches.match('./demo.html');
-        }
-      });
-    })
-  );
+      }).catch(() => caches.match(event.request).then(cached => cached || caches.match('./demo.html')))
+    );
+  } else {
+    // Cache-first for CSS/JS/SVG assets
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        }).catch(() => {});
+      })
+    );
+  }
 });

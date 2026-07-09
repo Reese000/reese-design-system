@@ -29,23 +29,28 @@ jobs:
             echo "  ✓ $f structure OK"
           done
 
-      - name: Check token consistency
+      # Token consistency (drift, undefined var() refs, invalid hex, and the
+      # hardcoded-hex ratchet vs scripts/hex-baseline.json) is enforced by
+      # `node scripts/validate.js` above — it exits non-zero on any violation.
+
+      - name: Check JavaScript syntax
         run: |
-          # Verify tokens.css is canonical — no hardcoded colors in HTML
+          # Extract script blocks and check syntax
           for f in demo.html index.html; do
-            echo "Checking $f for hardcoded colors..."
-            # Allow known exceptions (viewport bg, light mode overrides)
-            if grep -n 'background:#[0-9a-f]\{6\}' "$f" | grep -v 'canvas-\|--code-' | head -5; then
-              echo "  ⚠ Found hardcoded hex colors (may need token)"
-            fi
-            echo "  ✓ $f token check done"
+            echo "Checking $f JS..."
+            # Extract content between <script> and </script>
+            sed -n '/<script>/,/<script>/p; /<script>/,/<\/script>/p' "$f" 2>/dev/null | node --check - 2>&1 || echo "  ⚠ JS syntax issue in $f"
           done
+          echo "  ✓ JS syntax check done"
 
       - name: Check accessibility basics
         run: |
+          # Focus styles are global: they must exist in tokens.css, and each
+          # page must link tokens.css (link check is in the structure step).
+          grep -q ':focus-visible' tokens.css || { echo "FAIL: tokens.css lost :focus-visible styles"; exit 1; }
+          grep -q 'prefers-reduced-motion' tokens.css || { echo "FAIL: tokens.css lost reduced-motion support"; exit 1; }
           for f in demo.html index.html; do
             echo "Checking $f accessibility..."
-            grep -q ':focus-visible' "$f" || grep -q 'tokens.css' "$f" || { echo "FAIL: $f no focus styles"; exit 1; }
-            grep -q 'aria-label\|aria-checked\|role=' "$f" || echo "  ⚠ $f missing ARIA attributes"
+            grep -q 'aria-label\|aria-checked\|role=' "$f" || { echo "FAIL: $f has no ARIA attributes"; exit 1; }
             echo "  ✓ $f a11y check done"
           done

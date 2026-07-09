@@ -454,10 +454,10 @@
         </div>
         <div class="insp-section">
           <div class="insp-label">Display</div>
-          <div class="insp-field"><span class="insp-field-k">Toolpaths</span><div class="toggle on" tabindex="0" role="switch" aria-checked="true" onclick="this.classList.toggle('on')" style="cursor:pointer"></div></div>
-          <div class="insp-field"><span class="insp-field-k">Wireframe</span><div class="toggle" tabindex="0" role="switch" aria-checked="false" onclick="this.classList.toggle('on')" style="cursor:pointer"></div></div>
-          <div class="insp-field"><span class="insp-field-k">Stock</span><div class="toggle on" tabindex="0" role="switch" aria-checked="true" onclick="this.classList.toggle('on')" style="cursor:pointer"></div></div>
-          <div class="insp-field"><span class="insp-field-k">Collision</span><div class="toggle on" tabindex="0" role="switch" aria-checked="true" onclick="this.classList.toggle('on')" style="cursor:pointer"></div></div>
+          <div class="insp-field"><span class="insp-field-k">Toolpaths</span><div class="toggle on" tabindex="0" role="switch" aria-checked="true" aria-label="Toolpaths" style="cursor:pointer"></div></div>
+          <div class="insp-field"><span class="insp-field-k">Wireframe</span><div class="toggle" tabindex="0" role="switch" aria-checked="false" aria-label="Wireframe" style="cursor:pointer"></div></div>
+          <div class="insp-field"><span class="insp-field-k">Stock</span><div class="toggle on" tabindex="0" role="switch" aria-checked="true" aria-label="Stock" style="cursor:pointer"></div></div>
+          <div class="insp-field"><span class="insp-field-k">Collision</span><div class="toggle on" tabindex="0" role="switch" aria-checked="true" aria-label="Collision" style="cursor:pointer"></div></div>
         </div>
       </div>
 
@@ -538,11 +538,6 @@ const TIPS = {
     use:'<strong>Use case:</strong> Create profile boundaries for facing operations or define custom stock outlines.',
     video:'Drawing Lines' },
   arc:        { name:'Arc Tool', icon:'◠', color:'var(--code-view)', shortcut:'A',
-    desc:'Draw arcs using 3-point method. Click start, mid, end. Or center-radius mode with Ctrl held.',
-    use:'<strong>Use case:</strong> Define fillet radii on pockets or create rounded corners for profiling.',
-    video:'Drawing Arcs' },
-  circle:     { name:'Circle Tool', icon:'○', color:'var(--code-view)', shortcut:'C',
-    desc:'Draw circles by center+radius or diameter. Type exact values in the command bar.',
     use:'<strong>Use case:</strong> Define hole locations for drill cycles or create circular pockets.',
     video:'Drawing Circles' },
   spline:     { name:'Spline Tool', icon:'∿', color:'var(--code-view)', shortcut:'S',
@@ -646,7 +641,7 @@ document.querySelectorAll('.tip').forEach(el => {
 // ═══════════════════════════════════════════════════════════════
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openCmd(); }
-  if (e.key === 'Escape') { closeCmd(); dismissToast(); closeActions(); }
+  if (e.key === 'Escape') { closeCmd(); dismissToast(); /* closeActions removed */ }
   if ((e.ctrlKey || e.metaKey) && e.key === 'g') { e.preventDefault(); showToast(); }
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') { e.preventDefault(); /* simulate */ }
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') { e.preventDefault(); /* post process */ }
@@ -669,11 +664,12 @@ document.querySelectorAll('.tool-btn').forEach(btn => {
   });
 });
 
-// Toggle aria-checked on toggle click
+// Toggle aria-checked on click or keyboard (Enter/Space)
 document.querySelectorAll('.toggle').forEach(t => {
-  t.addEventListener('click', () => {
-    const on = t.classList.toggle('on');
-    t.setAttribute('aria-checked', on);
+  const flip = () => t.setAttribute('aria-checked', t.classList.toggle('on'));
+  t.addEventListener('click', flip);
+  t.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
   });
 });
 
@@ -1026,6 +1022,7 @@ document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && e.shiftKey) { e.preventDefault(); redo(); }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
   if (e.key === 'h' && altHeld) { e.preventDefault(); toggleHelp(); }
+  if (e.key === '?' && !e.ctrlKey && !e.altKey && !e.metaKey) { e.preventDefault(); toggleHelp(); }
   if (e.key === 't' && altHeld) { e.preventDefault(); /* toggle toolpaths */ }
   if (e.key === 'w' && altHeld) { e.preventDefault(); /* toggle wireframe */ }
 });
@@ -1039,10 +1036,13 @@ function toggleHelp() {
   if (helpOverlay) { helpOverlay.remove(); helpOverlay = null; return; }
   helpOverlay = document.createElement('div');
   helpOverlay.style.cssText = 'position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)';
-  helpOverlay.innerHTML = '<div style="background:var(--canvas-raised);border:1px solid var(--border-strong);border-radius:8px;width:600px;max-height:80vh;overflow:auto;padding:24px;box-shadow:0 16px 64px rgba(0,0,0,0.5)">' +
+  const helpDiv = document.createElement('div');
+  helpDiv.style.cssText = 'background:var(--canvas-raised);border:1px solid var(--border-strong);border-radius:8px;width:600px;max-height:80vh;overflow:auto;padding:24px;box-shadow:0 16px 64px rgba(0,0,0,0.5)';
+  const closeHelp = () => { helpOverlay.remove(); helpOverlay = null; };
+  helpDiv.innerHTML =
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">' +
     '<h2 style="font-size:18px;font-weight:700">Keyboard Shortcuts</h2>' +
-    '<button onclick="this.closest('.fixed').parentElement.remove()" style="background:none;border:none;color:var(--ink-muted);cursor:pointer;font-size:18px">✕</button></div>' +
+    '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;font-size:18px" id="helpCloseBtn">✕</button></div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
     Object.entries(SHORTCUTS).map(([mod, shortcuts]) => `
       <div>
@@ -1051,9 +1051,10 @@ function toggleHelp() {
       </div>
     `).join('') +
     '</div>' +
-    '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border-subtle);font-size:11px;color:var(--ink-muted);text-align:center">Hold Ctrl or Alt to see shortcuts. Press ? or Alt+H for this help.</div>' +
-    '</div>';
-  helpOverlay.addEventListener('click', e => { if (e.target === helpOverlay) { helpOverlay.remove(); helpOverlay = null; } });
+    '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border-subtle);font-size:11px;color:var(--ink-muted);text-align:center">Hold Ctrl or Alt to see shortcuts. Press ? or Alt+H for this help.</div>';
+  helpOverlay.appendChild(helpDiv);
+  helpDiv.querySelector('#helpCloseBtn').onclick = closeHelp;
+  helpOverlay.addEventListener('click', e => { if (e.target === helpOverlay) closeHelp(); });
   document.body.appendChild(helpOverlay);
 }
 
