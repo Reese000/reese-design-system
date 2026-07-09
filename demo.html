@@ -18,8 +18,8 @@
       .tree-panel.mobile-open{left:40px;border-right:1px solid var(--border-strong)}
       .inspector.mobile-open{right:0;border-left:1px solid var(--border-strong)}
       .resize-handle{display:none}
-      .viewport-stats{font-size:9px;min-width:130px;padding:4px 6px}
-      .vs-row{font-size:9px}
+      .viewport-stats{font-size:10px;min-width:130px;padding:4px 6px}
+      .vs-row{font-size:10px}
       .tip-content{width:220px}
       .quick-actions .btn span.kbd{display:none}
       .menubar{overflow-x:auto;flex-wrap:nowrap}
@@ -945,12 +945,13 @@ function hideShortcuts() {
 }
 
 // Modifier key detection
-let ctrlHeld = false, altHeld = false;
+let ctrlHeld = false, altHeld = false, overlayTimer = null;
 document.addEventListener('keydown', e => {
-  if (e.key === 'Control' || e.key === 'Meta') { ctrlHeld = true; if (!altHeld) showShortcuts('Ctrl'); }
-  if (e.key === 'Alt') { e.preventDefault(); altHeld = true; showShortcuts('Alt'); }
+  if (e.key === 'Control' || e.key === 'Meta') { ctrlHeld = true; if (!altHeld) overlayTimer = setTimeout(() => showShortcuts('Ctrl'), 400); }
+  if (e.key === 'Alt') { e.preventDefault(); altHeld = true; overlayTimer = setTimeout(() => showShortcuts('Alt'), 400); }
 });
 document.addEventListener('keyup', e => {
+  if (overlayTimer) { clearTimeout(overlayTimer); overlayTimer = null; }
   if (e.key === 'Control' || e.key === 'Meta') { ctrlHeld = false; if (!altHeld) hideShortcuts(); }
   if (e.key === 'Alt') { altHeld = false; if (!ctrlHeld) hideShortcuts(); }
 });
@@ -996,16 +997,17 @@ toggleTheme = function() {
   origToggleFn();
 };
 
-// Wrap unit toggle
+// Wrap unit toggle — real undo/redo
 const origUnitFn = toggleUnit;
 toggleUnit = function() {
-  const wasMM = isMM;
-  pushUndo({
-    label: 'Toggle units',
-    undo: () => { isMM = wasMM; /* restore unit state */ },
-    redo: () => { isMM = !wasMM; /* re-apply unit state */ }
-  });
-  origUnitFn();
+const wasMM = isMM;
+const wasDisplay = document.querySelectorAll('.num').length;
+origUnitFn();
+pushUndo({
+  label: 'Toggle units',
+  undo: () => { isMM = wasMM; toggleUnit(); origUnitFn(); },
+  redo: () => { isMM = !wasMM; toggleUnit(); origUnitFn(); }
+});
 };
 
 function showToastMessage(msg) {

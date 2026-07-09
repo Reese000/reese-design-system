@@ -1150,12 +1150,32 @@
   </style>
 </head>
 <body>
+<!-- SVG Icon Sprite -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="icon-cursor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></symbol>
+  <symbol id="icon-generate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+  <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></symbol>
+  <symbol id="icon-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+  <symbol id="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></symbol>
+  <symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></symbol>
+  <symbol id="icon-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="icon-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></symbol>
+  <symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+  <symbol id="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+  <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></symbol>
+</svg>
+<a href="#principles" class="skip-link" style="position:absolute;top:-100px;left:8px;z-index:1000;background:var(--code-action);color:#fff;padding:8px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:600">Skip to content</a>
+<a href="#principles" class="skip-link" style="position:absolute;top:-100px;left:8px;z-index:1000;background:var(--code-action);color:#fff;padding:8px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:600" tabindex="0">Skip to content</a>
 
 <!-- ═══════════════════════════════════════════════════════════════
      NAVIGATION
      ═══════════════════════════════════════════════════════════════ -->
 <nav class="ds-nav">
-  <div class="ds-nav-brand"><span>◆</span> Reese Design System</div>
+  <div class="ds-nav-brand"><svg class="icon icon-sm" style="vertical-align:middle"><use href="#icon-generate"/></svg> Reese Design System</div>
   <div class="ds-nav-links">
     <a href="#principles" class="active">Principles</a>
     <a href="#colors">Colors</a>
@@ -1453,15 +1473,15 @@
       <div class="panel-body">
         <div style="display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;">
           <button class="btn btn-xl btn-primary">
-            <span>⚡</span> Generate Toolpath
+            <svg class="icon icon-sm"><use href="#icon-generate"/></svg> Generate Toolpath
             <span class="kbd" style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">⌘G</span>
           </button>
           <button class="btn btn-lg btn-ghost">
-            <span>📂</span> Load Project
+            <svg class="icon icon-sm"><use href="#icon-package"/></svg> Load Project
             <span class="kbd">⌘O</span>
           </button>
           <button class="btn btn-md btn-primary">
-            <span>💾</span> Save
+            <svg class="icon icon-sm"><use href="#icon-package"/></svg> Save
             <span class="kbd">⌘S</span>
           </button>
           <button class="btn btn-sm btn-ghost">
@@ -1497,12 +1517,12 @@
       <div class="panel-body">
         <div class="action-grid action-grid-4">
           <div class="action-card" data-color="blue">
-            <div class="action-card-icon">⚡</div>
+            <div class="action-card-icon"><svg class="icon"><use href="#icon-generate"/></svg></div>
             <div class="action-card-label">Generate</div>
             <div class="action-card-shortcut"><span class="kbd">⌘G</span></div>
           </div>
           <div class="action-card" data-color="green">
-            <div class="action-card-icon">▶</div>
+            <div class="action-card-icon"><svg class="icon"><use href="#icon-play"/></svg></div>
             <div class="action-card-label">Simulate</div>
             <div class="action-card-shortcut"><span class="kbd">⌘R</span></div>
           </div>

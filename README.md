@@ -1,4 +1,4 @@
-# Reese Design System v1.0
+# Reese Design System v1.2.0
 
 ## Utilitarian Interface Template
 
@@ -71,7 +71,7 @@
 - **LG buttons (44px)** for secondary actions (Load, Configure)
 - **MD buttons (36px)** for toolbar items
 - **SM buttons (28px)** for inline actions
-- Nothing smaller than 28px — ever
+- `--h-sm: 24px` as the dense minimum; `--h-md: 28px` as the standard minimum for primary UI
 - Every button shows its keyboard shortcut
 
 ### 2. Zero Hidden Menus
@@ -81,7 +81,7 @@
 - No hamburger menus on desktop
 
 ### 3. Semantic Color Coding
-13 distinct colors map every type of action and data:
+#### 13 distinct colors map every type of action and data.
 
 | Color | Hex | Category | Use |
 |-------|-----|----------|-----|
@@ -100,7 +100,7 @@
 | Indigo | `#818cf8` | Process | Process/workflow |
 
 ### 4. Keyboard-First Navigation
-- `Cmd+K` opens command palette in every application
+| `Ctrl+K` opens command palette in every application
 - Shortcuts displayed inline on every button
 - Focus rings on all interactive elements
 - Tab order follows visual hierarchy
@@ -309,7 +309,7 @@ When applying this design system to a new project:
 - [ ] Never use pure black or pure white
 - [ ] Keep all features visible on screen
 
-## New Features (v1.1)
+## New Features
 
 ### Dark/Light Mode
 ```html
