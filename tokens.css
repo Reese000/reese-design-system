@@ -526,6 +526,21 @@ html.light .tip-content .tip-head{border-color:#d0d2d6}
 html.light .tip-content .tip-video{border-color:#d0d2d6}
 html.light .resize-handle:hover{background:var(--code-action)}
 
+/* ── Tab strip light mode ─────────────────────────────────── */
+html.light .tab-strip{background:#e8e9ec;border-color:#d0d2d6}
+html.light .browser-tab{color:#5a5d66;border-color:#d0d2d6}
+html.light .browser-tab:hover{background:#dddee2;color:#1a1c20}
+html.light .browser-tab.active{color:#1a1c20;background:#e0e1e5}
+html.light .browser-tab.active::after{background:#3366cc}
+html.light .tab-close{color:#8a8e98}
+html.light .tab-close:hover{background:rgba(200,40,40,0.1);color:#aa2222}
+html.light .tab-add{color:#6b7088}
+html.light .tab-add:hover{background:#dddee2;color:#1a1c20}
+
+/* ── Drag handle light mode ───────────────────────────────── */
+html.light .viewport-stats .drag-grip{color:#8a8e98}
+html.light .toast-drag-handle{color:#5a5d66}
+
 /* ── Viewport SVG light mode ────────────────────────────────── */
 html.light .viewport svg{filter:none}
 html.light .viewport svg text{fill:#5a5d66}
@@ -533,6 +548,9 @@ html.light .viewport svg line{stroke:#8a8e98}
 html.light .viewport svg rect[stroke]{stroke:#5a8a3a}
 html.light .viewport svg path[stroke]{stroke:#5a8a3a}
 html.light .viewport svg circle[stroke]{stroke:#5a8a3a}
+html.light .viewport svg circle[stroke="var(--code-info)"]{stroke:#0088aa}
+html.light .viewport svg circle[stroke="var(--code-accent)"]{stroke:#8844cc}
+html.light .viewport svg circle[stroke="var(--code-warning)"]{stroke:#cc8800}
 html.light .viewport svg circle[fill="var(--code-action)"]{fill:#3366cc}
 html.light .viewport svg #hole-warning{stroke:#cc8800}
 html.light .viewport-stats{color:#3a3d48}

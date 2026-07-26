@@ -96,6 +96,11 @@
     .tree-item.active{background:var(--code-action-dim);color:var(--code-action)}
     .tree-indent{padding-left:18px}
     .tree-icon{font-size:11px;width:16px;text-align:center;flex-shrink:0}
+    /* Hierarchical tree: group headers keep semantic color, children are neutral */
+    .tree-group-header{margin-top:6px}
+    .tree-group-header:first-child{margin-top:0}
+    .tree-child{color:var(--ink-secondary)}
+    .tree-child .tree-icon{color:var(--ink-muted)}
 
     /* ── VIEWPORT ──────────────────────────────────────────── */
     .viewport{background:var(--canvas-base);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-left:1px solid var(--border-default);border-right:1px solid var(--border-default)}
@@ -120,6 +125,7 @@
     .inspector{border-left:1px solid var(--border-default);overflow-y:auto;display:flex;flex-direction:column;background:var(--canvas-surface);position:relative}
     .inspector-body{padding:8px;flex:1;overflow-y:auto}
     .insp-section{margin-bottom:12px}
+    .insp-section + .insp-section{border-top:1px solid var(--border-subtle);padding-top:8px}
     .insp-label{font-size:10px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
     .insp-field{display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-size:12px}
     .insp-field-k{color:var(--ink-tertiary)}
@@ -221,6 +227,29 @@
     button:focus-visible,.tool-btn:focus-visible,.tab:focus-visible,.tree-item:focus-visible,.mode-btn:focus-visible{outline:2px solid var(--code-action);outline-offset:1px}
     .toggle:focus-visible{outline:2px solid var(--code-action);outline-offset:2px}
     html.light :focus-visible{outline-color:#3366cc}
+
+    /* ── TAB STRIP (browser-style) ─────────────────────────── */
+    .tab-strip{display:flex;align-items:stretch;gap:0;background:var(--canvas-void);border-bottom:1px solid var(--border-default);height:30px;flex-shrink:0;overflow-x:auto;padding:0 4px}
+    .browser-tab{display:flex;align-items:center;gap:6px;padding:0 12px;font-size:11px;color:var(--ink-muted);cursor:pointer;border-right:1px solid var(--border-subtle);position:relative;transition:all 80ms;max-width:180px;min-width:80px}
+    .browser-tab:hover{color:var(--ink-secondary);background:var(--canvas-surface)}
+    .browser-tab.active{color:var(--ink-primary);background:var(--canvas-surface)}
+    .browser-tab.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--code-action)}
+    .tab-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+    .tab-close{font-size:13px;color:var(--ink-ghost);cursor:pointer;padding:2px;border-radius:2px;line-height:1}
+    .tab-close:hover{color:var(--code-danger);background:var(--code-danger-dim)}
+    .tab-add{background:none;border:none;color:var(--ink-muted);font-size:16px;cursor:pointer;padding:0 10px;display:flex;align-items:center}
+    .tab-add:hover{color:var(--ink-primary);background:var(--canvas-surface)}
+
+    /* ── DRAG HANDLES (toast + viewport-stats) ─────────────── */
+    .toast-drag-handle{cursor:grab;user-select:none}
+    .toast-drag-handle:active{cursor:grabbing}
+    .viewport-stats .drag-grip{cursor:grab;user-select:none;display:flex;align-items:center;justify-content:center;padding:2px 0 4px;color:var(--ink-ghost);font-size:10px;letter-spacing:2px}
+    .viewport-stats .drag-grip:active{cursor:grabbing}
+    .toast.dragging,.viewport-stats.dragging{transition:none!important}
+
+    /* ── TOOLTIP SCHEMATIC ─────────────────────────────────── */
+    .tip-schematic{padding:8px 10px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:10px}
+    .tip-specs{font-size:10px;color:var(--ink-tertiary);line-height:1.5}
   </style>
 </head>
 <body>
@@ -273,6 +302,19 @@
       <svg viewBox="0 0 10 10"><line x1="2" y1="2" x2="8" y2="8" stroke="currentColor" stroke-width="1"/><line x1="8" y1="2" x2="2" y2="8" stroke="currentColor" stroke-width="1"/></svg>
     </div>
   </div>
+</div>
+
+<!-- TAB STRIP -->
+<div class="tab-strip" id="tabStrip">
+  <div class="browser-tab active" data-tab="0" onclick="if(!event.target.classList.contains('tab-close'))selectTab(0)">
+    <span class="tab-label">Demo Project.cnc</span>
+    <span class="tab-close" onclick="closeTab(0)">×</span>
+  </div>
+  <div class="browser-tab" data-tab="1" onclick="if(!event.target.classList.contains('tab-close'))selectTab(1)">
+    <span class="tab-label">Part-02.dxf</span>
+    <span class="tab-close" onclick="closeTab(1)">×</span>
+  </div>
+  <button class="tab-add" onclick="addTab()" title="New file">+</button>
 </div>
 
 <!-- MENUBAR -->
@@ -330,19 +372,19 @@
       <button class="btn btn-sm btn-surface">+ Add</button>
     </div>
     <div class="tree-content">
-      <div class="tree-item active" tabindex="0"><span class="tree-icon" style="color:var(--code-view)">◇</span><span>Stock Model</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-material)"><svg class="icon icon-sm"><use href="#icon-package"/></svg></span><span style="color:var(--code-material)">AL-6061</span></div>
-      <div class="tree-item" tabindex="0"><span class="tree-icon" style="color:var(--code-view)">◇</span><span>Geometry</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-view)"><svg class="icon icon-sm"><use href="#icon-line"/></svg></span><span>Outer Profile</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-view)"><svg class="icon icon-sm"><use href="#icon-circle"/></svg></span><span>4× Holes</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-view)"><svg class="icon icon-sm"><use href="#icon-arc"/></svg></span><span>Pocket</span></div>
-      <div class="tree-item" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-endmill"/></svg></span><span style="color:var(--code-tool)">3/8" Endmill</span></div>
-      <div class="tree-item tree-indent loading"><span class="spinner" style="width:10px;height:10px;border-width:1.5px;border-top-color:var(--code-action)"></span><span style="color:var(--code-action)">Roughing</span><span style="font-size:9px;color:var(--ink-muted);margin-left:auto">computing...</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-success)"><svg class="icon icon-sm"><use href="#icon-check"/></svg></span><span style="color:var(--code-success)">Finishing</span></div>
-      <div class="tree-item" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-drill"/></svg></span><span style="color:var(--code-tool)">1/4" Drill</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-action)"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></span><span style="color:var(--code-action)">Drill Cycle</span></div>
-      <div class="tree-item" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-turn"/></svg></span><span style="color:var(--code-tool)">1/2" Face Mill</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-action)"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></span><span style="color:var(--code-action)">Facing</span></div>
+      <div class="tree-item tree-group-header active" tabindex="0"><span class="tree-icon" style="color:var(--code-view)">◇</span><span>Stock Model</span></div>
+      <div class="tree-item tree-indent tree-child" data-tip="material"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-package"/></svg></span><span>AL-6061</span></div>
+      <div class="tree-item tree-group-header" tabindex="0"><span class="tree-icon" style="color:var(--code-view)">◇</span><span>Geometry</span></div>
+      <div class="tree-item tree-indent tree-child" data-tip="outer-profile"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-line"/></svg></span><span>Outer Profile</span></div>
+      <div class="tree-item tree-indent tree-child" data-tip="holes"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-circle"/></svg></span><span>4× Holes</span></div>
+      <div class="tree-item tree-indent tree-child" data-tip="pocket"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-arc"/></svg></span><span>Pocket</span></div>
+      <div class="tree-item tree-group-header" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-endmill"/></svg></span><span style="color:var(--code-tool)">3/8" Endmill</span></div>
+      <div class="tree-item tree-indent tree-child loading"><span class="spinner" style="width:10px;height:10px;border-width:1.5px;border-top-color:var(--code-action)"></span><span style="color:var(--code-action)">Roughing</span><span style="font-size:9px;color:var(--ink-muted);margin-left:auto">computing...</span></div>
+      <div class="tree-item tree-indent tree-child"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-check"/></svg></span><span>Finishing</span></div>
+      <div class="tree-item tree-group-header" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-drill"/></svg></span><span style="color:var(--code-tool)">1/4" Drill</span></div>
+      <div class="tree-item tree-indent tree-child"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></span><span>Drill Cycle</span></div>
+      <div class="tree-item tree-group-header" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-turn"/></svg></span><span style="color:var(--code-tool)">1/2" Face Mill</span></div>
+      <div class="tree-item tree-indent tree-child"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></span><span>Facing</span></div>
     </div>
   </div>
 
@@ -353,10 +395,13 @@
       <svg width="320" height="200" viewBox="0 0 320 200">
         <rect x="60" y="30" width="200" height="140" rx="2" fill="none" stroke="var(--code-view)" stroke-width="1.5" opacity="0.4"/>
         <path d="M80,50 L240,50 L240,110 L200,110 L200,150 L120,150 L120,110 L80,110 Z" fill="rgba(163,230,53,0.04)" stroke="var(--code-view)" stroke-width="1.5"/>
-        <circle cx="100" cy="75" r="8" fill="none" stroke="var(--code-success)" stroke-width="1.5" stroke-dasharray="3,2"/>
-        <circle cx="220" cy="75" r="8" fill="none" stroke="var(--code-success)" stroke-width="1.5" stroke-dasharray="3,2"/>
-        <circle cx="100" cy="130" r="8" fill="none" stroke="var(--code-success)" stroke-width="1.5" stroke-dasharray="3,2"/>
-        <circle cx="220" cy="130" r="8" fill="none" stroke="var(--code-warning)" stroke-width="1.5" stroke-dasharray="3,2" id="hole-warning"/>
+        <!-- Ø8mm holes (cyan) -->
+        <circle cx="100" cy="75" r="8" fill="none" stroke="var(--code-info)" stroke-width="1.5"/>
+        <circle cx="220" cy="75" r="8" fill="none" stroke="var(--code-info)" stroke-width="1.5"/>
+        <circle cx="100" cy="130" r="8" fill="none" stroke="var(--code-info)" stroke-width="1.5"/>
+        <!-- Ø5mm hole (purple) with warning ring -->
+        <circle cx="220" cy="130" r="10" fill="none" stroke="var(--code-warning)" stroke-width="1" stroke-dasharray="3,2"/>
+        <circle cx="220" cy="130" r="5" fill="none" stroke="var(--code-accent)" stroke-width="1.5"/>
         <rect x="130" y="115" width="60" height="30" rx="2" fill="rgba(163,230,53,0.06)" stroke="var(--code-view)" stroke-width="1" stroke-dasharray="4,2"/>
         <line x1="60" y1="180" x2="260" y2="180" stroke="var(--ink-muted)" stroke-width="0.5"/>
         <text x="160" y="193" text-anchor="middle" fill="var(--ink-muted)" font-family="var(--font-mono)" font-size="9">100mm</text>
@@ -372,17 +417,20 @@
       <div class="coord-pill">Y: <span id="coordY">80.000</span></div>
       <div class="coord-pill">Z: <span id="coordZ">0.000</span></div>
     </div>
-    <div style="position:absolute;top:8px;left:8px;z-index:2;display:flex;gap:6px;font-size:9px">
+    <div style="position:absolute;top:8px;left:8px;z-index:2;display:flex;gap:6px;font-size:9px;flex-wrap:wrap">
         <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-success);border-radius:1px;display:inline-block"></span> Safe</span>
         <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-warning);border-radius:1px;display:inline-block"></span> Warning</span>
         <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-danger);border-radius:1px;display:inline-block"></span> Error</span>
+        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-info);border-radius:1px;display:inline-block"></span> Ø8mm</span>
+        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-accent);border-radius:1px;display:inline-block"></span> Ø5mm</span>
       </div>
     <div class="viewport-modes">
       <div class="mode-btn on" tabindex="0" onclick="cycleMode(this,['Perspective','Top','Front','Side','Iso'])">Perspective</div>
       <div class="mode-btn on" tabindex="0" onclick="cycleMode(this,['Shaded','Wire','Hidden','X-Ray'])">Shaded</div>
       <div class="mode-btn" tabindex="0" onclick="this.classList.toggle('on')">Grid</div>
     </div>
-    <div class="viewport-stats">
+    <div class="viewport-stats" id="viewportStats">
+      <div class="drag-grip" title="Drag to reposition">⠿</div>
       <div class="vs-row"><span class="vs-k">Line Length</span><span class="vs-v">160.000 mm</span></div>
       <div class="vs-row"><span class="vs-k">Arc Radius</span><span class="vs-v">—</span></div>
       <div class="vs-sep"></div>
@@ -500,7 +548,7 @@
 
 <!-- TOAST -->
 <div class="toast" id="aiToast">
-  <div class="toast-header"><span class="status-dot ai"></span><span class="toast-title"><svg class="icon icon-sm" style="vertical-align:middle"><use href="#icon-robot"/></svg> AI Suggestion</span></div>
+  <div class="toast-header toast-drag-handle"><span class="status-dot ai"></span><span class="toast-title"><svg class="icon icon-sm" style="vertical-align:middle"><use href="#icon-robot"/></svg> AI Suggestion</span></div>
   <div class="toast-body">Feed rate can increase to 1,400 mm/min — 15% faster. Apply?</div>
   <div class="toast-actions">
     <button class="btn btn-sm" style="background:var(--code-ai);color:#fff" onclick="applyAI()">Apply</button>
@@ -547,15 +595,21 @@ const TIPS = {
   drill:      { name:'Drill Operation', icon:'⌾', color:'var(--code-tool)', shortcut:'D',
     desc:'Create drill cycles (G81-G89). Select holes, assign tool, set peck depth and retract plane.',
     use:'<strong>Use case:</strong> Drill the 4× mounting holes with chip-breaking peck cycle at 24K RPM.',
-    video:'Drill Cycles' },
+    video:'Drill Cycles',
+    schematic:{ svg:'<svg width="48" height="32" viewBox="0 0 48 32"><rect x="20" y="2" width="8" height="6" rx="1" fill="none" stroke="var(--code-tool)" stroke-width="1.2"/><rect x="22" y="8" width="4" height="22" rx="0.5" fill="none" stroke="var(--code-tool)" stroke-width="1.2"/><line x1="24" y1="30" x2="22" y2="26" stroke="var(--code-tool)" stroke-width="0.8"/><line x1="24" y1="30" x2="26" y2="26" stroke="var(--code-tool)" stroke-width="0.8"/></svg>',
+      specs:'Ø6.35mm (1/4")<br>2-Flute • HSS<br>OAL: 101.6mm' } },
   endmill:    { name:'End Mill Operation', icon:'⊞', color:'var(--code-tool)', shortcut:'E',
     desc:'Create milling toolpaths — roughing, finishing, pocketing, profiling. Set stepover, stepdown, and lead-in/out.',
     use:'<strong>Use case:</strong> Rough out the main pocket with 40% stepover, then finish with spring pass.',
-    video:'Mill Operations' },
+    video:'Mill Operations',
+    schematic:{ svg:'<svg width="48" height="32" viewBox="0 0 48 32"><rect x="19" y="1" width="10" height="20" rx="1" fill="none" stroke="var(--code-tool)" stroke-width="1.2"/><line x1="19" y1="7" x2="29" y2="7" stroke="var(--code-tool)" stroke-width="0.8"/><line x1="19" y1="13" x2="29" y2="13" stroke="var(--code-tool)" stroke-width="0.8"/><rect x="21" y="21" width="6" height="10" rx="0.5" fill="none" stroke="var(--code-tool)" stroke-width="1"/></svg>',
+      specs:'Ø9.525mm (3/8")<br>4-Flute • Carbide<br>OAL: 76.2mm' } },
   turn:       { name:'Turn Operation', icon:'◎', color:'var(--code-tool)', shortcut:'T',
     desc:'Create turning toolpaths for lathe operations — facing, OD/ID turning, threading, grooving.',
     use:'<strong>Use case:</strong> Face the stock to length, then turn the OD to final diameter.',
-    video:'Turn Operations' },
+    video:'Turn Operations',
+    schematic:{ svg:'<svg width="48" height="32" viewBox="0 0 48 32"><polygon points="10,8 38,8 34,24 14,24" fill="none" stroke="var(--code-tool)" stroke-width="1.2"/><line x1="12" y1="12" x2="36" y2="12" stroke="var(--code-tool)" stroke-width="0.6" stroke-dasharray="2,2"/><text x="24" y="19" text-anchor="middle" fill="var(--code-tool)" font-size="6" font-family="var(--font-mono)">CNMG</text></svg>',
+      specs:'CNMG 432 • Carbide<br>80° Diamond<br>0.8mm nose radius' } },
   'ai-optimize':{ name:'AI Optimize', icon:'🤖', color:'var(--code-ai)', shortcut:'Ctrl+⇧A',
     desc:'Machine learning analyzes your setup and suggests optimal feeds, speeds, and toolpath strategies.',
     use:'<strong>Use case:</strong> AI detected 15% efficiency gain by increasing feed rate. One-click apply.',
@@ -580,6 +634,28 @@ const TIPS = {
     desc:'Switch the entire project between metric (mm) and imperial (inches). All dimensions, feeds, and stats convert instantly.',
     use:'<strong>Use case:</strong> Switch to inches when working with a customer who specifies imperial dimensions.',
     video:'Unit Conversion' },
+  'material':{ name:'AL-6061-T6', icon:'📦', color:'var(--code-material)', shortcut:'',
+    desc:'Aluminum alloy, precipitation hardened. Excellent machinability, good corrosion resistance.',
+    use:'<strong>Use case:</strong> General structural parts, fixtures, and prototypes.',
+    specs:'Alloy: 6061-T6 • Hardness: 95 HB • Density: 2.70 g/cm³ • UTS: 310 MPa',
+    video:'Material Library',
+    schematic:{ svg:'<svg width="48" height="32" viewBox="0 0 48 32"><rect x="4" y="4" width="40" height="24" rx="2" fill="none" stroke="var(--code-material)" stroke-width="1.5"/><line x1="4" y1="12" x2="44" y2="12" stroke="var(--code-material)" stroke-width="0.5" stroke-dasharray="2,2"/><text x="24" y="22" text-anchor="middle" fill="var(--code-material)" font-size="7" font-family="var(--font-mono)">6061-T6</text></svg>',
+      specs:'Alloy: 6061-T6<br>Hardness: 95 HB<br>Density: 2.70 g/cm³<br>UTS: 310 MPa' } },
+  'outer-profile':{ name:'Outer Profile', icon:'╱', color:'var(--code-view)', shortcut:'',
+    desc:'Closed 2D profile defining the part outer boundary. Used for profiling and contouring toolpaths.',
+    use:'<strong>Use case:</strong> Profile cut to separate the part from stock material.',
+    specs:'Perimeter: 520mm • Area: 11,200mm² • 12 vertices',
+    video:'Profile Geometry' },
+  'holes':{ name:'4× Holes', icon:'⊙', color:'var(--code-view)', shortcut:'',
+    desc:'Four through-holes for mounting. 3× Ø8mm standard, 1× Ø5mm with tight tolerance.',
+    use:'<strong>Use case:</strong> Drill cycle with peck for chip breaking at 24K RPM.',
+    specs:'3× Ø8mm (±0.05mm) • 1× Ø5mm (±0.02mm) • Thru-hole',
+    video:'Hole Geometry' },
+  'pocket':{ name:'Pocket', icon:'◠', color:'var(--code-view)', shortcut:'',
+    desc:'Rectangular pocket feature, 60×30mm, 12mm depth. Roughing + finishing strategy.',
+    use:'<strong>Use case:</strong> Pocketing with 40% stepover endmill, 2.5mm stepdown per pass.',
+    specs:'60×30×12mm • Volume: 21.6cm³ • Corner R: 4.76mm',
+    video:'Pocket Geometry' },
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -617,8 +693,10 @@ document.querySelectorAll('.tip').forEach(el => {
         <div class="tip-name">${t.name}</div>
         <div class="tip-shortcut">${t.shortcut}</div>
       </div>
+      ${t.schematic ? `<div class="tip-schematic">${t.schematic.svg}<div class="tip-specs">${t.schematic.specs}</div></div>` : ''}
       <div class="tip-body">
         <div class="tip-desc">${t.desc}</div>
+        ${t.specs ? `<div class="tip-specs" style="margin-bottom:6px;padding:4px 6px;background:var(--canvas-elevated);border-radius:var(--r-sm)">${t.specs}</div>` : ''}
         <div class="tip-use">${t.use}</div>
       </div>
       <div class="tip-video">
@@ -717,7 +795,11 @@ function filterCmd(q) {
 }
 
 // Toast
-function showToast() { document.getElementById('aiToast').classList.add('show'); }
+function showToast() {
+  const toast = document.getElementById('aiToast');
+  toast.classList.add('show');
+  restoreDragPosition(toast, 'ds-toast-pos');
+}
 function dismissToast() { document.getElementById('aiToast').classList.remove('show'); }
 function applyAI() {
   dismissToast();
@@ -745,6 +827,81 @@ function cycleMode(el, modes) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// DRAGGABLE POPUPS
+// ═══════════════════════════════════════════════════════════════
+function makeDraggable(element, handleSelector, storageKey, bounds) {
+  const handle = element.querySelector(handleSelector);
+  if (!handle) return;
+  let dragging = false, startX, startY, origLeft, origTop;
+
+  handle.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dragging = true;
+    element.classList.add('dragging');
+    const rect = element.getBoundingClientRect();
+    startX = e.clientX;
+    startY = e.clientY;
+    origLeft = rect.left;
+    origTop = rect.top;
+    // Switch from fixed positioning to explicit top/left
+    element.style.left = origLeft + 'px';
+    element.style.top = origTop + 'px';
+    element.style.right = 'auto';
+    element.style.bottom = 'auto';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  function onMove(e) {
+    if (!dragging) return;
+    let newLeft = origLeft + (e.clientX - startX);
+    let newTop = origTop + (e.clientY - startY);
+    // Clamp to bounds
+    if (bounds) {
+      newLeft = Math.max(bounds.minX || 0, Math.min((bounds.maxX || window.innerWidth) - element.offsetWidth, newLeft));
+      newTop = Math.max(bounds.minY || 0, Math.min((bounds.maxY || window.innerHeight) - element.offsetHeight, newTop));
+    }
+    element.style.left = newLeft + 'px';
+    element.style.top = newTop + 'px';
+  }
+
+  function onUp() {
+    dragging = false;
+    element.classList.remove('dragging');
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    // Save position
+    localStorage.setItem(storageKey, JSON.stringify({
+      x: parseInt(element.style.left),
+      y: parseInt(element.style.top)
+    }));
+  }
+}
+
+function restoreDragPosition(element, storageKey) {
+  const saved = localStorage.getItem(storageKey);
+  if (!saved) return;
+  try {
+    const pos = JSON.parse(saved);
+    element.style.left = pos.x + 'px';
+    element.style.top = pos.y + 'px';
+    element.style.right = 'auto';
+    element.style.bottom = 'auto';
+  } catch(e) {}
+}
+
+// Wire up draggable popups
+(function() {
+  const toast = document.getElementById('aiToast');
+  const stats = document.getElementById('viewportStats');
+  if (toast) makeDraggable(toast, '.toast-drag-handle', 'ds-toast-pos', { minX: 0, minY: 0 });
+  if (stats) makeDraggable(stats, '.drag-grip', 'ds-stats-pos', { minX: 0, minY: 0 });
+  // Restore stats position on load
+  if (stats) restoreDragPosition(stats, 'ds-stats-pos');
+})();
+
+// ═══════════════════════════════════════════════════════════════
 // RESIZABLE PANELS
 // ═══════════════════════════════════════════════════════════════
 let resizeState = null;
@@ -768,7 +925,7 @@ document.querySelectorAll('.resize-handle').forEach(handle => {
 document.addEventListener('mousemove', e => {
   if (!resizeState) return;
   const dx = e.clientX - resizeState.startX;
-  const newW = Math.max(120, Math.min(500, resizeState.startW + (resizeState.target === 'tree' ? dx : -dx)));
+  const newW = Math.max(160, Math.min(440, resizeState.startW + (resizeState.target === 'tree' ? dx : -dx)));
   main.style.setProperty(`--${resizeState.target === 'tree' ? 'tree' : 'insp'}-w`, newW + 'px');
 });
 
@@ -783,7 +940,33 @@ document.addEventListener('mouseup', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// TABS
+// TAB MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+let tabCounter = 2;
+function addTab() {
+  const strip = document.getElementById('tabStrip');
+  const addBtn = strip.querySelector('.tab-add');
+  const names = ['Untitled-' + tabCounter + '.cnc', 'Sketch-' + tabCounter + '.dxf', 'Job-' + tabCounter + '.nc'];
+  const name = names[Math.floor(Math.random() * names.length)];
+  const tab = document.createElement('div');
+  tab.className = 'browser-tab';
+  tab.dataset.tab = tabCounter;
+  tab.innerHTML = '<span class="tab-label">' + name + '</span><span class="tab-close" onclick="closeTab(' + tabCounter + ')">×</span>';
+  tab.onclick = function(e) { if (!e.target.classList.contains('tab-close')) selectTab(tabCounter); };
+  strip.insertBefore(tab, addBtn);
+  selectTab(tabCounter);
+  tabCounter++;
+}
+function closeTab(idx) {
+  const tab = document.querySelector('.browser-tab[data-tab="' + idx + '"]');
+  if (tab) tab.remove();
+}
+function selectTab(idx) {
+  document.querySelectorAll('.browser-tab').forEach(function(t) { t.classList.remove('active'); });
+  const tab = document.querySelector('.browser-tab[data-tab="' + idx + '"]');
+  if (tab) tab.classList.add('active');
+}
+
 // ═══════════════════════════════════════════════════════════════
 // DARK / LIGHT MODE
 // ═══════════════════════════════════════════════════════════════

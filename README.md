@@ -330,6 +330,23 @@ Updates all `.num` elements, viewport stats, and inspector values.
 
 ---
 
+## Tooltip Animation Behavior
+
+Tooltips use a **120ms ease-out fade + 4px upward slide** entrance animation
+(`tipIn` keyframe, defined in `demo.html`). There is **no exit animation** —
+tooltips disappear instantly on mouse-leave for responsive feel.
+
+The animation respects `prefers-reduced-motion: reduce` — when enabled,
+the animation is disabled entirely (via the global reduced-motion media query
+in `tokens.css`).
+
+**Timing:**
+- Entrance: 120ms, cubic-bezier(0.16, 1, 0.3, 1) ease-out
+- Exit: instant (no animation)
+- Property changes: 80ms ease-out (transitions on hover states)
+
+---
+
 ## File Structure
 
 ```
