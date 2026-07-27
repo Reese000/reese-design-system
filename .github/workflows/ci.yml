@@ -35,7 +35,8 @@ jobs:
 
       - name: Check JavaScript syntax
         run: |
-          # Extract script blocks and check syntax
+          # Extract script blocks and check syntax — fails CI on any error
+          FAIL=0
           for f in demo.html index.html; do
             echo "Checking $f JS..."
             # Extract content between <script> and </script>, excluding the tags themselves
@@ -43,14 +44,23 @@ jobs:
               /<script>/d
               /<\/script>/d
               p
-            }' "$f" 2>/dev/null > /tmp/check.js
-            if [ -s /tmp/check.js ]; then
-              node --check /tmp/check.js 2>&1 && echo "  ✓ $f JS syntax OK" || echo "  ❌ $f JS syntax error"
+            }' "$f" 2>/dev/null > "$RUNNER_TEMP/check.js"
+            if [ -s "$RUNNER_TEMP/check.js" ]; then
+              if node --check "$RUNNER_TEMP/check.js" 2>&1; then
+                echo "  ✓ $f JS syntax OK"
+              else
+                echo "  ❌ $f JS syntax error — CI will fail"
+                FAIL=1
+              fi
             else
               echo "  ⚠ No JS found in $f"
             fi
           done
-          rm -f /tmp/check.js
+          rm -f "$RUNNER_TEMP/check.js"
+          if [ "$FAIL" -ne 0 ]; then
+            echo "JS syntax errors found — failing CI."
+            exit 1
+          fi
 
       - name: Check accessibility basics
         run: |
