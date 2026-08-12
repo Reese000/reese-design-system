@@ -8,7 +8,7 @@
 
 **Purpose:** A dark-mode-first, offline-capable design system providing 13 semantic color tokens, keyboard-first navigation, density tiers, and a full component library — built to skin CNC/CAM/DFM/nesting/ML desktop tools with a consistent utilitarian aesthetic.
 
-**Target projects:** AI CAM 3.0 · Deepnest · Web DFM · Evolution Engine · reesecnc.com
+**Target projects:** AI CAM 3.0 · Deepnest · Web DFM · Evolution Engine · Foundry Manager · reesecnc.com
 
 ---
 
@@ -181,6 +181,39 @@ toggleUnit(); // Ctrl+U — swaps mm ↔ in project-wide
 <div class="fade-in fade-in-delay-1">...</div>
 ```
 
+### Drag & Drop
+Two patterns, both with a non-drag counterpart — dragging is never the only way to do either.
+
+**Import** is drag-and-drop only. Drag a file over the browser window and `.viewport` becomes a drop target: dashed `var(--code-action)` outline, `var(--code-action-dim)` wash, centered icon + "Drop file to import". Dropping shows a confirmation toast (no parsing — this is a static demo, there's no backend).
+```html
+<div class="viewport drag-target">
+  <div class="dropzone-overlay">
+    <svg class="icon icon-xl"><use href="#icon-import"/></svg>
+    <div class="dropzone-overlay-text">Drop file to import</div>
+  </div>
+</div>
+```
+
+**Export** is click-only — a `.btn` with `icon-export`, next to Post in the toolbar and in the command palette. Import and Export are intentionally asymmetric: import mirrors dragging a file in from the OS, while export names one specific, deliberate action with no natural surface to drop onto.
+```html
+<button class="btn btn-md btn-ghost" onclick="exportFile()">
+  <svg class="icon icon-sm"><use href="#icon-export"/></svg> Export
+</button>
+```
+
+**Reordering tree items** — `.tree-sortable` rows (the operations under a `tree-group-header`, e.g. Roughing/Finishing) get a `.tree-drag-grip` (⠿) that starts a mouse drag, showing a `.tree-drop-indicator` between rows as the live insertion point. A reorder is scoped to the operation's own group.
+```html
+<div class="tree-item tree-indent tree-child tree-sortable" tabindex="0">
+  <span class="tree-drag-grip" aria-hidden="true">⠿</span>
+  <span class="tree-label">Finishing</span>
+  <span class="tree-move-btns">
+    <button class="tree-move-btn" data-dir="-1" aria-label="Move Finishing up">▲</button>
+    <button class="tree-move-btn" data-dir="1" aria-label="Move Finishing down">▼</button>
+  </span>
+</div>
+```
+Dragging is never required: every `.tree-sortable` row is keyboard-focusable and responds to `ArrowUp`/`ArrowDown`, and the `.tree-move-btn` buttons (visible on hover/focus, always in the tab order) do the same on click. Both paths call the same `moveTreeItem()` and announce the result through `#treeReorderStatus` (`.sr-only`, `aria-live="polite"`) — e.g. "Finishing moved to position 1 of 2".
+
 ---
 
 ## Tooltip Animation Behavior
@@ -220,6 +253,74 @@ The animation respects `prefers-reduced-motion: reduce`.
 
 ---
 
+## 3D Viewport & Viewer Conventions
+
+Formalizes the 3D viewport spec implied by `--code-view` (lime — "viewport,
+camera, display" in the semantic table above): camera controls, selection
+states, axis colors, toolpath line legend, and the grid convention. This
+repo has zero npm dependencies and ships no renderer — these are the design
+tokens and behavior contract; consumer projects (AI CAM 3.0, Web DFM) apply
+them to their own WebGL/Three.js viewports.
+
+### Camera Controls
+
+Standard CAD/CAM convention:
+
+| Gesture | Action |
+|---------|--------|
+| Left-drag | Orbit |
+| Middle-drag or `Shift`+Left-drag | Pan |
+| Scroll wheel | Zoom |
+| Double-click | Fit all |
+
+### Selection States
+
+| State | Treatment |
+|-------|-----------|
+| Hover | Thin outline — `--code-action` ~60% opacity, 1.5px |
+| Selected | Solid outline — `--code-action` 2px + `--code-action-dim` fill tint |
+| Multi-select | Same per-object treatment, plus a dashed bounding-box indicator around the group |
+| Flagged geometry (e.g. tight-tolerance hole) | Existing dashed warning ring — unchanged; see the Ø5mm hole in `demo.html` |
+
+### Axis Colors
+
+Standard red/green/blue CAD/CAM convention, aliased to existing semantic tokens — no new hex:
+
+| Axis | Token | Alias |
+|------|-------|-------|
+| X | `--code-axis-x` | `--code-danger` (red) |
+| Y | `--code-axis-y` | `--code-success` (green) |
+| Z | `--code-axis-z` | `--code-action` (blue) |
+
+### Toolpath Line Legend
+
+| Move type | Style | Token |
+|-----------|-------|-------|
+| Rapid | Dashed, thin | `--ink-muted` |
+| Feed / cut | Solid | `--code-tool` |
+| Plunge | Dotted | `--code-warning` |
+| Live tool position | Pulsing dot | `--code-action` — the animated SVG `<circle>` already in `demo.html` |
+
+`tokens.css` defines `.tp-rapid` / `.tp-feed` / `.tp-plunge` / `.tp-live` utility classes for this legend. The live-position dot keeps its existing SVG `<animate>` pulse — `.tp-live` only names the fill color, it does not introduce a second animation mechanism.
+
+### Grid / Floor
+
+`.grid-bg` (`demo.html`) is the floor convention: a 32×32px line grid drawn with `--border-subtle` at 0.5 opacity (0.3 in light mode, via the existing `html.light .grid-bg` rule). Consumer 3D viewports should render their ground plane at this same visual weight.
+
+### Clay Shading Mode
+
+A 5th viewport shading mode (`Shaded → Wire → Hidden → X-Ray → Clay`), inspired by Blender's "Random Object Color" solid-shading mode — every separate body/solid/operation gets its own flat pastel color so you can tell parts apart at a glance.
+
+- **Color assignment** — each object/body draws its color from the curated `--clay-1` … `--clay-10` palette in `tokens.css`, chosen by a **stable hash of the object/body ID**. It must not be re-randomized on every render or session — the same part keeps the same color so it stays usable for telling parts apart, not just decorative.
+- **Shading** — the base `--clay-N` tone on lit surfaces, the paired `--clay-N-shade` variant (~15–20% darker, same hue) on shadow-facing surfaces. Soft two-tone, not a flat-flat fill.
+- **Contour** — a thin (~1–1.5px) `--ink-primary` line traces each shape's silhouette.
+- **Background** — `--clay-bg`, a muted sage-olive neutral, replaces the standard canvas behind the viewport while Clay mode is active.
+- **Scope** — Clay mode is for distinguishing separate bodies/solids/operations while modeling. It does **not** replace the safe/warning/error semantic coloring used elsewhere for status — those meanings stay on `--code-success` / `--code-warning` / `--code-danger` regardless of shading mode.
+- **Quality note** — this only reads as clean with the shade variant *and* the contour line both present. A flat single-tone fill by itself looks cheap, not clean — don't ship one without the other.
+- **Demo** — `demo.html`'s mocked SVG viewport shapes re-color under a `.viewport.clay-mode` class toggle as a flat-SVG proof of concept, wired through the existing `cycleMode()` function. This repo has no real 3D renderer; a consumer project implementing actual 3D would apply this same palette and stable-hash-per-mesh rule to real mesh materials.
+
+---
+
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
@@ -237,15 +338,15 @@ The animation respects `prefers-reduced-motion: reduce`.
 
 ## Cross-Project Color Mapping
 
-| Color | AI CAM 3.0 | Deepnest | Web DFM | Evolution Engine |
-|-------|-----------|----------|---------|-----------------|
-| Blue | Generate toolpath | Start nesting | Analyze part | Run cycle |
-| Orange | Endmill, drill | Part geometry | CAD features | Mutation ops |
-| Teal | Stock material | Sheet size | Material type | Model arch |
-| Lime | 3D viewport | Nest preview | Three.js viewer | Training viz |
-| Magenta | AI optimization | — | AI DFM rules | Neural net |
-| Pink | Cutting data | Density % | Measurements | val_loss |
-| Gold | Machine params | Nesting params | Analysis settings | Hyperparams |
+| Color | AI CAM 3.0 | Deepnest | Web DFM | Evolution Engine | Foundry Manager |
+|-------|-----------|----------|---------|-----------------|-----------------|
+| Blue | Generate toolpath | Start nesting | Analyze part | Run cycle | Dispatch task |
+| Orange | Endmill, drill | Part geometry | CAD features | Mutation ops | Executor rung |
+| Teal | Stock material | Sheet size | Material type | Model arch | Project registry |
+| Lime | 3D viewport | Nest preview | Three.js viewer | Training viz | Live monitor |
+| Magenta | AI optimization | — | AI DFM rules | Neural net | Agent fleet |
+| Pink | Cutting data | Density % | Measurements | val_loss | Task metrics |
+| Gold | Machine params | Nesting params | Analysis settings | Hyperparams | Model config |
 
 ---
 
@@ -298,11 +399,15 @@ Design-System/
 ├── demo.html               # Interactive CAM app demo
 ├── index.html              # Design system reference page
 ├── sw.js                   # Service worker (offline caching)
-├── package.json            # v1.2.0 distribution metadata
+├── package.json            # v1.3.0 distribution metadata
 ├── README.md               # This file
 ├── AUDIT.md                # v1.x audit findings
 ├── AUDIT-v2.md             # v1.2 re-audit (pre-fix)
 ├── AUDIT-v3.md             # v1.2 re-audit (post-fix)
+├── AUDIT-v4.md             # v1.2 re-audit (accessibility + contrast backlog)
+├── AUDIT-v5.md             # v1.3 audit (latest, authoritative) — 3D viewport, clay mode, drag & drop
+├── WEB-DFM-GUIDE.md        # Guide for applying this design system to Web DFM
+├── ADAPTIVE-FRONTEND-PATTERNS.md # Different product — multi-vertical shopping-search UI (CNC machines/endmills/used cars), not this design system's scope
 ├── scripts/
 │   └── validate.js         # Token validator (CI gate)
 └── .github/workflows/
@@ -332,26 +437,29 @@ When applying this design system to a new project:
 
 ## Current Status
 
-**v1.2** — The token layer and component library are complete and validated:
-- 13×3 semantic color matrix (base/dim/mid for 13 categories)
-- `:focus-visible` rings, `prefers-reduced-motion`, light mode support
+**v1.3** — The token layer, component library, 3D viewport spec, and drag-and-drop patterns are complete and validated:
+- 13×3 semantic color matrix (base/dim/mid for 13 categories), plus a separate `--clay-1..10` pastel matrix for Clay shading mode (kept out of the 13-category matrix by design)
+- `:focus-visible` rings, `prefers-reduced-motion`, light mode support — including contrast-verified (≥4.5:1 AA) darkened text variants for 11 of 13 semantic colors
 - Dense control-height tier (`--h-xs` through `--h-2xl`)
 - Full component library: buttons, inputs, selects, sliders, checkbox/radio, toggle, alerts, tabs, modal, tooltip, loading states, stepper, breadcrumb, empty state, confirm dialog
-- Token validator (`scripts/validate.js`) passes clean (0 errors)
+- **3D Viewport & Viewer Conventions**: camera controls, hover/selected/multi-select states, axis-color aliases, toolpath rendering legend, grid/floor treatment — see the dedicated section above
+- **Clay shading mode**: Blender-inspired random-object-color viewport shading, stable-hash-assigned, spec'd and mocked in the flat-SVG demo viewport (this repo has no real 3D renderer — a consumer project would apply the same palette/hash rule to actual mesh materials)
+- **Drag & Drop**: file-import dropzone, click-to-export, and keyboard/ARIA-accessible feature-tree operation reordering (drag is never the only way to reorder)
+- Token validator (`scripts/validate.js`) passes clean (0 errors, 1 pre-existing advisory warning)
 - CI pipeline validates tokens, HTML structure, JS syntax, and a11y
 
 **What works:**
-- `demo.html`: Full interactive CAM demo with Ctrl+K palette, arrow-nav, tooltips, coordinate readout, unit toggle, ARIA switch sync, localStorage persistence, platform-aware keyboard labels, resizable panels, browser tabs, rich tooltips, onboarding tour
-- `index.html`: Design system reference with working Ctrl+K palette, smooth-scroll nav with IntersectionObserver, toggle controls, copy snippets
+- `demo.html`: Full interactive CAM demo with Ctrl+K palette, arrow-nav, tooltips, coordinate readout, unit toggle, ARIA switch sync, localStorage persistence, platform-aware keyboard labels, resizable panels, browser tabs, rich tooltips, onboarding tour, Clay shading toggle, import dropzone, sortable operation tree
+- `index.html`: Design system reference with working Ctrl+K palette, smooth-scroll nav with IntersectionObserver, toggle controls, working copy-snippet buttons, keyboard-operable action cards, platform-aware keyboard glyphs
 - Both pages parse and run with zero console errors
 
-**Known remaining work (from audit v3):**
-- Light mode has per-component coverage but no full `--code-*` darkened variants for all semantic colors on light backgrounds
-- `demo.html` keyboard shortcut overlay fires instantly on Ctrl/Alt hold (needs ~400ms delay)
-- `copySnippet` function exists in index.html but has no callers (no copy buttons added to snippets)
-- Action cards in index.html are clickable `<div>`s, not focusable `<button>`s
-- Platform-aware `⌘`/`Ctrl` detection exists in demo but not in index.html
+**Known remaining work (see AUDIT-v5.md for full detail):**
+- Pre-existing hardcoded `.pill`/`.alert` light-mode hex colors (not `--code-*` tokens) still fail AA contrast in places — a different mechanism than the v5 contrast fix, not yet addressed
+- `demo.html` keyboard shortcut overlay still fires instantly on Ctrl/Alt hold (needs ~400ms delay)
+- README's Tabs documentation references `switchTab()`, which doesn't exist (demo uses `selectTab()`)
+- Icon sprite duplication: inline `<symbol>` set in demo.html vs. separate icons.svg
+- SearchForge-UI still hard-copies tokens.css rather than importing it (drift risk documented in AUDIT-v4 §6 and AUDIT-v5; fixing it means touching a second repo, deliberately deferred)
 
 ---
 
-*Reese Design System v1.2 — Built for: AI CAM 3.0 · Deepnest · Web DFM · Evolution Engine · reesecnc.com*
+*Reese Design System v1.3 — Built for: AI CAM 3.0 · Deepnest · Web DFM · Evolution Engine · reesecnc.com*
