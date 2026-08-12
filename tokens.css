@@ -397,6 +397,105 @@ body {
 .vp-legend-dot{width:8px;height:3px;border-radius:1px;display:inline-block}
 
 /* ═══════════════════════════════════════════════════════════════
+   3D VIEWPORT CONVENTIONS (v1.4) — camera, selection, axis, toolpath
+   Full spec: README.md § "3D Viewport & Viewer Conventions"
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  /* Axis colors — standard CAD/CAM red/green/blue convention, aliased
+     to existing semantic tokens (no new hex introduced) */
+  --code-axis-x: var(--code-danger);   /* X — red */
+  --code-axis-y: var(--code-success);  /* Y — green */
+  --code-axis-z: var(--code-action);   /* Z — blue */
+}
+/* Selection states — hover / selected / multi-select */
+.vp-obj-hover{outline:1.5px solid rgba(108,138,255,0.6);outline-offset:1px}
+.vp-obj-selected{outline:2px solid var(--code-action);outline-offset:1px;background:var(--code-action-dim)}
+.vp-obj-multiselect{outline:2px solid var(--code-action);outline-offset:1px;background:var(--code-action-dim)}
+.vp-multiselect-box{fill:none;stroke:var(--code-action);stroke-width:1.5;stroke-dasharray:4,2}
+/* Flagged/tight-tolerance geometry keeps the existing dashed warning-ring
+   convention already used in demo.html's Ø5mm hole — unchanged, documented
+   only. Not to be confused with .vp-multiselect-box above. */
+
+/* Toolpath line legend — rapid/feed/plunge as reusable stroke classes.
+   Live tool-position stays the existing pulsing-dot SVG <animate> pattern
+   already in demo.html (~line 410) — .tp-live only names its fill color,
+   no new animation mechanism is introduced. */
+.tp-rapid{fill:none;stroke:var(--ink-muted);stroke-width:1;stroke-dasharray:4,3}
+.tp-feed{fill:none;stroke:var(--code-tool);stroke-width:1.5}
+.tp-plunge{fill:none;stroke:var(--code-warning);stroke-width:1.5;stroke-dasharray:1,2}
+.tp-live{fill:var(--code-action)}
+
+/* ═══════════════════════════════════════════════════════════════
+   CLAY SHADING MODE PALETTE (v1.4) — Blender "Random Object Color"-
+   inspired per-body pastel shading. Assignment rule + usage notes:
+   README.md § "3D Viewport & Viewer Conventions" → Clay Shading Mode.
+   Intentionally NOT --code-* — outside the 13-category semantic
+   matrix; never use these for status/severity meaning.
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --clay-1:        #a6c497;   /* sage green */
+  --clay-1-shade:  #74a35c;
+  --clay-2:        #c398a6;   /* dusty mauve */
+  --clay-2-shade:  #a15e74;
+  --clay-3:        #c4b3db;   /* lavender */
+  --clay-3-shade:  #9374be;
+  --clay-4:        #d3bc9c;   /* tan */
+  --clay-4-shade:  #b6915d;
+  --clay-5:        #a6d3c4;   /* mint */
+  --clay-5-shade:  #69b59c;
+  --clay-6:        #d7c58e;   /* gold */
+  --clay-6-shade:  #bfa24a;
+  --clay-7:        #e2ada2;   /* coral */
+  --clay-7-shade:  #cc6f5c;
+  --clay-8:        #abcad9;   /* powder blue */
+  --clay-8-shade:  #6ba1bd;
+  --clay-9:        #a9b474;   /* olive */
+  --clay-9-shade:  #7a8547;
+  --clay-10:       #e1b7be;   /* blush */
+  --clay-10-shade: #c77583;
+  --clay-bg:       #292c20;   /* muted sage-olive neutral — mode background */
+}
+/* Standalone light-mode override — kept out of the existing
+   html.light{...} block above (single source of truth stays untouched);
+   new classes get their own rule here instead. */
+html.light .viewport.clay-mode{background:#c7cfb4}
+
+/* ═══════════════════════════════════════════════════════════════
+   IMPORT / EXPORT DROPZONE
+   Import is drag-and-drop only — dashed border + translucent wash
+   appear on #viewport while a file is dragged over the window.
+   Export is the click-only counterpart (.btn + icon-export in the
+   toolbar / command palette). See README.md § "Drag & Drop".
+   ═══════════════════════════════════════════════════════════════ */
+.viewport.drag-target{outline:2px dashed var(--code-action);outline-offset:-2px}
+.dropzone-overlay{position:absolute;inset:0;z-index:5;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:var(--code-action-dim);pointer-events:none}
+.viewport.drag-target .dropzone-overlay{display:flex}
+.dropzone-overlay .icon{color:var(--code-action)}
+.dropzone-overlay-text{font-size:13px;font-weight:600;color:var(--code-action)}
+.toast.toast-alt{border-color:var(--code-success-mid);bottom:100px}
+
+/* ═══════════════════════════════════════════════════════════════
+   TREE ITEM REORDER — drag handle + keyboard/SR-accessible alternative
+   Mouse: .tree-drag-grip initiates drag; .tree-drop-indicator marks
+   the live insertion point. Keyboard: ArrowUp/ArrowDown when a
+   .tree-sortable row has focus, or the ▲/▼ .tree-move-btn buttons
+   (visible on hover/focus, always in the tab order). Every reorder
+   is announced via #treeReorderStatus (.sr-only, aria-live="polite").
+   ═══════════════════════════════════════════════════════════════ */
+.tree-drag-grip{width:14px;flex-shrink:0;text-align:center;cursor:grab;user-select:none;color:var(--ink-ghost);font-size:11px;opacity:0;transition:opacity 100ms}
+.tree-drag-grip:active{cursor:grabbing}
+.tree-sortable:hover .tree-drag-grip,.tree-sortable:focus-within .tree-drag-grip{opacity:1}
+.tree-item.dragging{opacity:0.4}
+.tree-drop-indicator{height:2px;margin:0 6px;border-radius:1px;background:var(--code-action);pointer-events:none}
+.tree-move-btns{display:flex;flex-direction:column;gap:1px;margin-left:auto;flex-shrink:0;opacity:0;transition:opacity 100ms}
+.tree-sortable:hover .tree-move-btns,.tree-sortable:focus-within .tree-move-btns{opacity:1}
+.tree-move-btn{width:14px;height:11px;padding:0;display:flex;align-items:center;justify-content:center;border:none;border-radius:2px;background:transparent;color:var(--ink-muted);font-size:8px;line-height:1;cursor:pointer}
+.tree-move-btn:hover{background:var(--canvas-elevated);color:var(--ink-primary)}
+.tree-move-btn:disabled{opacity:0.3;cursor:default}
+.tree-move-btn:disabled:hover{background:transparent;color:var(--ink-muted)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ═══════════════════════════════════════════════════════════════
    PRINT STYLES
    ═══════════════════════════════════════════════════════════════ */
 @media print{
@@ -469,7 +568,23 @@ button,a,.toggle,.input,.select,.tab,.tree-item,.alert,.mode-btn,.breadcrumb-ite
 /* ═══════════════════════════════════════════════════════════════
    LIGHT MODE OVERRIDES
    ═══════════════════════════════════════════════════════════════ */
-html.light{color-scheme:light}
+/* Darkened light-mode variants for the semantic colors that are actually
+   used as TEXT color (color:, not border/background/fill) somewhere in
+   tokens.css/index.html/demo.html -- the originals are tuned for near-
+   black dark-mode canvases and fall well under WCAG AA (4.5:1) once the
+   canvas flips light (see AUDIT-v4.md §4). Verified against the darkest
+   light canvas surface text realistically sits on, --canvas-elevated
+   (#d0d2d6, e.g. .cmd-item:hover) -- passing there guarantees >=4.5:1
+   against every lighter canvas token too (void/base/surface/raised).
+   config (gold) and process (indigo) are intentionally omitted: neither
+   is ever used as text, only as decorative swatch/legend fills. */
+html.light{
+  color-scheme:light;
+  --code-action:#1943e8; --code-danger:#b31212; --code-success:#266438;
+  --code-warning:#79510c; --code-info:#0c607a; --code-accent:#7a1bda;
+  --code-tool:#93410f; --code-material:#196265; --code-data:#ad1154;
+  --code-view:#456216; --code-ai:#a71d65;
+}
 html.light body{background:var(--canvas-void);color:var(--ink-primary)}
 html.light .tabs{background:var(--canvas-surface);border-color:var(--border-default)}
 html.light .tab{color:var(--ink-muted)}
@@ -540,6 +655,11 @@ html.light .tab-add:hover{background:#dddee2;color:#1a1c20}
 /* ── Drag handle light mode ───────────────────────────────── */
 html.light .viewport-stats .drag-grip{color:#8a8e98}
 html.light .toast-drag-handle{color:#5a5d66}
+html.light .tree-drag-grip{color:#8a8e98}
+html.light .tree-move-btn{color:#5a5d66}
+html.light .tree-move-btn:hover{background:#d4d5da;color:#1a1c20}
+html.light .toast.toast-alt{border-color:var(--code-success-mid)}
+html.light .viewport.drag-target{background:var(--code-action-dim)}
 
 /* ── Viewport SVG light mode ────────────────────────────────── */
 html.light .viewport svg{filter:none}
@@ -577,15 +697,20 @@ html.light .confirm-icon.warning{background:rgba(200,120,0,0.08)}
 html.light .confirm-icon.info{background:rgba(0,100,200,0.06)}
 
 /* ── Light mode semantic color contrast fixes ──────────────── */
-html.light .pill.green{color:#2d8a4e}
+/* Darkened, hue-preserved from the original values; each measures >=4.5:1
+   against its own tinted pill/alert background composited over every
+   lighter canvas token (void/base/surface/raised) — the worst case, not
+   just canvas-void. .pill.blue/.alert.error/.alert.ai were already >=4.5:1
+   and are unchanged. */
+html.light .pill.green{color:#22673b}
 html.light .pill.blue{color:#3355aa}
-html.light .pill.magenta{color:#aa3377}
-html.light .pill.amber{color:#996600}
-html.light .pill.red{color:#aa3333}
-html.light .pill.muted{color:#6b7088}
-html.light .alert.success{color:#2d7a44}
-html.light .alert.info{color:#0066aa}
-html.light .alert.warning{color:#885500}
+html.light .pill.magenta{color:#9a2e6c}
+html.light .pill.amber{color:#7f5500}
+html.light .pill.red{color:#a23030}
+html.light .pill.muted{color:#5a5e73}
+html.light .alert.success{color:#26673a}
+html.light .alert.info{color:#005d9c}
+html.light .alert.warning{color:#825100}
 html.light .alert.error{color:#aa2222}
 html.light .alert.ai{color:#993377}
 html.light .status-dot.on{box-shadow:0 0 4px rgba(45,138,78,0.4)}

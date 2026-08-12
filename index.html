@@ -197,6 +197,22 @@
       color: var(--ink-tertiary);
     }
 
+    .color-token {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-2);
+      margin-top: var(--sp-2);
+      padding-top: var(--sp-2);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .color-token code {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--ink-tertiary);
+    }
+
     /* ═══════════════════════════════════════════════════════════════
        MAXIMIZED ACTION BUTTONS
        ═══════════════════════════════════════════════════════════════ */
@@ -305,6 +321,12 @@
       color: var(--ink-tertiary);
     }
     .btn-surface:hover { background: var(--canvas-surface); color: var(--ink-primary); }
+
+    /* Copy-to-clipboard buttons (wired to copySnippet()). Left empty in
+       markup and iconified via :empty::before so the button's own label
+       never becomes part of the copied .snippet/pre textContent. */
+    .copy-btn { margin-left: var(--sp-2); flex-shrink: 0; }
+    .copy-btn:empty::before { content: '📋'; }
 
     /* ═══════════════════════════════════════════════════════════════
        TOOLBAR PATTERN — everything visible
@@ -1064,24 +1086,13 @@
   </style>
 </head>
 <body>
-<!-- SVG Icon Sprite -->
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
-  <symbol id="icon-cursor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></symbol>
-  <symbol id="icon-generate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
-  <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></symbol>
-  <symbol id="icon-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
-  <symbol id="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></symbol>
-  <symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></symbol>
-  <symbol id="icon-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></symbol>
-  <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></symbol>
-  <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
-  <symbol id="icon-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></symbol>
-  <symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
-  <symbol id="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
-  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
-  <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
-  <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></symbol>
-</svg>
+<!-- SVG Icon Sprite — loaded from icons.svg (single source of truth), not duplicated inline -->
+<div id="iconSpriteMount" style="display:none" aria-hidden="true"></div>
+<script>
+  fetch('icons.svg').then(r => r.text()).then(svg => {
+    document.getElementById('iconSpriteMount').innerHTML = svg;
+  });
+</script>
 <a href="#principles" class="skip-link" tabindex="0">Skip to content</a>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -1133,7 +1144,7 @@
       </div>
       <div class="metric-card" data-color="purple">
         <div class="metric-label">Visual System</div>
-        <div style="font-size: var(--text-lg); font-weight: 700; color: var(--code-accent);">12-Color Code</div>
+        <div style="font-size: var(--text-lg); font-weight: 700; color: var(--code-accent);">13-Color Code</div>
         <div class="metric-change" style="color: var(--ink-tertiary);">Semantic color coding</div>
       </div>
       <div class="metric-card" data-color="amber">
@@ -1161,7 +1172,7 @@
           </div>
           <div>
             <div style="font-size: var(--text-md); font-weight: 600; color: var(--code-accent); margin-bottom: var(--sp-1);">3. Semantic Color Coding</div>
-            <div style="font-size: var(--text-sm); color: var(--ink-tertiary); line-height: 1.6;">12 distinct color categories map every type of action and data. Blue = actions, red = danger, green = success, amber = warning, cyan = materials, orange = tools, purple = config, pink = data, lime = viewports, magenta = AI.</div>
+            <div style="font-size: var(--text-sm); color: var(--ink-tertiary); line-height: 1.6;">13 distinct color categories map every type of action and data. Blue = actions, red = danger, green = success, amber = warning, cyan = materials, orange = tools, purple = config, pink = data, lime = viewports, magenta = AI.</div>
           </div>
           <div>
             <div style="font-size: var(--text-md); font-weight: 600; color: var(--code-warning); margin-bottom: var(--sp-1);">4. Keyboard-First Navigation</div>
@@ -1196,6 +1207,7 @@
         <div class="color-info">
           <div class="color-name">Action Blue</div>
           <div class="color-role">Primary actions, CTAs, active states</div>
+          <div class="color-token"><code>var(--code-action)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-action)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
@@ -1203,6 +1215,7 @@
         <div class="color-info">
           <div class="color-name">Danger Red</div>
           <div class="color-role">Destructive actions, errors, critical</div>
+          <div class="color-token"><code>var(--code-danger)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-danger)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
@@ -1210,6 +1223,7 @@
         <div class="color-info">
           <div class="color-name">Success Green</div>
           <div class="color-role">Completed, verified, ready</div>
+          <div class="color-token"><code>var(--code-success)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-success)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
@@ -1217,6 +1231,7 @@
         <div class="color-info">
           <div class="color-name">Warning Amber</div>
           <div class="color-role">Caution, attention needed</div>
+          <div class="color-token"><code>var(--code-warning)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-warning)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
@@ -1224,6 +1239,7 @@
         <div class="color-info">
           <div class="color-name">Info Cyan</div>
           <div class="color-role">Informational, reference, help</div>
+          <div class="color-token"><code>var(--code-info)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-info)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
@@ -1231,6 +1247,7 @@
         <div class="color-info">
           <div class="color-name">Accent Purple</div>
           <div class="color-role">Configuration, settings, brand</div>
+          <div class="color-token"><code>var(--code-accent)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-accent)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
@@ -1238,6 +1255,7 @@
         <div class="color-info">
           <div class="color-name">Tool Orange</div>
           <div class="color-role">Tools, operations, machining</div>
+          <div class="color-token"><code>var(--code-tool)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-tool)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
@@ -1245,6 +1263,7 @@
         <div class="color-info">
           <div class="color-name">Material Teal</div>
           <div class="color-role">Materials, supply chain, stock</div>
+          <div class="color-token"><code>var(--code-material)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-material)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
@@ -1252,6 +1271,7 @@
         <div class="color-info">
           <div class="color-name">Data Pink</div>
           <div class="color-role">Metrics, measurements, analytics</div>
+          <div class="color-token"><code>var(--code-data)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-data)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
@@ -1259,6 +1279,7 @@
         <div class="color-info">
           <div class="color-name">View Lime</div>
           <div class="color-role">Viewport, camera, display modes</div>
+          <div class="color-token"><code>var(--code-view)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-view)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
@@ -1266,6 +1287,7 @@
         <div class="color-info">
           <div class="color-name">Config Gold</div>
           <div class="color-role">Configuration, parameters, tuning</div>
+          <div class="color-token"><code>var(--code-config)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-config)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
@@ -1273,6 +1295,7 @@
         <div class="color-info">
           <div class="color-name">AI Magenta</div>
           <div class="color-role">AI/ML, neural nets, generation</div>
+          <div class="color-token"><code>var(--code-ai)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-ai)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
@@ -1280,6 +1303,7 @@
         <div class="color-info">
           <div class="color-name">Process Indigo</div>
           <div class="color-role">Process/workflow, pipeline stages</div>
+          <div class="color-token"><code>var(--code-process)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-process)" title="Copy token"></button></div>
         </div>
       </div>
     </div>
@@ -1369,7 +1393,7 @@
           </div>
           <div class="type-row">
             <div class="type-label">mono / 500</div>
-            <div class="type-sample" style="font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 500; color: var(--code-action);">G01 X24.500 Y12.750 F1200</div>
+            <div class="type-sample snippet" style="font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 500; color: var(--code-action);">G01 X24.500 Y12.750 F1200<button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy G-code line" title="Copy"></button></div>
           </div>
         </div>
       </div>
@@ -1436,42 +1460,42 @@
       </div>
       <div class="panel-body">
         <div class="action-grid action-grid-4">
-          <div class="action-card" data-color="blue">
+          <div class="action-card" tabindex="0" role="button" data-color="blue">
             <div class="action-card-icon"><svg class="icon"><use href="#icon-generate"/></svg></div>
             <div class="action-card-label">Generate</div>
             <div class="action-card-shortcut"><span class="kbd">⌘G</span></div>
           </div>
-          <div class="action-card" data-color="green">
+          <div class="action-card" tabindex="0" role="button" data-color="green">
             <div class="action-card-icon"><svg class="icon"><use href="#icon-play"/></svg></div>
             <div class="action-card-label">Simulate</div>
             <div class="action-card-shortcut"><span class="kbd">⌘R</span></div>
           </div>
-          <div class="action-card" data-color="orange">
+          <div class="action-card" tabindex="0" role="button" data-color="orange">
             <div class="action-card-icon">🔧</div>
             <div class="action-card-label">Post Process</div>
             <div class="action-card-shortcut"><span class="kbd">⌘P</span></div>
           </div>
-          <div class="action-card" data-color="purple">
+          <div class="action-card" tabindex="0" role="button" data-color="purple">
             <div class="action-card-icon">⚙</div>
             <div class="action-card-label">Configure</div>
             <div class="action-card-shortcut"><span class="kbd">⌘,</span></div>
           </div>
-          <div class="action-card" data-color="cyan">
+          <div class="action-card" tabindex="0" role="button" data-color="cyan">
             <div class="action-card-icon">📦</div>
             <div class="action-card-label">Stock Setup</div>
             <div class="action-card-shortcut"><span class="kbd">⌘K</span></div>
           </div>
-          <div class="action-card" data-color="amber">
+          <div class="action-card" tabindex="0" role="button" data-color="amber">
             <div class="action-card-icon">⚠</div>
             <div class="action-card-label">Collision Check</div>
             <div class="action-card-shortcut"><span class="kbd">⌘⇧C</span></div>
           </div>
-          <div class="action-card" data-color="red">
+          <div class="action-card" tabindex="0" role="button" data-color="red">
             <div class="action-card-icon">🗑</div>
             <div class="action-card-label">Clear All</div>
             <div class="action-card-shortcut"><span class="kbd">⌘⌫</span></div>
           </div>
-          <div class="action-card" data-color="purple">
+          <div class="action-card" tabindex="0" role="button" data-color="purple">
             <div class="action-card-icon">🤖</div>
             <div class="action-card-label">AI Optimize</div>
             <div class="action-card-shortcut"><span class="kbd">⌘⇧A</span></div>
@@ -1894,7 +1918,7 @@
             <span class="mono" style="color: var(--ink-muted);">Tool #4</span>
           </div>
           <div style="display: flex; gap: var(--sp-4); align-items: center;">
-            <span style="color: var(--code-action);">⌘K Command Palette</span>
+            <span class="statusbar-modkey" style="color: var(--code-action);">⌘K Command Palette</span>
             <span style="color: var(--ink-muted);">v3.0.1</span>
           </div>
         </div>
@@ -2269,13 +2293,34 @@
   }, { rootMargin: '-80px 0px -70% 0px' });
   sections.forEach(s => observer.observe(s));
 
+  // ═══════════════════════════════════════════════════════════════
+  // PLATFORM-AWARE SHORTCUT LABELS (mirrors demo.html's approach)
+  // demo.html's markup hardcodes "Ctrl+" and swaps it for '⌘' on Mac;
+  // this page's markup hardcodes '⌘' instead, so the swap runs in the
+  // opposite direction, but the end result matches demo.html: Mac shows
+  // ⌘, every other platform shows Ctrl+.
+  // ═══════════════════════════════════════════════════════════════
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const modKey = isMac ? '⌘' : 'Ctrl+';
+  document.querySelectorAll('.kbd, .statusbar-modkey').forEach(el => {
+    el.textContent = el.textContent.replace('⌘', modKey);
+  });
+  // Bare modifier icon (no trailing key letter) reads better as "Ctrl"
+  // than "Ctrl+" on non-Mac platforms.
+  document.querySelectorAll('.cmd-input-icon').forEach(el => {
+    el.textContent = el.textContent.replace('⌘', isMac ? '⌘' : 'Ctrl');
+  });
+
 // Copy-to-clipboard
 function copySnippet(btn) {
   const code = btn.closest('pre')?.textContent || btn.closest('.snippet')?.textContent;
   if (code) {
     navigator.clipboard.writeText(code.trim()).then(() => {
       btn.textContent = '✓ Copied';
-      setTimeout(() => { btn.textContent = '📋'; }, 1500);
+      // Reset to empty (not a literal glyph) so .copy-btn:empty::before's
+      // CSS icon takes back over -- keeps the button's own label out of
+      // the .snippet/pre textContent on every copy, not just the first.
+      setTimeout(() => { btn.textContent = ''; }, 1500);
     });
   }
 }
@@ -2289,11 +2334,22 @@ function copySnippet(btn) {
     });
   });
 
-  // Action card hover feedback
+  // Action card hover feedback + keyboard activation (Enter/Space).
+  // Action cards are <div>s (not <button>s) to preserve the existing
+  // grid/flex layout and SVG-icon currentColor inheritance, so they need
+  // tabindex/role (added in the markup) plus an explicit keydown handler
+  // to be keyboard-operable; :focus-visible in tokens.css already applies
+  // to any focusable element, so no CSS changes were needed for the ring.
   document.querySelectorAll('.action-card').forEach(card => {
     card.addEventListener('click', () => {
       card.style.transform = 'scale(0.95)';
       setTimeout(() => card.style.transform = '', 150);
+    });
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        card.click();
+      }
     });
   });
 

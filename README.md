@@ -184,8 +184,13 @@ toggleUnit(); // Ctrl+U — swaps mm ↔ in project-wide
 ### Drag & Drop
 Two patterns, both with a non-drag counterpart — dragging is never the only way to do either.
 
-**Import** is drag-and-drop only. Drag a file over the browser window and `.viewport` becomes a drop target: dashed `var(--code-action)` outline, `var(--code-action-dim)` wash, centered icon + "Drop file to import". Dropping shows a confirmation toast (no parsing — this is a static demo, there's no backend).
+**Import** has two equivalent triggers. Drag a file over the browser window and `.viewport` becomes a drop target: dashed `var(--code-action)` outline, `var(--code-action-dim)` wash, centered icon + "Drop file to import". Or click the Import `.btn` (toolbar, next to Post, and in the command palette) to open a native file picker via a hidden `<input type="file">` — this is the keyboard- and screen-reader-accessible path, since the drag gesture alone has no non-mouse equivalent. Both paths call the same `handleImportedFile()` and show the same confirmation toast (no parsing — this is a static demo, there's no backend).
 ```html
+<button class="btn btn-md btn-ghost" onclick="triggerImport()">
+  <svg class="icon icon-sm"><use href="#icon-import"/></svg> Import
+</button>
+<input type="file" id="importFileInput" style="display:none">
+
 <div class="viewport drag-target">
   <div class="dropzone-overlay">
     <svg class="icon icon-xl"><use href="#icon-import"/></svg>
@@ -194,7 +199,7 @@ Two patterns, both with a non-drag counterpart — dragging is never the only wa
 </div>
 ```
 
-**Export** is click-only — a `.btn` with `icon-export`, next to Post in the toolbar and in the command palette. Import and Export are intentionally asymmetric: import mirrors dragging a file in from the OS, while export names one specific, deliberate action with no natural surface to drop onto.
+**Export** is click-only — a `.btn` with `icon-export`, next to Import in the toolbar and in the command palette. There's no "drag to export" gesture on desktop or web, so export never needed a second trigger the way import did.
 ```html
 <button class="btn btn-md btn-ghost" onclick="exportFile()">
   <svg class="icon icon-sm"><use href="#icon-export"/></svg> Export
@@ -444,21 +449,19 @@ When applying this design system to a new project:
 - Full component library: buttons, inputs, selects, sliders, checkbox/radio, toggle, alerts, tabs, modal, tooltip, loading states, stepper, breadcrumb, empty state, confirm dialog
 - **3D Viewport & Viewer Conventions**: camera controls, hover/selected/multi-select states, axis-color aliases, toolpath rendering legend, grid/floor treatment — see the dedicated section above
 - **Clay shading mode**: Blender-inspired random-object-color viewport shading, stable-hash-assigned, spec'd and mocked in the flat-SVG demo viewport (this repo has no real 3D renderer — a consumer project would apply the same palette/hash rule to actual mesh materials)
-- **Drag & Drop**: file-import dropzone, click-to-export, and keyboard/ARIA-accessible feature-tree operation reordering (drag is never the only way to reorder)
-- Token validator (`scripts/validate.js`) passes clean (0 errors, 1 pre-existing advisory warning)
+- **Drag & Drop**: file import via drag-anywhere-on-viewport *or* a keyboard/screen-reader-accessible Import button (toolbar + command palette) that opens a native file picker; click-to-export; keyboard/ARIA-accessible feature-tree operation reordering (drag is never the only way to do any of these)
+- Token validator (`scripts/validate.js`) passes clean (0 errors, 0 warnings)
 - CI pipeline validates tokens, HTML structure, JS syntax, and a11y
+- Single-source-of-truth icon sprite: both `demo.html` and `index.html` load `icons.svg` at runtime instead of hand-duplicating `<symbol>` definitions inline
 
 **What works:**
-- `demo.html`: Full interactive CAM demo with Ctrl+K palette, arrow-nav, tooltips, coordinate readout, unit toggle, ARIA switch sync, localStorage persistence, platform-aware keyboard labels, resizable panels, browser tabs, rich tooltips, onboarding tour, Clay shading toggle, import dropzone, sortable operation tree
+- `demo.html`: Full interactive CAM demo with Ctrl+K palette, arrow-nav, tooltips, coordinate readout, unit toggle, ARIA switch sync, localStorage persistence, platform-aware keyboard labels, resizable panels, browser tabs, rich tooltips, onboarding tour, Clay shading toggle, import (drag or Import button) / export, sortable operation tree
 - `index.html`: Design system reference with working Ctrl+K palette, smooth-scroll nav with IntersectionObserver, toggle controls, working copy-snippet buttons, keyboard-operable action cards, platform-aware keyboard glyphs
 - Both pages parse and run with zero console errors
 
 **Known remaining work (see AUDIT-v5.md for full detail):**
-- Pre-existing hardcoded `.pill`/`.alert` light-mode hex colors (not `--code-*` tokens) still fail AA contrast in places — a different mechanism than the v5 contrast fix, not yet addressed
-- `demo.html` keyboard shortcut overlay still fires instantly on Ctrl/Alt hold (needs ~400ms delay)
-- README's Tabs documentation references `switchTab()`, which doesn't exist (demo uses `selectTab()`)
-- Icon sprite duplication: inline `<symbol>` set in demo.html vs. separate icons.svg
 - SearchForge-UI still hard-copies tokens.css rather than importing it (drift risk documented in AUDIT-v4 §6 and AUDIT-v5; fixing it means touching a second repo, deliberately deferred)
+- No consumer project (AI CAM 3.0, Web DFM, Deepnest, Evolution Engine, reesecnc.com) has actually adopted these patterns yet — this repo is spec + a self-contained demo, not a shipped dependency
 
 ---
 
