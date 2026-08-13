@@ -484,7 +484,7 @@ Design-System/
 ├── AUDIT-v3.md             # v1.2 re-audit (post-fix)
 ├── AUDIT-v4.md             # v1.2 re-audit (accessibility + contrast backlog)
 ├── AUDIT-v5.md             # v1.3 audit — 3D viewport, clay mode, drag & drop, cleanup pass
-├── AUDIT-v6.md             # v1.3.1 audit (latest, authoritative) — component library showcases, focus-managed modal, critical theme-toggle fix (§7-8)
+├── AUDIT-v6.md             # v1.3.1 audit (latest, authoritative) — component library showcases, focus-managed modal, critical theme-toggle fix (§7-8), post-fix contrast sweep (§10)
 ├── WEB-DFM-GUIDE.md        # Guide for applying this design system to Web DFM
 ├── ADAPTIVE-FRONTEND-PATTERNS.md # Different product — multi-vertical shopping-search UI (CNC machines/endmills/used cars), not this design system's scope
 ├── scripts/

@@ -704,7 +704,7 @@ html.light .radio-dot{background:#e8e9ec;border-color:#b8bac0}
 html.light .breadcrumb-item{color:#5a5d66}
 html.light .breadcrumb-item:hover{color:#1a1c20}
 html.light .breadcrumb-item.active{color:#1a1c20}
-html.light .confirm-icon.danger{background:rgba(200,40,40,0.08)}
+html.light .confirm-icon.danger{background:rgba(200,40,40,0.05)}
 html.light .confirm-icon.warning{background:rgba(200,120,0,0.08)}
 html.light .confirm-icon.info{background:rgba(0,100,200,0.06)}
 

@@ -120,13 +120,33 @@ One tooling note worth recording: mid-investigation, `getComputedStyle` reads ta
 
 ---
 
-## 9. Summary
+## 10. Post-fix contrast sweep, and one more marginal fail found (`.confirm-icon.danger`)
+
+With §7/§8 landed, every `--code-*`-driven text color should now resolve correctly in light mode regardless of which page or mechanism set it. Rather than trust that by inference, re-ran the same contrast-ratio methodology (relative-luminance + alpha-compositing walker) from prior audits across every selector in `tokens.css` that uses a `--code-*` token as a **text** color (`.pill.*`, `.alert.*`, `.tab.active`, `.confirm-icon.*`, plus the `html.light` overrides for `.tool-btn.active`/`.tree-item.active`/`.mode-btn.on`), on both `demo.html` (class-toggle path) and `index.html` (OS-preference path), in genuine light mode post-fix:
+
+| Selector | Ratio | Result |
+|---|---|---|
+| `body`, `.mode-btn.on`, `.tab.active`, `button.btn-primary`, `.tree-item.active` | 4.79–15.10 | ✅ pass |
+| `.pill.green`, `.pill.magenta` | 5.15–5.17 | ✅ pass |
+| `.pill.amber`/`.red`/`.blue`/`.muted` | — | not rendered anywhere (pre-existing, tracked in §... see the unused-classes note below) |
+| `.alert.info`/`.success`/`.warning`/`.error`/`.ai` `.alert-msg` | 4.87–4.98 | ✅ pass |
+| `.status-pill.active`/`.ai`/`.error`/`.info`/`.warning` | 4.73–5.28 | ✅ pass |
+| `.breadcrumb-item.active`, `.empty-state-title`, `.modal-title`, `.select`, `input.input`, `.radio-option` | 8.28–13.06 | ✅ pass |
+| `.confirm-icon.danger` | **4.42** | ❌ fail (normal-size 14px text needs 4.5:1) |
+
+`.confirm-icon.danger` was the one genuine regression-shaped miss: `html.light .confirm-icon.danger{background:rgba(200,40,40,0.08)}` composites its 8%-alpha red tint over the modal's `--canvas-raised` background (`#d8d9dd`), darkening the effective backdrop just enough to undercut the `--code-danger` foreground's margin — unlike `.confirm-icon.warning`/`.info`, whose tint/foreground pairings land at ~4.64:1 with room to spare. This wasn't a false positive from the compositing walker (verified by hand-computing the same result) and wasn't introduced by §7/§8 — it's a pre-existing marginal miss from whenever `.confirm-icon` was added, just never previously measured. Fixed by reducing the tint alpha from `0.08` to `0.05` (`tokens.css:707`), which lightens the composited background just enough: re-measured at **4.61:1** post-fix. `sw.js` `CACHE_NAME` bumped to `v1.7` since this touches `tokens.css`, a cache-first asset.
+
+Everything else in the sweep passed cleanly, meaning §7/§8's token-level fix was sufficient on its own for every other `--code-*`-driven component — no other per-component patches were needed.
+
+---
+
+## 11. Summary
 
 | Severity | Count | Themes |
 |----------|-------|--------|
 | 🔴 Critical | 1 | Theme toggle applied only half the palette when it disagreed with OS `prefers-color-scheme` — fixed, see §7 |
 | 🟠 High | 1 | Pages with no manual toggle (`index.html`) never got `--code-*` colors or component overrides in light mode either — fixed by unifying both pages onto one explicit-class mechanism, see §8 |
 | 🟡 Medium | 0 | — |
-| 🔵 Low | 1 | box-drag area-select not implemented in the static viewport mock (documented, intentional scope cut) — the `.radio` vs `.radio-group` duplication listed here in an earlier pass was resolved later this session, see §4 |
+| 🔵 Low | 1 | box-drag area-select not implemented in the static viewport mock (documented, intentional scope cut) — the `.radio` vs `.radio-group` duplication listed here in an earlier pass was resolved later this session, see §4; a marginal `.confirm-icon.danger` contrast miss (4.42:1) was also found and fixed, see §10 |
 
-**One-line verdict:** the "Full component library" claim in README is now actually true, and so is the Select tool's own tooltip — both the top-level component showcase and the 3D-viewport's own selection/hover/toolpath-line spec had the same defect (real CSS, zero live wiring), and both are now live, keyboard-operable, and browser-verified. More significantly, this session found and fixed a two-part theming architecture bug (§7 critical + §8 high) that made the manual dark/light toggle *and* the OS-preference-only fallback each apply only half the color system in the common case — both are now unified onto a single explicit-class mechanism per page, set before first paint. `scripts/validate.js` passes with 0 errors and 0 warnings after every change. Remaining open items: box-drag select (documented scope cut, not a bug), unused `.fade-in`/`.pill` variants (cosmetic, low priority), the pre-existing `.pill`/`.status-pill` divergence (tracked since `AUDIT.md`, unchanged by design or long-standing inertia), and the SearchForge-UI token-copy drift carried forward from AUDIT-v4/v5 (documentation-only by explicit prior user decision).
+**One-line verdict:** the "Full component library" claim in README is now actually true, and so is the Select tool's own tooltip — both the top-level component showcase and the 3D-viewport's own selection/hover/toolpath-line spec had the same defect (real CSS, zero live wiring), and both are now live, keyboard-operable, and browser-verified. More significantly, this session found and fixed a two-part theming architecture bug (§7 critical + §8 high) that made the manual dark/light toggle *and* the OS-preference-only fallback each apply only half the color system in the common case — both are now unified onto a single explicit-class mechanism per page, set before first paint — plus one marginal contrast miss (§10) surfaced by a full post-fix sweep. `scripts/validate.js` passes with 0 errors and 0 warnings after every change. Remaining open items: box-drag select (documented scope cut, not a bug), unused `.fade-in`/`.pill.amber`/`.red`/`.blue`/`.muted` variants (cosmetic, low priority, confirmed still unrendered in this session's sweep), the pre-existing `.pill`/`.status-pill` divergence (tracked since `AUDIT.md`, unchanged by design or long-standing inertia), and the SearchForge-UI token-copy drift carried forward from AUDIT-v4/v5 (documentation-only by explicit prior user decision).
