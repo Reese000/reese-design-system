@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reese Design System — Interactive Demo</title>
+  <script>(function(){var t=localStorage.getItem('ds-theme');var dark=t?t!=='light':matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.add(dark?'dark':'light')})()</script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="icons.css">
@@ -1344,10 +1345,7 @@ function saveState() {
   localStorage.setItem('ds-insp-w', getComputedStyle(main).getPropertyValue('--insp-w'));
 }
 function loadState() {
-  const theme = localStorage.getItem('ds-theme');
-  isDark = theme !== 'light';
-  document.documentElement.classList.toggle('light', !isDark);
-  document.documentElement.classList.toggle('dark', isDark);
+  isDark = document.documentElement.classList.contains('dark');
   document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀';
   const unit = localStorage.getItem('ds-unit');
   if (unit === 'in' && isMM) toggleUnit();
