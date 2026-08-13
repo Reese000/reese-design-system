@@ -1768,6 +1768,56 @@
         </div>
       </div>
 
+      <!-- Tabs -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Tabs</div></div>
+        <div class="panel-body" style="padding: 0;">
+          <div class="tabs" role="tablist" aria-label="Feature inspector">
+            <div class="tab active" role="tab" id="ds-tab-geo" aria-selected="true" aria-controls="ds-panel-geo" tabindex="0">Geometry</div>
+            <div class="tab" role="tab" id="ds-tab-tool" aria-selected="false" aria-controls="ds-panel-tool" tabindex="-1">Toolpaths</div>
+            <div class="tab" role="tab" id="ds-tab-sim" aria-selected="false" aria-controls="ds-panel-sim" tabindex="-1">Simulation</div>
+          </div>
+          <div class="tab-panel active" role="tabpanel" id="ds-panel-geo" aria-labelledby="ds-tab-geo" style="font-size: var(--text-sm); color: var(--ink-secondary);">3 solids, 1 sketch, 4 hole features.</div>
+          <div class="tab-panel" role="tabpanel" id="ds-panel-tool" aria-labelledby="ds-tab-tool" style="font-size: var(--text-sm); color: var(--ink-secondary);">2 operations: Roughing (78%), Finishing (queued).</div>
+          <div class="tab-panel" role="tabpanel" id="ds-panel-sim" aria-labelledby="ds-tab-sim" style="font-size: var(--text-sm); color: var(--ink-secondary);">No collisions detected. Est. cycle time: 4m 12s.</div>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Alerts</div></div>
+        <div class="panel-body">
+          <div class="alert info"><div class="alert-icon">ℹ</div><div class="alert-body"><div class="alert-title">Info</div><div class="alert-msg">Haas NGC post loaded. Ready for G-code generation.</div></div></div>
+          <div class="alert success"><div class="alert-icon">✓</div><div class="alert-body"><div class="alert-title">Success</div><div class="alert-msg">Simulation complete. No collisions detected.</div></div></div>
+          <div class="alert warning"><div class="alert-icon">⚠</div><div class="alert-body"><div class="alert-title">Warning</div><div class="alert-msg">Depth exceeds 80% of tool reach.</div></div></div>
+          <div class="alert error closeable"><div class="alert-icon">✕</div><div class="alert-body"><div class="alert-title">Error</div><div class="alert-msg">Toolpath collision detected at Z-3.2mm.</div></div><div class="alert-close" role="button" tabindex="0" aria-label="Dismiss alert">✕</div></div>
+          <div class="alert ai" style="margin-bottom: 0;"><div class="alert-icon">🤖</div><div class="alert-body"><div class="alert-title">AI</div><div class="alert-msg">Increase feed to 1,400 mm/min for 15% efficiency gain.</div></div></div>
+        </div>
+      </div>
+
+      <!-- Loading States -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Loading States</div></div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-4);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="spinner" role="status" aria-label="Loading"></span>
+              <span style="font-size: var(--text-sm); color: var(--ink-secondary);">Generating toolpath…</span>
+            </div>
+            <div>
+              <div style="font-size: var(--text-xs); color: var(--ink-muted); margin-bottom: 4px;">Simulation progress</div>
+              <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+            </div>
+            <div>
+              <div style="font-size: var(--text-xs); color: var(--ink-muted); margin-bottom: 6px;">Skeleton placeholder</div>
+              <div class="skeleton skeleton-line" style="width: 80%;"></div>
+              <div class="skeleton skeleton-line" style="width: 60%; margin-bottom: 0;"></div>
+              <div class="skeleton skeleton-box" style="width: 100%; margin-top: 6px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -2438,6 +2488,39 @@ function copySnippet(btn) {
           e.preventDefault(); const n = (i - 1 + options.length) % options.length; select(n); options[n].querySelector('.radio-dot').focus();
         }
       });
+    });
+  });
+
+  // Tabs (ARIA APG tablist pattern, roving tabindex, automatic activation)
+  document.querySelectorAll('.tabs[role="tablist"]').forEach(list => {
+    const tabs = [...list.querySelectorAll('.tab[role="tab"]')];
+    const activate = i => {
+      tabs.forEach((t, ti) => {
+        const on = ti === i;
+        t.classList.toggle('active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        const panel = document.getElementById(t.getAttribute('aria-controls'));
+        if (panel) panel.classList.toggle('active', on);
+      });
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => { activate(i); t.focus(); });
+      t.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); const n = (i + 1) % tabs.length; activate(n); tabs[n].focus(); }
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); const n = (i - 1 + tabs.length) % tabs.length; activate(n); tabs[n].focus(); }
+        else if (e.key === 'Home') { e.preventDefault(); activate(0); tabs[0].focus(); }
+        else if (e.key === 'End') { e.preventDefault(); activate(tabs.length - 1); tabs[tabs.length - 1].focus(); }
+      });
+    });
+  });
+
+  // Closeable alerts
+  document.querySelectorAll('.alert-close').forEach(x => {
+    const close = () => x.closest('.alert')?.remove();
+    x.addEventListener('click', close);
+    x.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); close(); }
     });
   });
 
