@@ -485,7 +485,8 @@ Design-System/
 ├── AUDIT-v2.md             # v1.2 re-audit (pre-fix)
 ├── AUDIT-v3.md             # v1.2 re-audit (post-fix)
 ├── AUDIT-v4.md             # v1.2 re-audit (accessibility + contrast backlog)
-├── AUDIT-v5.md             # v1.3 audit (latest, authoritative) — 3D viewport, clay mode, drag & drop, cleanup pass
+├── AUDIT-v5.md             # v1.3 audit — 3D viewport, clay mode, drag & drop, cleanup pass
+├── AUDIT-v6.md             # v1.3.1 audit (latest, authoritative) — component library showcases, focus-managed modal
 ├── WEB-DFM-GUIDE.md        # Guide for applying this design system to Web DFM
 ├── ADAPTIVE-FRONTEND-PATTERNS.md # Different product — multi-vertical shopping-search UI (CNC machines/endmills/used cars), not this design system's scope
 ├── scripts/
@@ -535,10 +536,11 @@ When applying this design system to a new project:
 - `index.html`: Design system reference with working Ctrl+K palette, smooth-scroll nav with IntersectionObserver, toggle controls, working copy-snippet buttons, keyboard-operable action cards, platform-aware keyboard glyphs
 - Both pages parse and run with zero console errors
 
-**Known remaining work (see AUDIT-v5.md for full detail):**
+**Known remaining work (see AUDIT-v6.md for full detail):**
 - SearchForge-UI still hard-copies tokens.css rather than importing it (drift risk documented in AUDIT-v4 §6 and AUDIT-v5; fixing it means touching a second repo, deliberately deferred)
 - No consumer project (AI CAM 3.0, Web DFM, Deepnest, Evolution Engine, reesecnc.com) has actually adopted these patterns yet — this repo is spec + a self-contained demo, not a shipped dependency
+- `.radio` (bare primitive) duplicates `.radio-dot`/`.radio-group` (labeled-group pattern) — flagged in `tokens.css` and AUDIT-v6 §4, not deleted, pending a maintainer decision on which to keep
 
 ---
 
-*Reese Design System v1.3 — Built for: AI CAM 3.0 · Deepnest · Web DFM · Evolution Engine · reesecnc.com*
+*Reese Design System v1.3.1 — Built for: AI CAM 3.0 · Deepnest · Web DFM · Evolution Engine · reesecnc.com*
