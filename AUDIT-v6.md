@@ -3,7 +3,7 @@
 **Date:** 2026-08-13
 **Scope:** `index.html`, `demo.html`, `tokens.css`, `README.md`
 **Baseline:** [AUDIT-v5.md](AUDIT-v5.md) (2026-08-12)
-**Status:** ✅ Complete — closed the "component library mostly unrendered" gap found while investigating this repo's 3D-viewport demo: 13 of the ~15 component types the README's "Full component library" bullet claims were rendered nowhere in either HTML file, meaning their CSS had never been visually or functionally verified. All 13 now have live, keyboard-operable, browser-verified examples.
+**Status:** ✅ Complete — closed the "component library mostly unrendered" gap found while investigating this repo's 3D-viewport demo: 13 of the ~15 component types the README's "Full component library" bullet claims were rendered nowhere in either HTML file, meaning their CSS had never been visually or functionally verified. All 13 now have live, keyboard-operable, browser-verified examples. **Updated 2026-08-13** with a same-day follow-up: the 3D-viewport spec itself had the identical problem one level down — see §6.
 
 Severity legend: 🔴 Critical · 🟠 High · 🟡 Medium · 🔵 Low
 Resolution legend: ✅ Fixed · ⚠️ Partial · ❌ Not fixed · ➕ New in v6
@@ -65,13 +65,34 @@ All four component batches were verified against the live page at `http://localh
 
 ---
 
-## 5. Summary
+## 6. Follow-up: 3D-viewport interactivity was the same gap, one level down
+
+A re-run of the drift-detection sweep against the post-§3 tree found the "spec written, never actually demoed" pattern repeating inside `demo.html`'s mock viewport itself. AUDIT-v5's 3D Viewport & Viewer Conventions work (camera controls, selection states, axis colors, a toolpath line legend) added `.vp-legend`/`.vp-legend-dot`, `.vp-obj-hover`/`.vp-obj-selected`/`.vp-obj-multiselect`, and `.tp-rapid`/`.tp-feed`/`.tp-plunge`/`.tp-live` to `tokens.css` — but none of them were ever applied:
+
+- The viewport's on-screen legend (`demo.html`, top-left of the mock viewport) was hand-rolled with duplicate inline `style="..."` spans instead of using the real `.vp-legend`/`.vp-legend-dot` classes.
+- The pulsing "current position" dot used a hardcoded `fill="var(--code-action)"` instead of the `.tp-live` class meant to formalize it — AUDIT-v5 §3 even said as much ("the live-position marker formalizes a pulsing dot that already existed") without the formalization actually landing.
+- No toolpath line (`.tp-rapid`/`.tp-feed`/`.tp-plunge`) was drawn anywhere.
+- Worse: the Select tool's own tooltip (`TIPS.select` in `demo.html`) already promised *"Click to select geometry, toolpaths, or features in the viewport. Hold Shift for multi-select. Drag a box to area-select."* — none of which the viewport actually did. The docs were ahead of the code, not describing it.
+
+Fixed: 6 viewport shapes (Outer Profile, 3× Ø8mm holes, Ø5mm hole, Pocket) are now real selectable objects. Click selects (`.vp-obj-selected`), Shift+click toggles into a multi-selection (`.vp-obj-multiselect`), hover previews (`.vp-obj-hover`), and clicking empty viewport space clears the selection. Fully keyboard-operable — each shape is `tabindex="0" role="button"` with an `aria-label`, and Enter/Shift+Enter mirror click/Shift+click — and announced to screen readers via a new `#vpSelectionStatus` (`.sr-only`, `aria-live="polite"`) region, matching the existing `#treeReorderStatus` convention from AUDIT-v5's drag-and-drop work. The legend now uses its real classes; the live-position dot uses `.tp-live`; a short toolpath-line sample demonstrates all three line types.
+
+**Verified live** (simulated DOM events against the running page, same method as §3): click → `vp-obj-selected` + correct `aria-live` announcement; Shift+click → both shapes become `vp-obj-multiselect` + "2 objects selected: ..." announcement; Shift+click again → correctly downgrades the remaining shape back to `vp-obj-selected` (not left as multiselect); hover adds/removes `vp-obj-hover` on enter/leave; keyboard Enter selects; click on empty viewport space clears selection and announces "Selection cleared"; legend/`.tp-live`/`.tp-rapid` computed styles confirmed matching their intended tokens.
+
+**Deliberately not implemented:** box-drag area-select, the third behavior `TIPS.select` promises. Implementing real drag-rectangle-intersects-shape hit-testing is a disproportionate lift for a static flat-SVG mock (this repo has no real 3D renderer or scene graph — see AUDIT-v5 §3's Clay-mode caveat, same reasoning applies here). Documented here as a known, intentional gap rather than silently left unfinished; a consumer project with a real viewport (AI CAM 3.0, Web DFM) would need to implement it against actual scene geometry, not this mock.
+
+Also fixed in the same pass: `.alert.inline` (used in `demo.html`, e.g. the toolpath inspector) had no example on the `index.html` reference page — added one to the Alerts panel from §2.
+
+Four more `tokens.css` classes were confirmed still-unused after this pass and are lower priority than the above: `.fade-in`/`.fade-in-delay-1/2/3` (entrance-animation utility classes, documented in README with a code snippet but never applied to real content) and `.pill.amber`/`.pill.red`/`.pill.blue`/`.pill.muted` (2 of 6 `.pill` color variants — `green`/`magenta` — are used in `demo.html`; the other 4 aren't). The `.pill` vs. `index.html`'s separate hand-rolled `.status-pill` layer is **not** a new finding — it's the same divergent-component-API issue tracked since `AUDIT.md` §5.2/167 and reconfirmed in `AUDIT-v2.md`, left as-is here too.
+
+---
+
+## 7. Summary
 
 | Severity | Count | Themes |
 |----------|-------|--------|
 | 🔴 Critical | 0 | — |
 | 🟠 High | 0 | — |
 | 🟡 Medium | 0 | — |
-| 🔵 Low | 1 | `.radio` vs `.radio-group` duplication — flagged in code and here, not deleted, pending maintainer decision |
+| 🔵 Low | 2 | `.radio` vs `.radio-group` duplication (flagged, not deleted); box-drag area-select not implemented in the static viewport mock (documented, intentional scope cut) |
 
-**One-line verdict:** the "Full component library" claim in README is now actually true — all 13 previously-unrendered component types have live, keyboard-operable, browser-verified examples in `index.html`, each committed as an independently reviewable, validated batch. `scripts/validate.js` passes with 0 errors and 0 warnings after every batch. Only remaining open items are the `.radio`/`.radio-group` duplication (flagged, needs a maintainer call) and the pre-existing SearchForge-UI token-copy drift carried forward from AUDIT-v4/v5 (still documentation-only by explicit prior user decision).
+**One-line verdict:** the "Full component library" claim in README is now actually true, and so is the Select tool's own tooltip — both the top-level component showcase and the 3D-viewport's own selection/hover/toolpath-line spec had the same defect (real CSS, zero live wiring), and both are now live, keyboard-operable, and browser-verified. `scripts/validate.js` passes with 0 errors and 0 warnings after every batch. Remaining open items: the `.radio`/`.radio-group` duplication (flagged, needs a maintainer call), box-drag select (documented scope cut, not a bug), unused `.fade-in`/`.pill` variants (cosmetic, low priority), the pre-existing `.pill`/`.status-pill` divergence (tracked since `AUDIT.md`, unchanged by design or long-standing inertia), and the SearchForge-UI token-copy drift carried forward from AUDIT-v4/v5 (documentation-only by explicit prior user decision).
