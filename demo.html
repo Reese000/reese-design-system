@@ -370,7 +370,7 @@
     <button class="tool-btn tip" data-tip="ai-optimize" title="" aria-label="AI optimize" style="color:var(--code-ai)"><svg class="icon"><use href="#icon-robot"/></svg></button>
     <div style="flex:1"></div>
     <button class="tool-btn tip" data-tip="unit-toggle" title="" aria-label="Toggle units" style="color:var(--code-info);font-size:10px;font-weight:700;font-family:var(--font-mono)" id="unitBtn" onclick="toggleUnit()">mm</button>
-    <button class="tool-btn" title="Toggle Dark/Light Mode" onclick="toggleTheme()" style="font-size:13px" id="themeBtn">🌙</button>
+    <button class="tool-btn" title="Toggle Dark/Light Mode" onclick="toggleTheme()" style="font-size:13px" id="themeBtn" role="switch" aria-checked="true" aria-label="Dark mode">🌙</button>
     <button class="tool-btn tip" data-tip="settings" title="" aria-label="Settings" style="color:var(--ink-muted)"><svg class="icon"><use href="#icon-settings"/></svg></button>
   </div>
 
@@ -1266,6 +1266,7 @@ function toggleTheme() {
   document.documentElement.classList.toggle('light', !isDark);
   document.documentElement.classList.toggle('dark', isDark);
   document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀';
+  document.getElementById('themeBtn').setAttribute('aria-checked', isDark);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1347,6 +1348,7 @@ function saveState() {
 function loadState() {
   isDark = document.documentElement.classList.contains('dark');
   document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀';
+  document.getElementById('themeBtn').setAttribute('aria-checked', isDark);
   const unit = localStorage.getItem('ds-unit');
   if (unit === 'in' && isMM) toggleUnit();
   const tw = localStorage.getItem('ds-tree-w'); if (tw) main.style.setProperty('--tree-w', tw);
@@ -1465,8 +1467,8 @@ toggleTheme = function() {
   const wasDark = isDark;
   pushUndo({
     label: 'Toggle theme',
-    undo: () => { isDark = wasDark; document.documentElement.classList.toggle('light', !isDark); document.documentElement.classList.toggle('dark', isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; },
-    redo: () => { isDark = !wasDark; document.documentElement.classList.toggle('light', !isDark); document.documentElement.classList.toggle('dark', isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; }
+    undo: () => { isDark = wasDark; document.documentElement.classList.toggle('light', !isDark); document.documentElement.classList.toggle('dark', isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; document.getElementById('themeBtn').setAttribute('aria-checked', isDark); },
+    redo: () => { isDark = !wasDark; document.documentElement.classList.toggle('light', !isDark); document.documentElement.classList.toggle('dark', isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; document.getElementById('themeBtn').setAttribute('aria-checked', isDark); }
   });
   origToggleFn();
 };
