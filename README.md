@@ -181,6 +181,81 @@ toggleUnit(); // Ctrl+U — swaps mm ↔ in project-wide
 <div class="fade-in fade-in-delay-1">...</div>
 ```
 
+### Form Controls
+Text inputs, select, and slider use native elements with token styling — no JS required.
+```html
+<input class="input" type="text" placeholder="Untitled Project">
+<div class="input-with-unit"><input class="input" type="text" value="1200"><span class="input-unit">mm/min</span></div>
+<select class="select"><option>Haas — Mill</option></select>
+<input class="slider" type="range" min="1000" max="24000" step="500" value="8000">
+```
+Checkbox and radio-group are custom ARIA widgets (not native `<input>`s — `.checkbox`/`.radio-dot` render their checked state via `::after`), wired the same way as the toggle switches in Toggles & Controls: click + Enter/Space flips state, `aria-checked` mirrors the visual state.
+```html
+<span class="checkbox checked" role="checkbox" aria-checked="true" aria-label="Enable collision detection" tabindex="0"></span>
+
+<div class="radio-group" role="radiogroup" aria-label="Units">
+  <div class="radio-option selected"><span class="radio-dot" role="radio" aria-checked="true" tabindex="0"></span> Metric (mm)</div>
+  <div class="radio-option"><span class="radio-dot" role="radio" aria-checked="false" tabindex="-1"></span> Imperial (in)</div>
+</div>
+```
+Radio-group implements the [ARIA APG radio pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/): roving `tabindex` (0 on the selected option, -1 on the rest) plus Arrow key navigation that both moves focus and selects.
+
+> **Note:** a second, bare `.radio`/`.radio.checked` primitive also exists in `tokens.css` (a single unlabeled circle, no group semantics). It renders identically to `.radio-dot` and appears to predate `.radio-group` without ever being removed. Neither is deleted here — flagged for a maintainer decision on which to keep.
+
+### Tabs
+[ARIA APG tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/): `role="tablist"`/`"tab"`/`"tabpanel"`, roving `tabindex`, Arrow/Home/End navigation with automatic activation.
+```html
+<div class="tabs" role="tablist" aria-label="Feature inspector">
+  <div class="tab active" role="tab" id="tab-geo" aria-selected="true" aria-controls="panel-geo" tabindex="0">Geometry</div>
+  <div class="tab" role="tab" id="tab-tool" aria-selected="false" aria-controls="panel-tool" tabindex="-1">Toolpaths</div>
+</div>
+<div class="tab-panel active" role="tabpanel" id="panel-geo" aria-labelledby="tab-geo">...</div>
+<div class="tab-panel" role="tabpanel" id="panel-tool" aria-labelledby="tab-tool">...</div>
+```
+
+### Stepper, Breadcrumb, Empty State
+```html
+<div class="stepper">
+  <button class="stepper-btn" data-step="-1" aria-label="Decrease depth of cut">−</button>
+  <input class="stepper-value" type="text" inputmode="decimal" value="2.5" data-min="0.5" data-max="10" data-step-size="0.5">
+  <button class="stepper-btn" data-step="1" aria-label="Increase depth of cut">+</button>
+</div>
+
+<nav class="breadcrumb" aria-label="Feature path">
+  <button class="breadcrumb-item">Project</button>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-item active" aria-current="page">Roughing Pass 1</span>
+</nav>
+
+<div class="empty-state">
+  <div class="empty-state-icon">⬚</div>
+  <div class="empty-state-title">No toolpaths yet</div>
+  <div class="empty-state-desc">Generate a toolpath from selected geometry to see it listed here.</div>
+</div>
+```
+Breadcrumb items are plain `<button>`s, not `href="#"` placeholder links — clicking one shouldn't jump the scroll position on a single-page app that has no real per-crumb route.
+
+### Modal & Confirm Dialog
+Full accessible dialog contract: `role="dialog"` (or `"alertdialog"` for confirms), `aria-modal`, `aria-labelledby`/`aria-describedby`, Escape closes, backdrop click closes, focus moves into the dialog on open (first focusable element), Tab is trapped and wraps inside the dialog, and focus returns to the triggering button on close.
+```html
+<button aria-haspopup="dialog" aria-controls="export-modal">Open Modal</button>
+
+<div class="modal-overlay" id="export-modal-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="export-modal-title" id="export-modal" tabindex="-1">
+    <div class="modal-header">
+      <div class="modal-title" id="export-modal-title">Export Settings</div>
+      <div class="modal-close" role="button" tabindex="0" aria-label="Close dialog" data-modal-close>✕</div>
+    </div>
+    <div class="modal-body">...</div>
+    <div class="modal-footer">
+      <button class="btn btn-md btn-ghost" data-modal-close>Cancel</button>
+      <button class="btn btn-md btn-primary" data-modal-close>Export</button>
+    </div>
+  </div>
+</div>
+```
+Confirm dialogs are the same `.modal` markup with `role="alertdialog"` and a `.confirm-icon`/`.confirm-title`/`.confirm-msg` body instead of `.modal-header`/`.modal-body` — see `index.html`'s Components section for the full delete-confirmation example.
+
 ### Drag & Drop
 Two patterns, both with a non-drag counterpart — dragging is never the only way to do either.
 
@@ -404,17 +479,18 @@ Design-System/
 ├── demo.html               # Interactive CAM app demo
 ├── index.html              # Design system reference page
 ├── sw.js                   # Service worker (offline caching)
-├── package.json            # v1.3.0 distribution metadata
+├── package.json            # v1.3.1 distribution metadata
 ├── README.md               # This file
 ├── AUDIT.md                # v1.x audit findings
 ├── AUDIT-v2.md             # v1.2 re-audit (pre-fix)
 ├── AUDIT-v3.md             # v1.2 re-audit (post-fix)
 ├── AUDIT-v4.md             # v1.2 re-audit (accessibility + contrast backlog)
-├── AUDIT-v5.md             # v1.3 audit (latest, authoritative) — 3D viewport, clay mode, drag & drop
+├── AUDIT-v5.md             # v1.3 audit (latest, authoritative) — 3D viewport, clay mode, drag & drop, cleanup pass
 ├── WEB-DFM-GUIDE.md        # Guide for applying this design system to Web DFM
 ├── ADAPTIVE-FRONTEND-PATTERNS.md # Different product — multi-vertical shopping-search UI (CNC machines/endmills/used cars), not this design system's scope
 ├── scripts/
-│   └── validate.js         # Token validator (CI gate)
+│   ├── validate.js         # Token validator (CI gate)
+│   └── hex-baseline.json   # Hardcoded-hex ratchet baseline (per-file limits validate.js enforces)
 └── .github/workflows/
     └── ci.yml              # CI pipeline (token validation, HTML structure, JS syntax, a11y)
 ```
