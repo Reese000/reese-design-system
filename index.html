@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="icons.css">
   <style>
     /* ═══════════════════════════════════════════════════════════════
-       REESE DESIGN SYSTEM v1.2.0
+       REESE DESIGN SYSTEM v1.3.1
        Surface: Operate + Command/Inspect hybrid
        Philosophy: Every feature visible. Zero hidden menus.
        Maximize action space. Color-code everything.
@@ -1695,6 +1695,79 @@
         </div>
       </div>
 
+      <!-- Text Inputs -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Text Inputs</div></div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+            <div>
+              <label for="ds-input-name" style="display: block; font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 4px;">Project Name</label>
+              <input id="ds-input-name" class="input" type="text" placeholder="Untitled Project">
+            </div>
+            <div>
+              <label for="ds-input-feed" style="display: block; font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 4px;">Feed Rate</label>
+              <div class="input-with-unit">
+                <input id="ds-input-feed" class="input" type="text" value="1200">
+                <span class="input-unit">mm/min</span>
+              </div>
+            </div>
+            <div>
+              <label for="ds-input-tool" style="display: block; font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 4px;">Tool Number <span style="color: var(--ink-muted);">(.input-sm)</span></label>
+              <input id="ds-input-tool" class="input input-sm" type="text" value="T01" style="max-width: 120px;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Select -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Select</div></div>
+        <div class="panel-body">
+          <label for="ds-select-post" style="display: block; font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 4px;">Post Processor</label>
+          <select id="ds-select-post" class="select">
+            <option>Haas — Mill</option>
+            <option>Haas — Lathe</option>
+            <option>Fanuc — Generic</option>
+            <option>Mazak — Multi-Axis</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Checkbox & Radio -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Checkbox & Radio</div></div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-4);">
+            <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="this.querySelector('.checkbox').click()">
+              <span class="checkbox checked" role="checkbox" aria-checked="true" aria-label="Enable collision detection" tabindex="0"></span>
+              <span style="font-size: var(--text-sm); color: var(--ink-secondary);">Enable collision detection</span>
+            </div>
+            <div>
+              <div style="font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 6px;">Units</div>
+              <div class="radio-group" role="radiogroup" aria-label="Units">
+                <div class="radio-option selected">
+                  <span class="radio-dot" role="radio" aria-checked="true" tabindex="0"></span> Metric (mm)
+                </div>
+                <div class="radio-option">
+                  <span class="radio-dot" role="radio" aria-checked="false" tabindex="-1"></span> Imperial (in)
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slider -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Slider</div></div>
+        <div class="panel-body">
+          <label for="ds-slider-speed" style="display: flex; justify-content: space-between; font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 8px;">
+            <span>Spindle Speed</span><span id="ds-slider-speed-val" style="font-family: var(--font-mono); color: var(--code-action);">8000 RPM</span>
+          </label>
+          <input id="ds-slider-speed" class="slider" type="range" min="1000" max="24000" step="500" value="8000" aria-label="Spindle Speed" oninput="document.getElementById('ds-slider-speed-val').textContent = this.value + ' RPM'">
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -2253,7 +2326,7 @@
   <!-- FOOTER -->
   <footer style="padding: var(--sp-8) 0; border-top: 1px solid var(--border-subtle); text-align: center;">
     <div style="font-size: var(--text-sm); color: var(--ink-muted);">
-      Reese Design System v1.2.0 — Utilitarian Interface Template
+      Reese Design System v1.3.1 — Utilitarian Interface Template
     </div>
     <div style="font-size: var(--text-xs); color: var(--ink-ghost); margin-top: var(--sp-2);">
       Built for: AI CAM 3.0 • Deepnest • Web DFM • Evolution Engine • reesecnc.com
@@ -2331,6 +2404,40 @@ function copySnippet(btn) {
     t.addEventListener('click', flip);
     t.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+    });
+  });
+
+  // Checkboxes
+  document.querySelectorAll('.checkbox').forEach(c => {
+    const flip = () => c.setAttribute('aria-checked', c.classList.toggle('checked'));
+    c.addEventListener('click', flip);
+    c.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+    });
+  });
+
+  // Radio groups (ARIA APG roving-tabindex pattern)
+  document.querySelectorAll('.radio-group').forEach(group => {
+    const options = [...group.querySelectorAll('.radio-option')];
+    const select = i => {
+      options.forEach((o, oi) => {
+        const dot = o.querySelector('.radio-dot');
+        o.classList.toggle('selected', oi === i);
+        dot.setAttribute('aria-checked', oi === i ? 'true' : 'false');
+        dot.tabIndex = oi === i ? 0 : -1;
+      });
+    };
+    options.forEach((opt, i) => {
+      const dot = opt.querySelector('.radio-dot');
+      opt.addEventListener('click', () => { select(i); dot.focus(); });
+      dot.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(i); }
+        else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          e.preventDefault(); const n = (i + 1) % options.length; select(n); options[n].querySelector('.radio-dot').focus();
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+          e.preventDefault(); const n = (i - 1 + options.length) % options.length; select(n); options[n].querySelector('.radio-dot').focus();
+        }
+      });
     });
   });
 
