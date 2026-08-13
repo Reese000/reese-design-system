@@ -205,8 +205,16 @@ body {
 }
 
 /* ── PREFERS COLOR SCHEME ───────────────────────────────────── */
+/* :not(.dark):not(.light) -- this is a pre-JS/no-explicit-choice fallback
+   only. Once a page sets an explicit .light or .dark class (demo.html's
+   toggleTheme()/loadState() always do, on every load), that class fully
+   determines the base tokens via the html.light{} block below -- see
+   AUDIT-v6 §7 for the bug this fixes: the media query used to redefine
+   these tokens independently of .light/.dark, so a manual toggle that
+   disagreed with the OS's prefers-color-scheme produced a broken hybrid
+   theme (canvas stuck on one scheme, text/action colors on the other). */
 @media(prefers-color-scheme:light){
-  :root:not(.dark){
+  :root:not(.dark):not(.light){
     --canvas-void:#f0f1f3; --canvas-base:#e8e9ec; --canvas-surface:#e0e1e5;
     --canvas-raised:#d8d9dd; --canvas-elevated:#d0d2d6; --canvas-bright:#c8c9ce;
     --ink-primary:#1a1c20; --ink-secondary:#3a3d48; --ink-tertiary:#5a5d66;
@@ -585,6 +593,12 @@ button,a,.toggle,.input,.select,.tab,.tree-item,.alert,.mode-btn,.breadcrumb-ite
    is ever used as text, only as decorative swatch/legend fills. */
 html.light{
   color-scheme:light;
+  --canvas-void:#f0f1f3; --canvas-base:#e8e9ec; --canvas-surface:#e0e1e5;
+  --canvas-raised:#d8d9dd; --canvas-elevated:#d0d2d6; --canvas-bright:#c8c9ce;
+  --ink-primary:#1a1c20; --ink-secondary:#3a3d48; --ink-tertiary:#5a5d66;
+  --ink-muted:#6b7088; --ink-ghost:#8a8e98;
+  --border-subtle:rgba(0,0,0,0.06); --border-default:rgba(0,0,0,0.09);
+  --border-strong:rgba(0,0,0,0.14); --border-vivid:rgba(0,0,0,0.20);
   --code-action:#1943e8; --code-danger:#b31212; --code-success:#266438;
   --code-warning:#79510c; --code-info:#0c607a; --code-accent:#7a1bda;
   --code-tool:#93410f; --code-material:#196265; --code-data:#ad1154;

@@ -1263,6 +1263,7 @@ let isDark = true;
 function toggleTheme() {
   isDark = !isDark;
   document.documentElement.classList.toggle('light', !isDark);
+  document.documentElement.classList.toggle('dark', isDark);
   document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀';
 }
 
@@ -1344,7 +1345,10 @@ function saveState() {
 }
 function loadState() {
   const theme = localStorage.getItem('ds-theme');
-  if (theme === 'light') { isDark = false; document.documentElement.classList.add('light'); document.getElementById('themeBtn').textContent = '☀'; }
+  isDark = theme !== 'light';
+  document.documentElement.classList.toggle('light', !isDark);
+  document.documentElement.classList.toggle('dark', isDark);
+  document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀';
   const unit = localStorage.getItem('ds-unit');
   if (unit === 'in' && isMM) toggleUnit();
   const tw = localStorage.getItem('ds-tree-w'); if (tw) main.style.setProperty('--tree-w', tw);
@@ -1463,8 +1467,8 @@ toggleTheme = function() {
   const wasDark = isDark;
   pushUndo({
     label: 'Toggle theme',
-    undo: () => { isDark = wasDark; document.documentElement.classList.toggle('light', !isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; },
-    redo: () => { isDark = !wasDark; document.documentElement.classList.toggle('light', !isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; }
+    undo: () => { isDark = wasDark; document.documentElement.classList.toggle('light', !isDark); document.documentElement.classList.toggle('dark', isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; },
+    redo: () => { isDark = !wasDark; document.documentElement.classList.toggle('light', !isDark); document.documentElement.classList.toggle('dark', isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; }
   });
   origToggleFn();
 };

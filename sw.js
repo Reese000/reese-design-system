@@ -3,7 +3,7 @@
    Offline-first caching for design system files.
    ═══════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'reese-ds-v1.5';
+const CACHE_NAME = 'reese-ds-v1.6';
 const ASSETS = [
   './',
   './tokens.css',
