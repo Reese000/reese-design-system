@@ -86,11 +86,31 @@ Four more `tokens.css` classes were confirmed still-unused after this pass and a
 
 ---
 
-## 7. Summary
+## 7. 🔴 Critical: the manual theme toggle produced a broken hybrid theme for most users
+
+While spot-checking light-mode contrast on the components added in §2-§6, several measured implausibly low ratios (e.g. `.breadcrumb-item.active` at 1.01:1, `.empty-state-title` at 1.56:1) even though their `html.light` CSS rules looked correct in isolation. Tracing the actual computed styles up the DOM found the root cause was not in any individual component — it was in how the theme itself gets applied.
+
+`tokens.css` redefined the base surface tokens (`--canvas-*`/`--ink-*`/`--border-*`) only inside `@media(prefers-color-scheme:light){ :root:not(.dark){...} }` — driven purely by the OS/browser's color-scheme setting. Separately, `html.light{...}` (added during AUDIT-v4/v5's contrast work) redefined only the `--code-*` semantic colors, plus a long tail of `html.light .foo{color:#hardcoded}` per-component overrides. But `demo.html`'s actual theme toggle (`toggleTheme()`, bound to a toolbar button and Ctrl+L, persisted via `localStorage`) only ever manipulates the `.light` class on `<html>` — it never touches `prefers-color-scheme`, which the browser doesn't let a page override anyway.
+
+Net effect, confirmed via the real `toggleTheme()` function (not a synthetic test) on a browser with `prefers-color-scheme: dark` — the overwhelming majority case for this "Dark-Mode Native" product's own target audience: clicking the light-mode toggle updated `--code-*` and every hardcoded per-component light-mode color, **but the canvas itself stayed pitch black**, because nothing had ever redefined `--canvas-void`/`--ink-primary`/etc. in response to the `.light` class. Text and icons rendered in colors tuned for a light background, on a background that never changed — a genuinely broken, largely illegible theme. (The bug is symmetric: a user whose OS prefers light and who explicitly picks dark mode via the toggle would hit the mirror-image failure, since the code never set a `.dark` class either — "dark" was only ever represented by the *absence* of `.light`, which the media query doesn't know how to respect.)
+
+**Fixed:**
+- Moved the full base token set into `html.light{}` so the explicit class is completely self-sufficient regardless of OS preference.
+- Narrowed the media query's guard to `:root:not(.dark):not(.light)` so it only acts as a fallback for the brief pre-JS moment (or an unstyled/no-JS context) before either explicit class is set.
+- Made `toggleTheme()`, `loadState()`, and the undo/redo history handlers all set an explicit `.dark` class (mirroring the existing `.light` toggle) on every code path, instead of representing "dark" as the mere absence of `.light`.
+- Bumped `sw.js`'s `CACHE_NAME` (`v1.5` → `v1.6`) — the service worker caches `tokens.css` cache-first with no revalidation ever, so any returning user with the old service worker installed would never have received this fix at all without a cache-version bump. (This is also a standing gotcha for local development: editing `tokens.css` while an old service worker is installed silently serves stale CSS — worth knowing if a future fix "doesn't seem to apply" in a browser that's visited the page before.)
+
+**Verified live** against the real code path (toolbar button click, not a simulated class change), in a fresh tab with the stale `reese-ds-v1.5` service-worker cache cleared: default state on load is fully dark (`--canvas-void:#0e1013`, `--code-action:#6c8aff`); clicking the toggle produces a fully light theme (`--canvas-void:#f0f1f3`, `--code-action:#1943e8`, body background measured `rgb(240,241,243)`); clicking again returns to fully dark. Also verified `index.html` (which has no toggle and relies purely on `prefers-color-scheme`) still resolves light mode correctly under an emulated `prefers-color-scheme: light` browser, confirming the narrowed media-query guard didn't regress the OS-driven-only path.
+
+This is the most severe finding across AUDIT.md through AUDIT-v6 — every previous audit's light-mode contrast work (AUDIT-v4's WCAG fixes, AUDIT-v5's `.pill`/`.alert` fixes, this document's own §2-§6) was correct *in isolation* but could never actually be experienced correctly by a real user toggling themes, because the toggle itself didn't fully apply. It went unnoticed through five prior audits because verification consistently checked computed color values against token definitions rather than exercising the actual toggle end-to-end in a browser whose OS preference disagreed with the chosen in-app theme.
+
+---
+
+## 8. Summary
 
 | Severity | Count | Themes |
 |----------|-------|--------|
-| 🔴 Critical | 0 | — |
+| 🔴 Critical | 1 | Theme toggle applied only half the palette when it disagreed with OS `prefers-color-scheme` — fixed, see §7 |
 | 🟠 High | 0 | — |
 | 🟡 Medium | 0 | — |
 | 🔵 Low | 2 | `.radio` vs `.radio-group` duplication (flagged, not deleted); box-drag area-select not implemented in the static viewport mock (documented, intentional scope cut) |
