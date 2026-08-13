@@ -1857,6 +1857,47 @@
         </div>
       </div>
 
+      <!-- Modal & Confirm Dialog -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Modal & Confirm Dialog</div></div>
+        <div class="panel-body">
+          <div style="display: flex; gap: var(--sp-3); flex-wrap: wrap;">
+            <button class="btn btn-md btn-ghost" type="button" aria-haspopup="dialog" aria-controls="ds-modal-example">Open Modal</button>
+            <button class="btn btn-md btn-danger" type="button" aria-haspopup="dialog" aria-controls="ds-confirm-example">Delete Project…</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="ds-modal-overlay">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ds-modal-title" id="ds-modal-example" tabindex="-1">
+          <div class="modal-header">
+            <div class="modal-title" id="ds-modal-title">Export Settings</div>
+            <div class="modal-close" role="button" tabindex="0" aria-label="Close dialog" data-modal-close>✕</div>
+          </div>
+          <div class="modal-body">
+            <div style="font-size: var(--text-sm); color: var(--ink-secondary); line-height: 1.5;">Choose a post-processor and units before generating G-code.</div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-md btn-ghost" type="button" data-modal-close>Cancel</button>
+            <button class="btn btn-md btn-primary" type="button" data-modal-close>Export</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="ds-confirm-overlay">
+        <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="ds-confirm-title" aria-describedby="ds-confirm-msg" id="ds-confirm-example" tabindex="-1" style="width: 340px;">
+          <div class="modal-body" style="padding-top: var(--sp-6);">
+            <div class="confirm-icon danger">⚠</div>
+            <div class="confirm-title" id="ds-confirm-title">Delete this project?</div>
+            <div class="confirm-msg" id="ds-confirm-msg">This removes all toolpaths and cannot be undone.</div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-md btn-ghost" type="button" data-modal-close>Cancel</button>
+            <button class="btn btn-md btn-danger" type="button" data-modal-close>Delete</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -2578,6 +2619,57 @@ function copySnippet(btn) {
       });
     });
   });
+
+  // Modals & confirm dialogs: open/close, focus trap, focus return
+  (function () {
+    let lastTrigger = null;
+
+    const focusableEls = modal => [...modal.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )].filter(el => !el.disabled && el.offsetParent !== null);
+
+    const openModal = (modal, trigger) => {
+      lastTrigger = trigger || document.activeElement;
+      modal.closest('.modal-overlay').classList.add('open');
+      (focusableEls(modal)[0] || modal).focus();
+    };
+
+    const closeModal = modal => {
+      modal.closest('.modal-overlay').classList.remove('open');
+      if (lastTrigger) { lastTrigger.focus(); lastTrigger = null; }
+    };
+
+    document.querySelectorAll('[aria-haspopup="dialog"][aria-controls]').forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const modal = document.getElementById(trigger.getAttribute('aria-controls'));
+        if (modal) openModal(modal, trigger);
+      });
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      const modal = overlay.querySelector('.modal');
+      overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(modal); });
+
+      modal.querySelectorAll('[data-modal-close]').forEach(btn => {
+        btn.addEventListener('click', () => closeModal(modal));
+        if (btn.getAttribute('role') === 'button') {
+          btn.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeModal(modal); }
+          });
+        }
+      });
+
+      modal.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeModal(modal); return; }
+        if (e.key !== 'Tab') return;
+        const focusables = focusableEls(modal);
+        if (!focusables.length) return;
+        const first = focusables[0], last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      });
+    });
+  })();
 
   // Action card hover feedback + keyboard activation (Enter/Space).
   // Action cards are <div>s (not <button>s) to preserve the existing
