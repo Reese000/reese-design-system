@@ -200,8 +200,6 @@ Checkbox and radio-group are custom ARIA widgets (not native `<input>`s — `.ch
 ```
 Radio-group implements the [ARIA APG radio pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/): roving `tabindex` (0 on the selected option, -1 on the rest) plus Arrow key navigation that both moves focus and selects.
 
-> **Note:** a second, bare `.radio`/`.radio.checked` primitive also exists in `tokens.css` (a single unlabeled circle, no group semantics). It renders identically to `.radio-dot` and appears to predate `.radio-group` without ever being removed. Neither is deleted here — flagged for a maintainer decision on which to keep.
-
 ### Tabs
 [ARIA APG tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/): `role="tablist"`/`"tab"`/`"tabpanel"`, roving `tabindex`, Arrow/Home/End navigation with automatic activation.
 ```html
@@ -539,7 +537,6 @@ When applying this design system to a new project:
 **Known remaining work (see AUDIT-v6.md for full detail):**
 - SearchForge-UI still hard-copies tokens.css rather than importing it (drift risk documented in AUDIT-v4 §6 and AUDIT-v5; fixing it means touching a second repo, deliberately deferred)
 - No consumer project (AI CAM 3.0, Web DFM, Deepnest, Evolution Engine, reesecnc.com) has actually adopted these patterns yet — this repo is spec + a self-contained demo, not a shipped dependency
-- `.radio` (bare primitive) duplicates `.radio-dot`/`.radio-group` (labeled-group pattern) — flagged in `tokens.css` and AUDIT-v6 §4, not deleted, pending a maintainer decision on which to keep
 
 ---
 

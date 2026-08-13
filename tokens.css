@@ -266,13 +266,6 @@ body {
 .checkbox{width:16px;height:16px;background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:var(--r-xs);cursor:pointer;position:relative;flex-shrink:0}
 .checkbox.checked{background:var(--code-action);border-color:var(--code-action)}
 .checkbox.checked::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:700}
-/* NOTE: bare .radio duplicates .radio-dot below (identical rendering, no group semantics).
-   Prefer .radio-group/.radio-option/.radio-dot for anything with more than one option --
-   it has ARIA radiogroup wiring (see index.html Components section). Not deleted here,
-   flagged for a maintainer decision on which to keep -- see AUDIT-v6.md. */
-.radio{width:16px;height:16px;background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:50%;cursor:pointer;position:relative;flex-shrink:0}
-.radio.checked{border-color:var(--code-action)}
-.radio.checked::after{content:'';position:absolute;top:3px;left:3px;width:8px;height:8px;background:var(--code-action);border-radius:50%}
 
 /* ═══════════════════════════════════════════════════════════════
    TOGGLE
