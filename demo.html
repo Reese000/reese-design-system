@@ -403,20 +403,24 @@
     <div class="viewport-content">
       <svg width="320" height="200" viewBox="0 0 320 200">
         <rect x="60" y="30" width="200" height="140" rx="2" fill="none" stroke="var(--code-view)" stroke-width="1.5" opacity="0.4" data-clay="1"/>
-        <path d="M80,50 L240,50 L240,110 L200,110 L200,150 L120,150 L120,110 L80,110 Z" fill="rgba(163,230,53,0.04)" stroke="var(--code-view)" stroke-width="1.5" data-clay="1"/>
+        <path class="vp-selectable" data-obj="Outer Profile" tabindex="0" role="button" aria-label="Outer Profile" d="M80,50 L240,50 L240,110 L200,110 L200,150 L120,150 L120,110 L80,110 Z" fill="rgba(163,230,53,0.04)" stroke="var(--code-view)" stroke-width="1.5" data-clay="1"/>
         <!-- Ø8mm holes (cyan) -->
-        <circle cx="100" cy="75" r="8" fill="none" stroke="var(--code-info)" stroke-width="1.5" data-clay="8"/>
-        <circle cx="220" cy="75" r="8" fill="none" stroke="var(--code-info)" stroke-width="1.5" data-clay="4"/>
-        <circle cx="100" cy="130" r="8" fill="none" stroke="var(--code-info)" stroke-width="1.5" data-clay="3"/>
-        <!-- Ø5mm hole (purple) with warning ring — ring stays untouched by Clay mode, only the inner hole recolors -->
+        <circle class="vp-selectable" data-obj="Ø8mm Hole 1" tabindex="0" role="button" aria-label="Ø8mm Hole 1" cx="100" cy="75" r="8" fill="none" stroke="var(--code-info)" stroke-width="1.5" data-clay="8"/>
+        <circle class="vp-selectable" data-obj="Ø8mm Hole 2" tabindex="0" role="button" aria-label="Ø8mm Hole 2" cx="220" cy="75" r="8" fill="none" stroke="var(--code-info)" stroke-width="1.5" data-clay="4"/>
+        <circle class="vp-selectable" data-obj="Ø8mm Hole 3" tabindex="0" role="button" aria-label="Ø8mm Hole 3" cx="100" cy="130" r="8" fill="none" stroke="var(--code-info)" stroke-width="1.5" data-clay="3"/>
+        <!-- Ø5mm hole (purple) with warning ring — ring stays untouched by Clay mode and selection, only the inner hole responds -->
         <circle cx="220" cy="130" r="10" fill="none" stroke="var(--code-warning)" stroke-width="1" stroke-dasharray="3,2"/>
-        <circle cx="220" cy="130" r="5" fill="none" stroke="var(--code-accent)" stroke-width="1.5" data-clay="2"/>
-        <rect x="130" y="115" width="60" height="30" rx="2" fill="rgba(163,230,53,0.06)" stroke="var(--code-view)" stroke-width="1" stroke-dasharray="4,2" data-clay="6"/>
+        <circle class="vp-selectable" data-obj="Ø5mm Hole" tabindex="0" role="button" aria-label="Ø5mm Hole" cx="220" cy="130" r="5" fill="none" stroke="var(--code-accent)" stroke-width="1.5" data-clay="2"/>
+        <rect class="vp-selectable" data-obj="Pocket" tabindex="0" role="button" aria-label="Pocket" x="130" y="115" width="60" height="30" rx="2" fill="rgba(163,230,53,0.06)" stroke="var(--code-view)" stroke-width="1" stroke-dasharray="4,2" data-clay="6"/>
+        <!-- Toolpath line legend sample: rapid (dashed), feed (solid), plunge (dotted) -->
+        <path class="tp-rapid" d="M65,165 L95,165"/>
+        <path class="tp-feed" d="M95,165 L100,130"/>
+        <path class="tp-plunge" d="M100,130 L100,140"/>
         <line x1="60" y1="180" x2="260" y2="180" stroke="var(--ink-muted)" stroke-width="0.5"/>
         <text x="160" y="193" text-anchor="middle" fill="var(--ink-muted)" font-family="var(--font-mono)" font-size="9">100mm</text>
         <line x1="275" y1="30" x2="275" y2="170" stroke="var(--ink-muted)" stroke-width="0.5"/>
         <text x="290" y="104" text-anchor="middle" fill="var(--ink-muted)" font-family="var(--font-mono)" font-size="9" transform="rotate(90,290,104)">80mm</text>
-        <circle cx="160" cy="80" r="4" fill="var(--code-action)" opacity="0.8">
+        <circle class="tp-live" cx="160" cy="80" r="4" opacity="0.8">
           <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
         </circle>
       </svg>
@@ -426,13 +430,14 @@
       <div class="coord-pill">Y: <span id="coordY">80.000</span></div>
       <div class="coord-pill">Z: <span id="coordZ">0.000</span></div>
     </div>
-    <div style="position:absolute;top:8px;left:8px;z-index:2;display:flex;gap:6px;font-size:9px;flex-wrap:wrap">
-        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-success);border-radius:1px;display:inline-block"></span> Safe</span>
-        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-warning);border-radius:1px;display:inline-block"></span> Warning</span>
-        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-danger);border-radius:1px;display:inline-block"></span> Error</span>
-        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-info);border-radius:1px;display:inline-block"></span> Ø8mm</span>
-        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-accent);border-radius:1px;display:inline-block"></span> Ø5mm</span>
-      </div>
+    <div class="vp-legend">
+      <span><span class="vp-legend-dot" style="background:var(--code-success)"></span> Safe</span>
+      <span><span class="vp-legend-dot" style="background:var(--code-warning)"></span> Warning</span>
+      <span><span class="vp-legend-dot" style="background:var(--code-danger)"></span> Error</span>
+      <span><span class="vp-legend-dot" style="background:var(--code-info)"></span> Ø8mm</span>
+      <span><span class="vp-legend-dot" style="background:var(--code-accent)"></span> Ø5mm</span>
+    </div>
+    <div id="vpSelectionStatus" class="sr-only" role="status" aria-live="polite"></div>
     <div class="viewport-modes">
       <div class="mode-btn on" tabindex="0" onclick="cycleMode(this,['Perspective','Top','Front','Side','Iso'])">Perspective</div>
       <div class="mode-btn on" tabindex="0" onclick="cycleMode(this,['Shaded','Wire','Hidden','X-Ray','Clay'])">Shaded</div>
@@ -803,6 +808,56 @@ document.getElementById('viewport').addEventListener('mousemove', e => {
   document.getElementById('coordX').textContent = parseFloat(x).toFixed(3);
   document.getElementById('coordY').textContent = parseFloat(y).toFixed(3);
 });
+
+// Viewport object selection — click to select, Shift+click/Shift+Enter to
+// multi-select, hover to preview. Mouse and keyboard both fully supported;
+// box-drag multi-select from the tool tooltip's copy is not implemented in
+// this static mock (documented gap, see AUDIT-v6 §6).
+(function () {
+  const shapes = [...document.querySelectorAll('.vp-selectable')];
+  const status = document.getElementById('vpSelectionStatus');
+  let selected = [];
+
+  function render() {
+    shapes.forEach(s => {
+      s.classList.remove('vp-obj-selected', 'vp-obj-multiselect');
+      if (selected.includes(s)) {
+        s.classList.add(selected.length > 1 ? 'vp-obj-multiselect' : 'vp-obj-selected');
+      }
+    });
+  }
+
+  function announce() {
+    if (selected.length === 0) status.textContent = 'Selection cleared';
+    else if (selected.length === 1) status.textContent = selected[0].dataset.obj + ' selected';
+    else status.textContent = selected.length + ' objects selected: ' + selected.map(s => s.dataset.obj).join(', ');
+  }
+
+  function selectOnly(shape) { selected = [shape]; render(); announce(); }
+  function toggleInSelection(shape) {
+    selected = selected.includes(shape) ? selected.filter(s => s !== shape) : [...selected, shape];
+    render(); announce();
+  }
+
+  shapes.forEach(shape => {
+    shape.addEventListener('mouseenter', () => shape.classList.add('vp-obj-hover'));
+    shape.addEventListener('mouseleave', () => shape.classList.remove('vp-obj-hover'));
+    shape.addEventListener('click', e => {
+      e.stopPropagation();
+      if (e.shiftKey) toggleInSelection(shape); else selectOnly(shape);
+    });
+    shape.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (e.shiftKey) toggleInSelection(shape); else selectOnly(shape);
+      }
+    });
+  });
+
+  document.getElementById('viewport').addEventListener('click', e => {
+    if (!e.target.closest('.vp-selectable')) { selected = []; render(); announce(); }
+  });
+})();
 
 // Command palette
 function openCmd() {

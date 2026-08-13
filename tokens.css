@@ -412,6 +412,7 @@ body {
   --code-axis-z: var(--code-action);   /* Z — blue */
 }
 /* Selection states — hover / selected / multi-select */
+.vp-selectable{cursor:pointer}
 .vp-obj-hover{outline:1.5px solid rgba(108,138,255,0.6);outline-offset:1px}
 .vp-obj-selected{outline:2px solid var(--code-action);outline-offset:1px;background:var(--code-action-dim)}
 .vp-obj-multiselect{outline:2px solid var(--code-action);outline-offset:1px;background:var(--code-action-dim)}
