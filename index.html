@@ -1818,6 +1818,45 @@
         </div>
       </div>
 
+      <!-- Stepper & Breadcrumb -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Stepper & Breadcrumb</div></div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-4);">
+            <div>
+              <div style="font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 6px;">Depth of Cut (mm)</div>
+              <div class="stepper">
+                <button class="stepper-btn" type="button" data-step="-1" aria-label="Decrease depth of cut">−</button>
+                <input class="stepper-value" type="text" inputmode="decimal" value="2.5" aria-label="Depth of cut in millimeters" data-min="0.5" data-max="10" data-step-size="0.5">
+                <button class="stepper-btn" type="button" data-step="1" aria-label="Increase depth of cut">+</button>
+              </div>
+            </div>
+            <div>
+              <div style="font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 6px;">Breadcrumb</div>
+              <nav class="breadcrumb" aria-label="Feature path">
+                <button class="breadcrumb-item" type="button">Project</button>
+                <span class="breadcrumb-sep">/</span>
+                <button class="breadcrumb-item" type="button">Toolpaths</button>
+                <span class="breadcrumb-sep">/</span>
+                <span class="breadcrumb-item active" aria-current="page">Roughing Pass 1</span>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Empty State</div></div>
+        <div class="panel-body">
+          <div class="empty-state">
+            <div class="empty-state-icon">⬚</div>
+            <div class="empty-state-title">No toolpaths yet</div>
+            <div class="empty-state-desc">Generate a toolpath from selected geometry to see it listed here.</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -2521,6 +2560,22 @@ function copySnippet(btn) {
     x.addEventListener('click', close);
     x.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); close(); }
+    });
+  });
+
+  // Steppers
+  document.querySelectorAll('.stepper').forEach(stepper => {
+    const value = stepper.querySelector('.stepper-value');
+    const min = parseFloat(value.dataset.min ?? '-Infinity');
+    const max = parseFloat(value.dataset.max ?? 'Infinity');
+    const stepSize = parseFloat(value.dataset.stepSize ?? '1');
+    stepper.querySelectorAll('.stepper-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const dir = parseFloat(btn.dataset.step);
+        const next = Math.min(max, Math.max(min, parseFloat(value.value || '0') + dir * stepSize));
+        value.value = Number(next.toFixed(2));
+        value.dispatchEvent(new Event('change'));
+      });
     });
   });
 
