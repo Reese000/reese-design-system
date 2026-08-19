@@ -176,14 +176,17 @@
     .btn-sm{height:22px;padding:0 6px;font-size:10px;border-radius:var(--r-xs)}
     .btn-primary{background:var(--code-action);color:#fff}
     .btn-primary:hover{background:#7d99ff}
-    .btn-success{background:var(--code-success);color:#0a0b0d}
+    .btn-success{background:var(--code-success);color:#ffffff}
     .btn-success:hover{background:#5fd87f}
     .btn-danger{background:var(--code-danger);color:#fff}
     .btn-ghost{background:var(--canvas-surface);color:var(--ink-secondary);border:1px solid var(--border-default)}
     .btn-ghost:hover{background:var(--canvas-raised);color:var(--ink-primary);border-color:var(--border-strong)}
     .btn-surface{background:transparent;color:var(--ink-tertiary)}
     .btn-surface:hover{background:var(--canvas-surface);color:var(--ink-primary)}
-    .kbd{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 3px;font-family:var(--font-mono);font-size:9px;font-weight:500;color:var(--ink-muted);background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:2px}
+    .kbd{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 3px;font-family:var(--font-mono);font-size:9px;font-weight:500;color:var(--ink-secondary);background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:2px}
+
+    .insp-label{color:var(--ink-secondary) !important}
+    .tool-card-sub{color:var(--ink-secondary) !important}
 
     /* ── TOGGLE (square) ───────────────────────────────────── */
     .toggle{width:32px;height:18px;background:var(--canvas-elevated);border:1px solid var(--border-default);border-radius:var(--r-xs);cursor:pointer;transition:all 120ms;position:relative;flex-shrink:0}
@@ -389,7 +392,7 @@
       <div class="tree-item tree-indent tree-child" data-tip="holes"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-circle"/></svg></span><span>4× Holes</span></div>
       <div class="tree-item tree-indent tree-child" data-tip="pocket"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-arc"/></svg></span><span>Pocket</span></div>
       <div class="tree-item tree-group-header" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-endmill"/></svg></span><span style="color:var(--code-tool)">3/8" Endmill</span></div>
-      <div class="tree-item tree-indent tree-child loading tree-sortable" tabindex="0"><span class="tree-drag-grip" aria-hidden="true">⠿</span><span class="spinner" style="width:10px;height:10px;border-width:1.5px;border-top-color:var(--code-action)"></span><span class="tree-label" style="color:var(--code-action)">Roughing</span><span style="font-size:9px;color:var(--ink-muted)">computing...</span><span class="tree-move-btns"><button type="button" class="tree-move-btn" data-dir="-1" aria-label="Move Roughing up">▲</button><button type="button" class="tree-move-btn" data-dir="1" aria-label="Move Roughing down">▼</button></span></div>
+      <div class="tree-item tree-indent tree-child loading tree-sortable" tabindex="0"><span class="tree-drag-grip" aria-hidden="true">⠿</span><span class="spinner" style="width:10px;height:10px;border-width:1.5px;border-top-color:var(--code-action)"></span><span class="tree-label" style="color:var(--code-action)">Roughing</span><span style="font-size:9px;color:var(--ink-primary)">computing...</span><span class="tree-move-btns"><button type="button" class="tree-move-btn" data-dir="-1" aria-label="Move Roughing up">▲</button><button type="button" class="tree-move-btn" data-dir="1" aria-label="Move Roughing down">▼</button></span></div>
       <div class="tree-item tree-indent tree-child tree-sortable" tabindex="0"><span class="tree-drag-grip" aria-hidden="true">⠿</span><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-check"/></svg></span><span class="tree-label">Finishing</span><span class="tree-move-btns"><button type="button" class="tree-move-btn" data-dir="-1" aria-label="Move Finishing up">▲</button><button type="button" class="tree-move-btn" data-dir="1" aria-label="Move Finishing down">▼</button></span></div>
       <div class="tree-item tree-group-header" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-drill"/></svg></span><span style="color:var(--code-tool)">1/4" Drill</span></div>
       <div class="tree-item tree-indent tree-child tree-sortable" tabindex="0"><span class="tree-drag-grip" aria-hidden="true">⠿</span><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></span><span class="tree-label">Drill Cycle</span><span class="tree-move-btns"><button type="button" class="tree-move-btn" data-dir="-1" aria-label="Move Drill Cycle up">▲</button><button type="button" class="tree-move-btn" data-dir="1" aria-label="Move Drill Cycle down">▼</button></span></div>
@@ -544,7 +547,7 @@
   <div class="statusbar-right">
     <span>Feeds: <span style="color:var(--code-success)">OK</span></span>
     <span>Collision: <span style="color:var(--code-success)">Clear</span></span>
-    <span style="color:var(--ink-ghost)">v3.0.1</span>
+    <span style="color:var(--ink-secondary)">v3.0.1</span>
   </div>
 </div>
 
@@ -1565,9 +1568,9 @@ function startOnboarding() {
       `<div style="font-size:14px;font-weight:700;margin-bottom:6px">${s.title}</div>` +
       `<div style="font-size:12px;color:var(--ink-tertiary);line-height:1.5;margin-bottom:12px">${s.msg}</div>` +
       `<div style="display:flex;justify-content:space-between;align-items:center">` +
-      `<span style="font-size:10px;color:var(--ink-muted)">${step+1}/${steps.length}</span>` +
+      `<span style="font-size:10px;color:var(--ink-secondary)">${step+1}/${steps.length}</span>` +
       `<div style="display:flex;gap:6px">` +
-      `<button onclick="localStorage.setItem('ds-onboarded','1');this.closest('[style*=fixed]').remove()" style="background:none;border:none;color:var(--ink-muted);cursor:pointer;font-size:11px">Skip</button>` +
+      `<button onclick="localStorage.setItem('ds-onboarded','1');this.closest('[style*=fixed]').remove()" style="background:none;border:none;color:var(--ink-secondary);cursor:pointer;font-size:11px">Skip</button>` +
       `<button class="btn btn-sm btn-primary" onclick="window._nextStep()" style="height:28px">${step<steps.length-1?'Next':'Get Started'}</button>` +
       `</div></div></div>`;
   }

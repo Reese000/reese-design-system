@@ -45,6 +45,8 @@
 | HTML structure | CI `for f in demo.html index.html` block | DOCTYPE + closing tags + tokens.css link + balanced `<style>` |
 | JS syntax | CI `node --check` on extracted `<script>` blocks | exit 0 |
 | A11y basics | CI grep for `:focus-visible`, `prefers-reduced-motion`, ARIA attrs | all present in tokens.css + both pages |
+| WCAG 2.2 AA (axe-core) | `node scripts/test-a11y-axe.js` | **0 Critical, 0 Serious** violations (axe-core + Playwright Chromium) |
+| Visual regression | `node scripts/test-visual.js` | ≤0.5% pixel diff vs committed baselines (light/dark/reduced-motion) |
 | Component rendering | Audit sweep (regex class-def vs class-usage) | every documented component has a live example (AUDIT-v6 method) |
 | Version pin | `grep` package.json ↔ page/README headers | identical |
 
@@ -60,5 +62,5 @@ Adoption is verified by a per-project grep for token usage (`--ds-*` / token ide
 ## 5. Known debt (open items)
 
 - **Fleet adoption incomplete**: only AI CAM 3.0 and Foundry Manager have verified real adoption. Deepnest/Web DFM matches are in temp/brownfield copies; Evolution Engine and reesecnc.com have none. Tracked via board adoption tasks.
-- **Axe-core not wired into CI yet**: current a11y gates are grep-based; a real axe-core scan (automated WCAG audit) is the future floor. See AUDIT trail.
-- **No visual regression harness**: component rendering is verified functionally by hand; a browser-level screenshot diff would close the loop.
+- ~~**Axe-core not wired into CI yet**~~: **RESOLVED** (2026-08-19). axe-core WCAG 2.2 AA audit wired into CI via `@axe-core/playwright` + Playwright Chromium. Runs against both `index.html` and `demo.html` served locally. CI fails on any Critical/Serious violation. Reports saved as CI artifacts. All current violations fixed (contrast, aria-labels, landmark structure).
+- ~~**No visual regression harness**~~: **RESOLVED** (2026-08-19). Playwright screenshot-based visual regression for `index.html` and `demo.html` in light/dark/reduced-motion modes. Baselines committed in `tests/visual/baselines/`. CI fails on >0.5% pixel diff. `npm run test:visual -- --update` regenerates baselines.

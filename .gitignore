@@ -17,3 +17,7 @@ Thumbs.db
 # Environment
 .env
 .env.local
+
+# Test artifacts
+reports/
+tests/visual/diffs/
