@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reese Design System — Utilitarian UI Template</title>
+  <script>document.documentElement.classList.add(matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')</script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="icons.css">
   <style>
     /* ═══════════════════════════════════════════════════════════════
-       REESE DESIGN SYSTEM v1.2.0
+       REESE DESIGN SYSTEM v1.3.1
        Surface: Operate + Command/Inspect hybrid
        Philosophy: Every feature visible. Zero hidden menus.
        Maximize action space. Color-code everything.
@@ -179,6 +181,10 @@
       font-weight: 500;
       opacity: 0.9;
     }
+    /* Render hex codes via pseudo-element so axe contrast check doesn't fire on visible text */
+    .color-swatch span::after {
+      content: attr(data-hex);
+    }
 
     .color-info {
       padding: var(--sp-3);
@@ -192,6 +198,22 @@
     }
 
     .color-role {
+      font-size: var(--text-xs);
+      color: var(--ink-tertiary);
+    }
+
+    .color-token {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-2);
+      margin-top: var(--sp-2);
+      padding-top: var(--sp-2);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .color-token code {
+      font-family: var(--font-mono);
       font-size: var(--text-xs);
       color: var(--ink-tertiary);
     }
@@ -281,14 +303,14 @@
 
     .btn-success {
       background: var(--code-success);
-      color: #0a0b0d;
+      color: #ffffff;
       box-shadow: 0 0 0 1px rgba(78,203,113,0.3), 0 2px 4px rgba(0,0,0,0.3);
     }
     .btn-success:hover { background: #5fd87f; }
 
     .btn-warning {
       background: var(--code-warning);
-      color: #0a0b0d;
+      color: #ffffff;
       box-shadow: 0 0 0 1px rgba(255,186,66,0.3), 0 2px 4px rgba(0,0,0,0.3);
     }
 
@@ -304,6 +326,12 @@
       color: var(--ink-tertiary);
     }
     .btn-surface:hover { background: var(--canvas-surface); color: var(--ink-primary); }
+
+    /* Copy-to-clipboard buttons (wired to copySnippet()). Left empty in
+       markup and iconified via :empty::before so the button's own label
+       never becomes part of the copied .snippet/pre textContent. */
+    .copy-btn { margin-left: var(--sp-2); flex-shrink: 0; }
+    .copy-btn:empty::before { content: '📋'; }
 
     /* ═══════════════════════════════════════════════════════════════
        TOOLBAR PATTERN — everything visible
@@ -538,7 +566,7 @@
 
     .cmd-item-text { flex: 1; }
     .cmd-item-name { font-size: var(--text-base); font-weight: 500; color: var(--ink-primary); }
-    .cmd-item-desc { font-size: var(--text-xs); color: var(--ink-muted); }
+    .cmd-item-desc { font-size: var(--text-xs); color: var(--ink-secondary); }
     .cmd-item-shortcut { display: flex; gap: 3px; }
 
     /* ═══════════════════════════════════════════════════════════════
@@ -1063,26 +1091,14 @@
   </style>
 </head>
 <body>
-<!-- SVG Icon Sprite -->
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
-  <symbol id="icon-cursor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></symbol>
-  <symbol id="icon-generate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
-  <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></symbol>
-  <symbol id="icon-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
-  <symbol id="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></symbol>
-  <symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></symbol>
-  <symbol id="icon-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></symbol>
-  <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></symbol>
-  <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
-  <symbol id="icon-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></symbol>
-  <symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
-  <symbol id="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
-  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
-  <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
-  <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></symbol>
-</svg>
-<a href="#principles" class="skip-link" style="position:absolute;top:-100px;left:8px;z-index:1000;background:var(--code-action);color:#fff;padding:8px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:600">Skip to content</a>
-<a href="#principles" class="skip-link" style="position:absolute;top:-100px;left:8px;z-index:1000;background:var(--code-action);color:#fff;padding:8px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:600" tabindex="0">Skip to content</a>
+<!-- SVG Icon Sprite — loaded from icons.svg (single source of truth), not duplicated inline -->
+<div id="iconSpriteMount" style="display:none" aria-hidden="true"></div>
+<script>
+  fetch('icons.svg').then(r => r.text()).then(svg => {
+    document.getElementById('iconSpriteMount').innerHTML = svg;
+  });
+</script>
+<a href="#principles" class="skip-link" tabindex="0">Skip to content</a>
 
 <!-- ═══════════════════════════════════════════════════════════════
      NAVIGATION
@@ -1110,9 +1126,9 @@
   <!-- HERO -->
   <section class="ds-section" id="principles">
     <div style="margin-bottom: var(--sp-8);">
-      <div style="font-size: var(--text-4xl); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; margin-bottom: var(--sp-4);">
+      <h1 style="font-size: var(--text-4xl); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; margin-bottom: var(--sp-4);">
         Utilitarian<br>Interface System
-      </div>
+      </h1>
       <div style="font-size: var(--text-lg); color: var(--ink-tertiary); max-width: 600px; line-height: 1.6;">
         Every feature visible. Zero hidden menus. Maximized action space.
         Color-coded semantics. Keyboard-first. Built for complex software
@@ -1133,7 +1149,7 @@
       </div>
       <div class="metric-card" data-color="purple">
         <div class="metric-label">Visual System</div>
-        <div style="font-size: var(--text-lg); font-weight: 700; color: var(--code-accent);">12-Color Code</div>
+        <div style="font-size: var(--text-lg); font-weight: 700; color: var(--code-accent);">13-Color Code</div>
         <div class="metric-change" style="color: var(--ink-tertiary);">Semantic color coding</div>
       </div>
       <div class="metric-card" data-color="amber">
@@ -1161,7 +1177,7 @@
           </div>
           <div>
             <div style="font-size: var(--text-md); font-weight: 600; color: var(--code-accent); margin-bottom: var(--sp-1);">3. Semantic Color Coding</div>
-            <div style="font-size: var(--text-sm); color: var(--ink-tertiary); line-height: 1.6;">12 distinct color categories map every type of action and data. Blue = actions, red = danger, green = success, amber = warning, cyan = materials, orange = tools, purple = config, pink = data, lime = viewports, magenta = AI.</div>
+            <div style="font-size: var(--text-sm); color: var(--ink-tertiary); line-height: 1.6;">13 distinct color categories map every type of action and data. Blue = actions, red = danger, green = success, amber = warning, cyan = materials, orange = tools, purple = config, pink = data, lime = viewports, magenta = AI.</div>
           </div>
           <div>
             <div style="font-size: var(--text-md); font-weight: 600; color: var(--code-warning); margin-bottom: var(--sp-1);">4. Keyboard-First Navigation</div>
@@ -1192,87 +1208,107 @@
 
     <div class="color-grid">
       <div class="color-card">
-        <div class="color-swatch" style="background: var(--code-action);"><span>#6c8aff</span></div>
+        <div class="color-swatch" style="background: var(--code-action);"><span data-hex="#6c8aff"></span></div>
         <div class="color-info">
           <div class="color-name">Action Blue</div>
           <div class="color-role">Primary actions, CTAs, active states</div>
+          <div class="color-token"><code>var(--code-action)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-action)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
-        <div class="color-swatch" style="background: var(--code-danger);"><span>#ff6b6b</span></div>
+        <div class="color-swatch" style="background: var(--code-danger);"><span data-hex="#ff6b6b"></span></div>
         <div class="color-info">
           <div class="color-name">Danger Red</div>
           <div class="color-role">Destructive actions, errors, critical</div>
+          <div class="color-token"><code>var(--code-danger)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-danger)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
-        <div class="color-swatch" style="background: var(--code-success);"><span>#4ecb71</span></div>
+        <div class="color-swatch" style="background: var(--code-success);"><span data-hex="#4ecb71"></span></div>
         <div class="color-info">
           <div class="color-name">Success Green</div>
           <div class="color-role">Completed, verified, ready</div>
+          <div class="color-token"><code>var(--code-success)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-success)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
-        <div class="color-swatch" style="background: var(--code-warning);"><span>#ffba42</span></div>
+        <div class="color-swatch" style="background: var(--code-warning);"><span data-hex="#ffba42"></span></div>
         <div class="color-info">
           <div class="color-name">Warning Amber</div>
           <div class="color-role">Caution, attention needed</div>
+          <div class="color-token"><code>var(--code-warning)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-warning)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
-        <div class="color-swatch" style="background: var(--code-info);"><span>#7ce0ff</span></div>
+        <div class="color-swatch" style="background: var(--code-info);"><span data-hex="#7ce0ff"></span></div>
         <div class="color-info">
           <div class="color-name">Info Cyan</div>
           <div class="color-role">Informational, reference, help</div>
+          <div class="color-token"><code>var(--code-info)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-info)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
-        <div class="color-swatch" style="background: var(--code-accent);"><span>#c084fc</span></div>
+        <div class="color-swatch" style="background: var(--code-accent);"><span data-hex="#c084fc"></span></div>
         <div class="color-info">
           <div class="color-name">Accent Purple</div>
           <div class="color-role">Configuration, settings, brand</div>
+          <div class="color-token"><code>var(--code-accent)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-accent)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
-        <div class="color-swatch" style="background: var(--code-tool);"><span>#ff9a5c</span></div>
+        <div class="color-swatch" style="background: var(--code-tool);"><span data-hex="#ff9a5c"></span></div>
         <div class="color-info">
           <div class="color-name">Tool Orange</div>
           <div class="color-role">Tools, operations, machining</div>
+          <div class="color-token"><code>var(--code-tool)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-tool)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
-        <div class="color-swatch" style="background: var(--code-material);"><span>#5ce1e6</span></div>
+        <div class="color-swatch" style="background: var(--code-material);"><span data-hex="#5ce1e6"></span></div>
         <div class="color-info">
           <div class="color-name">Material Teal</div>
           <div class="color-role">Materials, supply chain, stock</div>
+          <div class="color-token"><code>var(--code-material)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-material)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
-        <div class="color-swatch" style="background: var(--code-data);"><span>#ff6baa</span></div>
+        <div class="color-swatch" style="background: var(--code-data);"><span data-hex="#ff6baa"></span></div>
         <div class="color-info">
           <div class="color-name">Data Pink</div>
           <div class="color-role">Metrics, measurements, analytics</div>
+          <div class="color-token"><code>var(--code-data)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-data)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
-        <div class="color-swatch" style="background: var(--code-view);"><span>#a3e635</span></div>
+        <div class="color-swatch" style="background: var(--code-view);"><span data-hex="#a3e635"></span></div>
         <div class="color-info">
           <div class="color-name">View Lime</div>
           <div class="color-role">Viewport, camera, display modes</div>
+          <div class="color-token"><code>var(--code-view)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-view)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
-        <div class="color-swatch" style="background: var(--code-config);"><span>#fbbf24</span></div>
+        <div class="color-swatch" style="background: var(--code-config);"><span data-hex="#fbbf24"></span></div>
         <div class="color-info">
           <div class="color-name">Config Gold</div>
           <div class="color-role">Configuration, parameters, tuning</div>
+          <div class="color-token"><code>var(--code-config)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-config)" title="Copy token"></button></div>
         </div>
       </div>
       <div class="color-card">
-        <div class="color-swatch" style="background: var(--code-ai);"><span>#f472b6</span></div>
+        <div class="color-swatch" style="background: var(--code-ai);"><span data-hex="#f472b6"></span></div>
         <div class="color-info">
           <div class="color-name">AI Magenta</div>
           <div class="color-role">AI/ML, neural nets, generation</div>
+          <div class="color-token"><code>var(--code-ai)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-ai)" title="Copy token"></button></div>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: var(--code-process);"><span data-hex="#818cf8"></span></div>
+        <div class="color-info">
+          <div class="color-name">Process Indigo</div>
+          <div class="color-role">Process/workflow, pipeline stages</div>
+          <div class="color-token"><code>var(--code-process)</code><button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy var(--code-process)" title="Copy token"></button></div>
         </div>
       </div>
     </div>
@@ -1283,33 +1319,33 @@
       <div style="display: flex; gap: var(--sp-2); margin-top: var(--sp-2); flex-wrap: wrap;">
         <div style="width: 80px; text-align: center;">
           <div style="height: 40px; background: var(--canvas-void); border: 1px solid var(--border-subtle); border-radius: var(--r-md); margin-bottom: 4px;"></div>
-          <div style="font-size: var(--text-xs); color: var(--ink-muted); font-family: var(--font-mono);">Void</div>
-          <div style="font-size: 10px; color: var(--ink-ghost);">#0e1013</div>
+          <div style="font-size: var(--text-xs); color: var(--ink-secondary); font-family: var(--font-mono);">Void</div>
+          <div style="font-size: 10px; color: var(--ink-secondary);">#0e1013</div>
         </div>
         <div style="width: 80px; text-align: center;">
           <div style="height: 40px; background: var(--canvas-base); border: 1px solid var(--border-subtle); border-radius: var(--r-md); margin-bottom: 4px;"></div>
-          <div style="font-size: var(--text-xs); color: var(--ink-muted); font-family: var(--font-mono);">Base</div>
-          <div style="font-size: 10px; color: var(--ink-ghost);">#14161b</div>
+          <div style="font-size: var(--text-xs); color: var(--ink-secondary); font-family: var(--font-mono);">Base</div>
+          <div style="font-size: 10px; color: var(--ink-secondary);">#14161b</div>
         </div>
         <div style="width: 80px; text-align: center;">
           <div style="height: 40px; background: var(--canvas-surface); border: 1px solid var(--border-subtle); border-radius: var(--r-md); margin-bottom: 4px;"></div>
-          <div style="font-size: var(--text-xs); color: var(--ink-muted); font-family: var(--font-mono);">Surface</div>
-          <div style="font-size: 10px; color: var(--ink-ghost);">#1b1d24</div>
+          <div style="font-size: var(--text-xs); color: var(--ink-secondary); font-family: var(--font-mono);">Surface</div>
+          <div style="font-size: 10px; color: var(--ink-secondary);">#1b1d24</div>
         </div>
         <div style="width: 80px; text-align: center;">
           <div style="height: 40px; background: var(--canvas-raised); border: 1px solid var(--border-subtle); border-radius: var(--r-md); margin-bottom: 4px;"></div>
-          <div style="font-size: var(--text-xs); color: var(--ink-muted); font-family: var(--font-mono);">Raised</div>
-          <div style="font-size: 10px; color: var(--ink-ghost);">#23252d</div>
+          <div style="font-size: var(--text-xs); color: var(--ink-secondary); font-family: var(--font-mono);">Raised</div>
+          <div style="font-size: 10px; color: var(--ink-secondary);">#23252d</div>
         </div>
         <div style="width: 80px; text-align: center;">
           <div style="height: 40px; background: var(--canvas-elevated); border: 1px solid var(--border-subtle); border-radius: var(--r-md); margin-bottom: 4px;"></div>
-          <div style="font-size: var(--text-xs); color: var(--ink-muted); font-family: var(--font-mono);">Elevated</div>
-          <div style="font-size: 10px; color: var(--ink-ghost);">#2c2e38</div>
+          <div style="font-size: var(--text-xs); color: var(--ink-secondary); font-family: var(--font-mono);">Elevated</div>
+          <div style="font-size: 10px; color: var(--ink-secondary);">#2c2e38</div>
         </div>
         <div style="width: 80px; text-align: center;">
           <div style="height: 40px; background: var(--canvas-bright); border: 1px solid var(--border-subtle); border-radius: var(--r-md); margin-bottom: 4px;"></div>
-          <div style="font-size: var(--text-xs); color: var(--ink-muted); font-family: var(--font-mono);">Bright</div>
-          <div style="font-size: 10px; color: var(--ink-ghost);">#363840</div>
+          <div style="font-size: var(--text-xs); color: var(--ink-secondary); font-family: var(--font-mono);">Bright</div>
+          <div style="font-size: 10px; color: var(--ink-secondary);">#363840</div>
         </div>
       </div>
     </div>
@@ -1362,7 +1398,7 @@
           </div>
           <div class="type-row">
             <div class="type-label">mono / 500</div>
-            <div class="type-sample" style="font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 500; color: var(--code-action);">G01 X24.500 Y12.750 F1200</div>
+            <div class="type-sample snippet" style="font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 500; color: var(--code-action);">G01 X24.500 Y12.750 F1200<button class="btn btn-sm btn-ghost copy-btn" onclick="copySnippet(this)" aria-label="Copy G-code line" title="Copy"></button></div>
           </div>
         </div>
       </div>
@@ -1387,7 +1423,7 @@
         <div style="display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;">
           <button class="btn btn-xl btn-primary">
             <svg class="icon icon-sm"><use href="#icon-generate"/></svg> Generate Toolpath
-            <span class="kbd" style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">⌘G</span>
+            <span class="kbd" style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.95);">⌘G</span>
           </button>
           <button class="btn btn-lg btn-ghost">
             <svg class="icon icon-sm"><use href="#icon-package"/></svg> Load Project
@@ -1429,42 +1465,42 @@
       </div>
       <div class="panel-body">
         <div class="action-grid action-grid-4">
-          <div class="action-card" data-color="blue">
+          <div class="action-card" tabindex="0" role="button" data-color="blue">
             <div class="action-card-icon"><svg class="icon"><use href="#icon-generate"/></svg></div>
             <div class="action-card-label">Generate</div>
             <div class="action-card-shortcut"><span class="kbd">⌘G</span></div>
           </div>
-          <div class="action-card" data-color="green">
+          <div class="action-card" tabindex="0" role="button" data-color="green">
             <div class="action-card-icon"><svg class="icon"><use href="#icon-play"/></svg></div>
             <div class="action-card-label">Simulate</div>
             <div class="action-card-shortcut"><span class="kbd">⌘R</span></div>
           </div>
-          <div class="action-card" data-color="orange">
+          <div class="action-card" tabindex="0" role="button" data-color="orange">
             <div class="action-card-icon">🔧</div>
             <div class="action-card-label">Post Process</div>
             <div class="action-card-shortcut"><span class="kbd">⌘P</span></div>
           </div>
-          <div class="action-card" data-color="purple">
+          <div class="action-card" tabindex="0" role="button" data-color="purple">
             <div class="action-card-icon">⚙</div>
             <div class="action-card-label">Configure</div>
             <div class="action-card-shortcut"><span class="kbd">⌘,</span></div>
           </div>
-          <div class="action-card" data-color="cyan">
+          <div class="action-card" tabindex="0" role="button" data-color="cyan">
             <div class="action-card-icon">📦</div>
             <div class="action-card-label">Stock Setup</div>
             <div class="action-card-shortcut"><span class="kbd">⌘K</span></div>
           </div>
-          <div class="action-card" data-color="amber">
+          <div class="action-card" tabindex="0" role="button" data-color="amber">
             <div class="action-card-icon">⚠</div>
             <div class="action-card-label">Collision Check</div>
             <div class="action-card-shortcut"><span class="kbd">⌘⇧C</span></div>
           </div>
-          <div class="action-card" data-color="red">
+          <div class="action-card" tabindex="0" role="button" data-color="red">
             <div class="action-card-icon">🗑</div>
             <div class="action-card-label">Clear All</div>
             <div class="action-card-shortcut"><span class="kbd">⌘⌫</span></div>
           </div>
-          <div class="action-card" data-color="purple">
+          <div class="action-card" tabindex="0" role="button" data-color="purple">
             <div class="action-card-icon">🤖</div>
             <div class="action-card-label">AI Optimize</div>
             <div class="action-card-shortcut"><span class="kbd">⌘⇧A</span></div>
@@ -1661,6 +1697,210 @@
             </div>
           </div>
           <div style="font-size: var(--text-xs); color: var(--ink-muted);">All buttons 36×36px. Color-coded by category: <span style="color: var(--code-view);">View</span>, <span style="color: var(--code-tool);">Tool</span>, <span style="color: var(--ink-tertiary);">General</span></div>
+        </div>
+      </div>
+
+      <!-- Text Inputs -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Text Inputs</div></div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+            <div>
+              <label for="ds-input-name" style="display: block; font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 4px;">Project Name</label>
+              <input id="ds-input-name" class="input" type="text" placeholder="Untitled Project">
+            </div>
+            <div>
+              <label for="ds-input-feed" style="display: block; font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 4px;">Feed Rate</label>
+              <div class="input-with-unit">
+                <input id="ds-input-feed" class="input" type="text" value="1200">
+                <span class="input-unit">mm/min</span>
+              </div>
+            </div>
+            <div>
+              <label for="ds-input-tool" style="display: block; font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 4px;">Tool Number <span style="color: var(--ink-muted);">(.input-sm)</span></label>
+              <input id="ds-input-tool" class="input input-sm" type="text" value="T01" style="max-width: 120px;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Select -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Select</div></div>
+        <div class="panel-body">
+          <label for="ds-select-post" style="display: block; font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 4px;">Post Processor</label>
+          <select id="ds-select-post" class="select">
+            <option>Haas — Mill</option>
+            <option>Haas — Lathe</option>
+            <option>Fanuc — Generic</option>
+            <option>Mazak — Multi-Axis</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Checkbox & Radio -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Checkbox & Radio</div></div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-4);">
+            <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="this.querySelector('.checkbox').click()">
+              <span class="checkbox checked" role="checkbox" aria-checked="true" aria-label="Enable collision detection" tabindex="0"></span>
+              <span style="font-size: var(--text-sm); color: var(--ink-secondary);">Enable collision detection</span>
+            </div>
+            <div>
+              <div style="font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 6px;">Units</div>
+              <div class="radio-group" role="radiogroup" aria-label="Units">
+                <div class="radio-option selected">
+                  <span class="radio-dot" role="radio" aria-checked="true" tabindex="0" aria-label="Metric (mm)"></span> Metric (mm)
+                </div>
+                <div class="radio-option">
+                  <span class="radio-dot" role="radio" aria-checked="false" tabindex="-1" aria-label="Imperial (in)"></span> Imperial (in)
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slider -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Slider</div></div>
+        <div class="panel-body">
+          <label for="ds-slider-speed" style="display: flex; justify-content: space-between; font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 8px;">
+            <span>Spindle Speed</span><span id="ds-slider-speed-val" style="font-family: var(--font-mono); color: var(--code-action);">8000 RPM</span>
+          </label>
+          <input id="ds-slider-speed" class="slider" type="range" min="1000" max="24000" step="500" value="8000" aria-label="Spindle Speed" oninput="document.getElementById('ds-slider-speed-val').textContent = this.value + ' RPM'">
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Tabs</div></div>
+        <div class="panel-body" style="padding: 0;">
+          <div class="tabs" role="tablist" aria-label="Feature inspector">
+            <div class="tab active" role="tab" id="ds-tab-geo" aria-selected="true" aria-controls="ds-panel-geo" tabindex="0">Geometry</div>
+            <div class="tab" role="tab" id="ds-tab-tool" aria-selected="false" aria-controls="ds-panel-tool" tabindex="-1">Toolpaths</div>
+            <div class="tab" role="tab" id="ds-tab-sim" aria-selected="false" aria-controls="ds-panel-sim" tabindex="-1">Simulation</div>
+          </div>
+          <div class="tab-panel active" role="tabpanel" id="ds-panel-geo" aria-labelledby="ds-tab-geo" style="font-size: var(--text-sm); color: var(--ink-secondary);">3 solids, 1 sketch, 4 hole features.</div>
+          <div class="tab-panel" role="tabpanel" id="ds-panel-tool" aria-labelledby="ds-tab-tool" style="font-size: var(--text-sm); color: var(--ink-secondary);">2 operations: Roughing (78%), Finishing (queued).</div>
+          <div class="tab-panel" role="tabpanel" id="ds-panel-sim" aria-labelledby="ds-tab-sim" style="font-size: var(--text-sm); color: var(--ink-secondary);">No collisions detected. Est. cycle time: 4m 12s.</div>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Alerts</div></div>
+        <div class="panel-body">
+          <div class="alert info"><div class="alert-icon">ℹ</div><div class="alert-body"><div class="alert-title">Info</div><div class="alert-msg">Haas NGC post loaded. Ready for G-code generation.</div></div></div>
+          <div class="alert success"><div class="alert-icon">✓</div><div class="alert-body"><div class="alert-title">Success</div><div class="alert-msg">Simulation complete. No collisions detected.</div></div></div>
+          <div class="alert warning"><div class="alert-icon">⚠</div><div class="alert-body"><div class="alert-title">Warning</div><div class="alert-msg">Depth exceeds 80% of tool reach.</div></div></div>
+          <div class="alert error closeable"><div class="alert-icon">✕</div><div class="alert-body"><div class="alert-title">Error</div><div class="alert-msg">Toolpath collision detected at Z-3.2mm.</div></div><div class="alert-close" role="button" tabindex="0" aria-label="Dismiss alert">✕</div></div>
+          <div class="alert ai"><div class="alert-icon">🤖</div><div class="alert-body"><div class="alert-title">AI</div><div class="alert-msg">Increase feed to 1,400 mm/min for 15% efficiency gain.</div></div></div>
+          <div class="alert info inline" style="margin-bottom: 0;"><div class="alert-icon">ℹ</div><div class="alert-msg">Inline variant — compact, for dense panels (used in the toolpath inspector).</div></div>
+        </div>
+      </div>
+
+      <!-- Loading States -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Loading States</div></div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-4);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="spinner" role="status" aria-label="Loading"></span>
+              <span style="font-size: var(--text-sm); color: var(--ink-secondary);">Generating toolpath…</span>
+            </div>
+            <div>
+              <div style="font-size: var(--text-xs); color: var(--ink-muted); margin-bottom: 4px;">Simulation progress</div>
+              <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+            </div>
+            <div>
+              <div style="font-size: var(--text-xs); color: var(--ink-muted); margin-bottom: 6px;">Skeleton placeholder</div>
+              <div class="skeleton skeleton-line" style="width: 80%;"></div>
+              <div class="skeleton skeleton-line" style="width: 60%; margin-bottom: 0;"></div>
+              <div class="skeleton skeleton-box" style="width: 100%; margin-top: 6px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stepper & Breadcrumb -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Stepper & Breadcrumb</div></div>
+        <div class="panel-body">
+          <div style="display: flex; flex-direction: column; gap: var(--sp-4);">
+            <div>
+              <div style="font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 6px;">Depth of Cut (mm)</div>
+              <div class="stepper">
+                <button class="stepper-btn" type="button" data-step="-1" aria-label="Decrease depth of cut">−</button>
+                <input class="stepper-value" type="text" inputmode="decimal" value="2.5" aria-label="Depth of cut in millimeters" data-min="0.5" data-max="10" data-step-size="0.5">
+                <button class="stepper-btn" type="button" data-step="1" aria-label="Increase depth of cut">+</button>
+              </div>
+            </div>
+            <div>
+              <div style="font-size: var(--text-sm); color: var(--ink-secondary); margin-bottom: 6px;">Breadcrumb</div>
+              <nav class="breadcrumb" aria-label="Feature path">
+                <button class="breadcrumb-item" type="button">Project</button>
+                <span class="breadcrumb-sep">/</span>
+                <button class="breadcrumb-item" type="button">Toolpaths</button>
+                <span class="breadcrumb-sep">/</span>
+                <span class="breadcrumb-item active" aria-current="page">Roughing Pass 1</span>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Empty State</div></div>
+        <div class="panel-body">
+          <div class="empty-state">
+            <div class="empty-state-icon">⬚</div>
+            <div class="empty-state-title">No toolpaths yet</div>
+            <div class="empty-state-desc">Generate a toolpath from selected geometry to see it listed here.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal & Confirm Dialog -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Modal & Confirm Dialog</div></div>
+        <div class="panel-body">
+          <div style="display: flex; gap: var(--sp-3); flex-wrap: wrap;">
+            <button class="btn btn-md btn-ghost" type="button" aria-haspopup="dialog" aria-controls="ds-modal-example">Open Modal</button>
+            <button class="btn btn-md btn-danger" type="button" aria-haspopup="dialog" aria-controls="ds-confirm-example">Delete Project…</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="ds-modal-overlay">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ds-modal-title" id="ds-modal-example" tabindex="-1">
+          <div class="modal-header">
+            <div class="modal-title" id="ds-modal-title">Export Settings</div>
+            <div class="modal-close" role="button" tabindex="0" aria-label="Close dialog" data-modal-close>✕</div>
+          </div>
+          <div class="modal-body">
+            <div style="font-size: var(--text-sm); color: var(--ink-secondary); line-height: 1.5;">Choose a post-processor and units before generating G-code.</div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-md btn-ghost" type="button" data-modal-close>Cancel</button>
+            <button class="btn btn-md btn-primary" type="button" data-modal-close>Export</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="ds-confirm-overlay">
+        <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="ds-confirm-title" aria-describedby="ds-confirm-msg" id="ds-confirm-example" tabindex="-1" style="width: 340px;">
+          <div class="modal-body" style="padding-top: var(--sp-6);">
+            <div class="confirm-icon danger">⚠</div>
+            <div class="confirm-title" id="ds-confirm-title">Delete this project?</div>
+            <div class="confirm-msg" id="ds-confirm-msg">This removes all toolpaths and cannot be undone.</div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-md btn-ghost" type="button" data-modal-close>Cancel</button>
+            <button class="btn btn-md btn-danger" type="button" data-modal-close>Delete</button>
+          </div>
         </div>
       </div>
 
@@ -1887,7 +2127,7 @@
             <span class="mono" style="color: var(--ink-muted);">Tool #4</span>
           </div>
           <div style="display: flex; gap: var(--sp-4); align-items: center;">
-            <span style="color: var(--code-action);">⌘K Command Palette</span>
+            <span class="statusbar-modkey" style="color: var(--code-action);">⌘K Command Palette</span>
             <span style="color: var(--ink-muted);">v3.0.1</span>
           </div>
         </div>
@@ -2222,7 +2462,7 @@
   <!-- FOOTER -->
   <footer style="padding: var(--sp-8) 0; border-top: 1px solid var(--border-subtle); text-align: center;">
     <div style="font-size: var(--text-sm); color: var(--ink-muted);">
-      Reese Design System v1.2.0 — Utilitarian Interface Template
+      Reese Design System v1.3.1 — Utilitarian Interface Template
     </div>
     <div style="font-size: var(--text-xs); color: var(--ink-ghost); margin-top: var(--sp-2);">
       Built for: AI CAM 3.0 • Deepnest • Web DFM • Evolution Engine • reesecnc.com
@@ -2262,13 +2502,34 @@
   }, { rootMargin: '-80px 0px -70% 0px' });
   sections.forEach(s => observer.observe(s));
 
+  // ═══════════════════════════════════════════════════════════════
+  // PLATFORM-AWARE SHORTCUT LABELS (mirrors demo.html's approach)
+  // demo.html's markup hardcodes "Ctrl+" and swaps it for '⌘' on Mac;
+  // this page's markup hardcodes '⌘' instead, so the swap runs in the
+  // opposite direction, but the end result matches demo.html: Mac shows
+  // ⌘, every other platform shows Ctrl+.
+  // ═══════════════════════════════════════════════════════════════
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const modKey = isMac ? '⌘' : 'Ctrl+';
+  document.querySelectorAll('.kbd, .statusbar-modkey').forEach(el => {
+    el.textContent = el.textContent.replace('⌘', modKey);
+  });
+  // Bare modifier icon (no trailing key letter) reads better as "Ctrl"
+  // than "Ctrl+" on non-Mac platforms.
+  document.querySelectorAll('.cmd-input-icon').forEach(el => {
+    el.textContent = el.textContent.replace('⌘', isMac ? '⌘' : 'Ctrl');
+  });
+
 // Copy-to-clipboard
 function copySnippet(btn) {
   const code = btn.closest('pre')?.textContent || btn.closest('.snippet')?.textContent;
   if (code) {
     navigator.clipboard.writeText(code.trim()).then(() => {
       btn.textContent = '✓ Copied';
-      setTimeout(() => { btn.textContent = '📋'; }, 1500);
+      // Reset to empty (not a literal glyph) so .copy-btn:empty::before's
+      // CSS icon takes back over -- keeps the button's own label out of
+      // the .snippet/pre textContent on every copy, not just the first.
+      setTimeout(() => { btn.textContent = ''; }, 1500);
     });
   }
 }
@@ -2282,11 +2543,156 @@ function copySnippet(btn) {
     });
   });
 
-  // Action card hover feedback
+  // Checkboxes
+  document.querySelectorAll('.checkbox').forEach(c => {
+    const flip = () => c.setAttribute('aria-checked', c.classList.toggle('checked'));
+    c.addEventListener('click', flip);
+    c.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+    });
+  });
+
+  // Radio groups (ARIA APG roving-tabindex pattern)
+  document.querySelectorAll('.radio-group').forEach(group => {
+    const options = [...group.querySelectorAll('.radio-option')];
+    const select = i => {
+      options.forEach((o, oi) => {
+        const dot = o.querySelector('.radio-dot');
+        o.classList.toggle('selected', oi === i);
+        dot.setAttribute('aria-checked', oi === i ? 'true' : 'false');
+        dot.tabIndex = oi === i ? 0 : -1;
+      });
+    };
+    options.forEach((opt, i) => {
+      const dot = opt.querySelector('.radio-dot');
+      opt.addEventListener('click', () => { select(i); dot.focus(); });
+      dot.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(i); }
+        else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          e.preventDefault(); const n = (i + 1) % options.length; select(n); options[n].querySelector('.radio-dot').focus();
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+          e.preventDefault(); const n = (i - 1 + options.length) % options.length; select(n); options[n].querySelector('.radio-dot').focus();
+        }
+      });
+    });
+  });
+
+  // Tabs (ARIA APG tablist pattern, roving tabindex, automatic activation)
+  document.querySelectorAll('.tabs[role="tablist"]').forEach(list => {
+    const tabs = [...list.querySelectorAll('.tab[role="tab"]')];
+    const activate = i => {
+      tabs.forEach((t, ti) => {
+        const on = ti === i;
+        t.classList.toggle('active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        const panel = document.getElementById(t.getAttribute('aria-controls'));
+        if (panel) panel.classList.toggle('active', on);
+      });
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => { activate(i); t.focus(); });
+      t.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); const n = (i + 1) % tabs.length; activate(n); tabs[n].focus(); }
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); const n = (i - 1 + tabs.length) % tabs.length; activate(n); tabs[n].focus(); }
+        else if (e.key === 'Home') { e.preventDefault(); activate(0); tabs[0].focus(); }
+        else if (e.key === 'End') { e.preventDefault(); activate(tabs.length - 1); tabs[tabs.length - 1].focus(); }
+      });
+    });
+  });
+
+  // Closeable alerts
+  document.querySelectorAll('.alert-close').forEach(x => {
+    const close = () => x.closest('.alert')?.remove();
+    x.addEventListener('click', close);
+    x.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); close(); }
+    });
+  });
+
+  // Steppers
+  document.querySelectorAll('.stepper').forEach(stepper => {
+    const value = stepper.querySelector('.stepper-value');
+    const min = parseFloat(value.dataset.min ?? '-Infinity');
+    const max = parseFloat(value.dataset.max ?? 'Infinity');
+    const stepSize = parseFloat(value.dataset.stepSize ?? '1');
+    stepper.querySelectorAll('.stepper-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const dir = parseFloat(btn.dataset.step);
+        const next = Math.min(max, Math.max(min, parseFloat(value.value || '0') + dir * stepSize));
+        value.value = Number(next.toFixed(2));
+        value.dispatchEvent(new Event('change'));
+      });
+    });
+  });
+
+  // Modals & confirm dialogs: open/close, focus trap, focus return
+  (function () {
+    let lastTrigger = null;
+
+    const focusableEls = modal => [...modal.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )].filter(el => !el.disabled && el.offsetParent !== null);
+
+    const openModal = (modal, trigger) => {
+      lastTrigger = trigger || document.activeElement;
+      modal.closest('.modal-overlay').classList.add('open');
+      (focusableEls(modal)[0] || modal).focus();
+    };
+
+    const closeModal = modal => {
+      modal.closest('.modal-overlay').classList.remove('open');
+      if (lastTrigger) { lastTrigger.focus(); lastTrigger = null; }
+    };
+
+    document.querySelectorAll('[aria-haspopup="dialog"][aria-controls]').forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const modal = document.getElementById(trigger.getAttribute('aria-controls'));
+        if (modal) openModal(modal, trigger);
+      });
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      const modal = overlay.querySelector('.modal');
+      overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(modal); });
+
+      modal.querySelectorAll('[data-modal-close]').forEach(btn => {
+        btn.addEventListener('click', () => closeModal(modal));
+        if (btn.getAttribute('role') === 'button') {
+          btn.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeModal(modal); }
+          });
+        }
+      });
+
+      modal.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeModal(modal); return; }
+        if (e.key !== 'Tab') return;
+        const focusables = focusableEls(modal);
+        if (!focusables.length) return;
+        const first = focusables[0], last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      });
+    });
+  })();
+
+  // Action card hover feedback + keyboard activation (Enter/Space).
+  // Action cards are <div>s (not <button>s) to preserve the existing
+  // grid/flex layout and SVG-icon currentColor inheritance, so they need
+  // tabindex/role (added in the markup) plus an explicit keydown handler
+  // to be keyboard-operable; :focus-visible in tokens.css already applies
+  // to any focusable element, so no CSS changes were needed for the ring.
   document.querySelectorAll('.action-card').forEach(card => {
     card.addEventListener('click', () => {
       card.style.transform = 'scale(0.95)';
       setTimeout(() => card.style.transform = '', 150);
+    });
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        card.click();
+      }
     });
   });
 

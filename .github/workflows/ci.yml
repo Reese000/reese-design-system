@@ -2,9 +2,9 @@ name: Design System CI
 
 on:
   push:
-    paths: ['tokens.css', 'demo.html', 'index.html', '*.css', '*.svg']
+    paths: ['tokens.css', 'demo.html', 'index.html', '*.css', '*.svg', 'scripts/**', '.github/workflows/**']
   pull_request:
-    paths: ['tokens.css', 'demo.html', 'index.html', '*.css', '*.svg']
+    paths: ['tokens.css', 'demo.html', 'index.html', '*.css', '*.svg', 'scripts/**', '.github/workflows/**']
 
 jobs:
   validate:
@@ -35,13 +35,32 @@ jobs:
 
       - name: Check JavaScript syntax
         run: |
-          # Extract script blocks and check syntax
+          # Extract script blocks and check syntax — fails CI on any error
+          FAIL=0
           for f in demo.html index.html; do
             echo "Checking $f JS..."
-            # Extract content between <script> and </script>
-            sed -n '/<script>/,/<script>/p; /<script>/,/<\/script>/p' "$f" 2>/dev/null | node --check - 2>&1 || echo "  ⚠ JS syntax issue in $f"
+            # Extract content between <script> and </script>, excluding the tags themselves
+            sed -n '/<script>/,/<\/script>/{
+              /<script>/d
+              /<\/script>/d
+              p
+            }' "$f" 2>/dev/null > "$RUNNER_TEMP/check.js"
+            if [ -s "$RUNNER_TEMP/check.js" ]; then
+              if node --check "$RUNNER_TEMP/check.js" 2>&1; then
+                echo "  ✓ $f JS syntax OK"
+              else
+                echo "  ❌ $f JS syntax error — CI will fail"
+                FAIL=1
+              fi
+            else
+              echo "  ⚠ No JS found in $f"
+            fi
           done
-          echo "  ✓ JS syntax check done"
+          rm -f "$RUNNER_TEMP/check.js"
+          if [ "$FAIL" -ne 0 ]; then
+            echo "JS syntax errors found — failing CI."
+            exit 1
+          fi
 
       - name: Check accessibility basics
         run: |
@@ -54,3 +73,55 @@ jobs:
             grep -q 'aria-label\|aria-checked\|role=' "$f" || { echo "FAIL: $f has no ARIA attributes"; exit 1; }
             echo "  ✓ $f a11y check done"
           done
+
+  axe-a11y:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Run axe-core WCAG 2.2 AA audit
+        run: node scripts/test-a11y-axe.js
+
+      - name: Upload axe reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axe-reports
+          path: reports/
+          retention-days: 14
+
+  visual-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Run visual regression
+        run: node scripts/test-visual.js
+
+      - name: Upload diff screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diffs
+          path: tests/visual/diffs/
+          retention-days: 14

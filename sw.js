@@ -3,7 +3,7 @@
    Offline-first caching for design system files.
    ═══════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'reese-ds-v1.2';
+const CACHE_NAME = 'reese-ds-v1.7';
 const ASSETS = [
   './',
   './tokens.css',
@@ -54,7 +54,7 @@ self.addEventListener('fetch', event => {
             caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
           }
           return response;
-        }).catch(() => {});
+        }).catch(() => new Response('Offline', { status: 503, statusText: 'Service Unavailable' }));
       })
     );
   }

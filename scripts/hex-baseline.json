@@ -1,5 +1,5 @@
 {
   "comment": "Hardcoded-hex usage ratchet for HTML files (custom-property definitions excluded). CI fails if a file exceeds its baseline; lower the number when you remove hardcoded colors.",
-  "index.html": 16,
+  "index.html": 14,
   "demo.html": 9
 }

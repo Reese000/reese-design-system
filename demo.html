@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reese Design System — Interactive Demo</title>
+  <script>(function(){var t=localStorage.getItem('ds-theme');var dark=t?t!=='light':matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.add(dark?'dark':'light')})()</script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="icons.css">
@@ -93,9 +94,14 @@
     .tree-content{padding:4px;flex:1;overflow-y:auto}
     .tree-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:var(--r-sm);font-size:12px;color:var(--ink-secondary);cursor:pointer;transition:all 60ms}
     .tree-item:hover{background:var(--canvas-raised)}
-    background:var(--code-action-dim);color:var(--code-action)
+    .tree-item.active{background:var(--code-action-dim);color:var(--code-action)}
     .tree-indent{padding-left:18px}
     .tree-icon{font-size:11px;width:16px;text-align:center;flex-shrink:0}
+    /* Hierarchical tree: group headers keep semantic color, children are neutral */
+    .tree-group-header{margin-top:6px}
+    .tree-group-header:first-child{margin-top:0}
+    .tree-child{color:var(--ink-secondary)}
+    .tree-child .tree-icon{color:var(--ink-muted)}
 
     /* ── VIEWPORT ──────────────────────────────────────────── */
     .viewport{background:var(--canvas-base);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-left:1px solid var(--border-default);border-right:1px solid var(--border-default)}
@@ -107,6 +113,30 @@
     .mode-btn{font-size:10px;padding:3px 8px;border-radius:var(--r-sm);font-weight:600;cursor:pointer;transition:all 80ms;border:1px solid var(--border-default);background:rgba(20,22,27,0.8);color:var(--ink-tertiary)}
     .mode-btn:hover{border-color:var(--border-strong);color:var(--ink-primary)}
     .mode-btn.on{border-color:var(--code-action);color:var(--code-action);background:rgba(108,138,255,0.08)}
+
+    /* ── CLAY SHADING MODE (v1.4) ───────────────────────────── */
+    /* Blender "Random Object Color"-inspired proof of concept — this repo
+       has no real renderer, so the two-tone shading + contour are faked
+       with CSS on the flat SVG mock. Base --clay-N tone = fill (lit
+       surface), --clay-N-shade = stroke (shadow edge); a near-zero-offset
+       drop-shadow adds the thin --ink-primary contour, a 1px-offset
+       drop-shadow in the shade tone adds the two-tone depth cue. Holes
+       keep fill:none so they still read as voids — only their stroke and
+       contour pick up the clay treatment. [data-clay] is a static stand-in
+       for a stable hash of the object/body ID (see README) — the same
+       shape always gets the same clay index. */
+    .viewport.clay-mode{background:var(--clay-bg)}
+    .viewport.clay-mode svg rect[data-clay="1"]{stroke:var(--clay-1-shade);filter:drop-shadow(0 0 0.6px var(--ink-primary))}
+    .viewport.clay-mode svg path[data-clay="1"]{fill:var(--clay-1);stroke:var(--clay-1-shade);filter:drop-shadow(1px 1px 0 var(--clay-1-shade)) drop-shadow(0 0 0.6px var(--ink-primary))}
+    .viewport.clay-mode svg circle[data-clay="8"]{stroke:var(--clay-8);filter:drop-shadow(1px 1px 0 var(--clay-8-shade)) drop-shadow(0 0 0.6px var(--ink-primary))}
+    .viewport.clay-mode svg circle[data-clay="4"]{stroke:var(--clay-4);filter:drop-shadow(1px 1px 0 var(--clay-4-shade)) drop-shadow(0 0 0.6px var(--ink-primary))}
+    .viewport.clay-mode svg circle[data-clay="3"]{stroke:var(--clay-3);filter:drop-shadow(1px 1px 0 var(--clay-3-shade)) drop-shadow(0 0 0.6px var(--ink-primary))}
+    .viewport.clay-mode svg circle[data-clay="2"]{stroke:var(--clay-2);filter:drop-shadow(1px 1px 0 var(--clay-2-shade)) drop-shadow(0 0 0.6px var(--ink-primary))}
+    .viewport.clay-mode svg rect[data-clay="6"]{fill:var(--clay-6);stroke:var(--clay-6-shade);filter:drop-shadow(1px 1px 0 var(--clay-6-shade)) drop-shadow(0 0 0.6px var(--ink-primary))}
+    /* Light-mode override for .viewport.clay-mode background lives in
+       tokens.css (new standalone html.light rule next to the Clay Shading
+       Mode Palette section) — not here, to keep demo.html's hardcoded-hex
+       count at baseline. */
 
     /* ── VIEWPORT STATS ────────────────────────────────────── */
     .viewport-stats{position:absolute;bottom:8px;right:8px;z-index:2;background:var(--canvas-raised);border:1px solid var(--border-default);border-radius:var(--r-md);padding:6px 8px;min-width:150px;backdrop-filter:blur(8px)}
@@ -120,6 +150,7 @@
     .inspector{border-left:1px solid var(--border-default);overflow-y:auto;display:flex;flex-direction:column;background:var(--canvas-surface);position:relative}
     .inspector-body{padding:8px;flex:1;overflow-y:auto}
     .insp-section{margin-bottom:12px}
+    .insp-section + .insp-section{border-top:1px solid var(--border-subtle);padding-top:8px}
     .insp-label{font-size:10px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
     .insp-field{display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-size:12px}
     .insp-field-k{color:var(--ink-tertiary)}
@@ -145,19 +176,21 @@
     .btn-sm{height:22px;padding:0 6px;font-size:10px;border-radius:var(--r-xs)}
     .btn-primary{background:var(--code-action);color:#fff}
     .btn-primary:hover{background:#7d99ff}
-    .btn-success{background:var(--code-success);color:#0a0b0d}
+    .btn-success{background:var(--code-success);color:#ffffff}
     .btn-success:hover{background:#5fd87f}
     .btn-danger{background:var(--code-danger);color:#fff}
     .btn-ghost{background:var(--canvas-surface);color:var(--ink-secondary);border:1px solid var(--border-default)}
     .btn-ghost:hover{background:var(--canvas-raised);color:var(--ink-primary);border-color:var(--border-strong)}
     .btn-surface{background:transparent;color:var(--ink-tertiary)}
     .btn-surface:hover{background:var(--canvas-surface);color:var(--ink-primary)}
-    .kbd{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 3px;font-family:var(--font-mono);font-size:9px;font-weight:500;color:var(--ink-muted);background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:2px}
+    .kbd{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 3px;font-family:var(--font-mono);font-size:9px;font-weight:500;color:var(--ink-secondary);background:var(--canvas-surface);border:1px solid var(--border-default);border-radius:2px}
+
+    .insp-label{color:var(--ink-secondary) !important}
+    .tool-card-sub{color:var(--ink-secondary) !important}
 
     /* ── TOGGLE (square) ───────────────────────────────────── */
     .toggle{width:32px;height:18px;background:var(--canvas-elevated);border:1px solid var(--border-default);border-radius:var(--r-xs);cursor:pointer;transition:all 120ms;position:relative;flex-shrink:0}
     .toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;background:var(--ink-muted);border-radius:var(--r-xs);transition:all 120ms var(--ease-out)}
-    background:var(--code-action-dim);color:var(--code-action)
     .toggle.on{background:var(--code-action-dim);border-color:var(--code-action)}
     .toggle.on::after{left:16px;background:var(--code-action)}
 
@@ -222,38 +255,39 @@
     button:focus-visible,.tool-btn:focus-visible,.tab:focus-visible,.tree-item:focus-visible,.mode-btn:focus-visible{outline:2px solid var(--code-action);outline-offset:1px}
     .toggle:focus-visible{outline:2px solid var(--code-action);outline-offset:2px}
     html.light :focus-visible{outline-color:#3366cc}
+
+    /* ── TAB STRIP (browser-style) ─────────────────────────── */
+    .tab-strip{display:flex;align-items:stretch;gap:0;background:var(--canvas-void);border-bottom:1px solid var(--border-default);height:30px;flex-shrink:0;overflow-x:auto;padding:0 4px}
+    .browser-tab{display:flex;align-items:center;gap:6px;padding:0 12px;font-size:11px;color:var(--ink-muted);cursor:pointer;border-right:1px solid var(--border-subtle);position:relative;transition:all 80ms;max-width:180px;min-width:80px}
+    .browser-tab:hover{color:var(--ink-secondary);background:var(--canvas-surface)}
+    .browser-tab.active{color:var(--ink-primary);background:var(--canvas-surface)}
+    .browser-tab.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--code-action)}
+    .tab-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+    .tab-close{font-size:13px;color:var(--ink-ghost);cursor:pointer;padding:2px;border-radius:2px;line-height:1}
+    .tab-close:hover{color:var(--code-danger);background:var(--code-danger-dim)}
+    .tab-add{background:none;border:none;color:var(--ink-muted);font-size:16px;cursor:pointer;padding:0 10px;display:flex;align-items:center}
+    .tab-add:hover{color:var(--ink-primary);background:var(--canvas-surface)}
+
+    /* ── DRAG HANDLES (toast + viewport-stats) ─────────────── */
+    .toast-drag-handle{cursor:grab;user-select:none}
+    .toast-drag-handle:active{cursor:grabbing}
+    .viewport-stats .drag-grip{cursor:grab;user-select:none;display:flex;align-items:center;justify-content:center;padding:2px 0 4px;color:var(--ink-ghost);font-size:10px;letter-spacing:2px}
+    .viewport-stats .drag-grip:active{cursor:grabbing}
+    .toast.dragging,.viewport-stats.dragging{transition:none!important}
+
+    /* ── TOOLTIP SCHEMATIC ─────────────────────────────────── */
+    .tip-schematic{padding:8px 10px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:10px}
+    .tip-specs{font-size:10px;color:var(--ink-tertiary);line-height:1.5}
   </style>
 </head>
 <body>
-<!-- SVG Icon Sprite -->
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
-  <symbol id="icon-cursor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></symbol>
-  <symbol id="icon-pan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></symbol>
-  <symbol id="icon-zoom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></symbol>
-  <symbol id="icon-line" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/></symbol>
-  <symbol id="icon-arc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12A9 9 0 0 0 6.2 5.2"/></symbol>
-  <symbol id="icon-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></symbol>
-  <symbol id="icon-spline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17c2-4 4-8 7-8s3 6 6 6 4-4 5-4"/></symbol>
-  <symbol id="icon-drill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"/></symbol>
-  <symbol id="icon-endmill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="3" width="10" height="18" rx="1"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="15" x2="17" y2="15"/></symbol>
-  <symbol id="icon-turn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="21"/></symbol>
-  <symbol id="icon-generate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
-  <symbol id="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></symbol>
-  <symbol id="icon-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
-  <symbol id="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
-  <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
-  <symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></symbol>
-  <symbol id="icon-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></symbol>
-  <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></symbol>
-  <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
-  <symbol id="icon-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
-  <symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
-  <symbol id="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
-  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
-  <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
-  <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></symbol>
-  <symbol id="icon-unit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20"/><path d="M6 8v8"/><path d="M10 10v4"/><path d="M14 10v4"/><path d="M18 8v8"/></symbol>
-</svg>
+<!-- SVG Icon Sprite — loaded from icons.svg (single source of truth), not duplicated inline -->
+<div id="iconSpriteMount" style="display:none" aria-hidden="true"></div>
+<script>
+  fetch('icons.svg').then(r => r.text()).then(svg => {
+    document.getElementById('iconSpriteMount').innerHTML = svg;
+  });
+</script>
 
 <!-- TITLEBAR (Windows-style) -->
 <div class="titlebar">
@@ -276,6 +310,19 @@
   </div>
 </div>
 
+<!-- TAB STRIP -->
+<div class="tab-strip" id="tabStrip">
+  <div class="browser-tab active" data-tab="0" onclick="if(!event.target.classList.contains('tab-close'))selectTab(0)">
+    <span class="tab-label">Demo Project.cnc</span>
+    <span class="tab-close" onclick="closeTab(0)">×</span>
+  </div>
+  <div class="browser-tab" data-tab="1" onclick="if(!event.target.classList.contains('tab-close'))selectTab(1)">
+    <span class="tab-label">Part-02.dxf</span>
+    <span class="tab-close" onclick="closeTab(1)">×</span>
+  </div>
+  <button class="tab-add" onclick="addTab()" title="New file">+</button>
+</div>
+
 <!-- MENUBAR -->
 <div class="menubar">
   <span class="menu-item active">File</span>
@@ -295,6 +342,13 @@
     <button class="btn btn-md btn-ghost tip" data-tip="post">
       <svg class="icon icon-sm"><use href="#icon-wrench"/></svg> Post <span class="kbd">Ctrl+⇧P</span>
     </button>
+    <button class="btn btn-md btn-ghost tip" data-tip="import" onclick="triggerImport()">
+      <svg class="icon icon-sm"><use href="#icon-import"/></svg> Import
+    </button>
+    <button class="btn btn-md btn-ghost tip" data-tip="export" onclick="exportFile()">
+      <svg class="icon icon-sm"><use href="#icon-export"/></svg> Export
+    </button>
+    <input type="file" id="importFileInput" style="display:none" accept=".step,.stp,.iges,.igs,.stl,.nc,.gcode">
   </div>
 </div>
 
@@ -319,7 +373,7 @@
     <button class="tool-btn tip" data-tip="ai-optimize" title="" aria-label="AI optimize" style="color:var(--code-ai)"><svg class="icon"><use href="#icon-robot"/></svg></button>
     <div style="flex:1"></div>
     <button class="tool-btn tip" data-tip="unit-toggle" title="" aria-label="Toggle units" style="color:var(--code-info);font-size:10px;font-weight:700;font-family:var(--font-mono)" id="unitBtn" onclick="toggleUnit()">mm</button>
-    <button class="tool-btn" title="Toggle Dark/Light Mode" onclick="toggleTheme()" style="font-size:13px" id="themeBtn">🌙</button>
+    <button class="tool-btn" title="Toggle Dark/Light Mode" onclick="toggleTheme()" style="font-size:13px" id="themeBtn" role="switch" aria-checked="true" aria-label="Dark mode">🌙</button>
     <button class="tool-btn tip" data-tip="settings" title="" aria-label="Settings" style="color:var(--ink-muted)"><svg class="icon"><use href="#icon-settings"/></svg></button>
   </div>
 
@@ -331,19 +385,19 @@
       <button class="btn btn-sm btn-surface">+ Add</button>
     </div>
     <div class="tree-content">
-      <div class="tree-item active" tabindex="0"><span class="tree-icon" style="color:var(--code-view)">◇</span><span>Stock Model</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-material)"><svg class="icon icon-sm"><use href="#icon-package"/></svg></span><span style="color:var(--code-material)">AL-6061</span></div>
-      <div class="tree-item" tabindex="0"><span class="tree-icon" style="color:var(--code-view)">◇</span><span>Geometry</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-view)"><svg class="icon icon-sm"><use href="#icon-line"/></svg></span><span>Outer Profile</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-view)"><svg class="icon icon-sm"><use href="#icon-circle"/></svg></span><span>4× Holes</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-view)"><svg class="icon icon-sm"><use href="#icon-arc"/></svg></span><span>Pocket</span></div>
-      <div class="tree-item" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-endmill"/></svg></span><span style="color:var(--code-tool)">3/8" Endmill</span></div>
-      <div class="tree-item tree-indent loading"><span class="spinner" style="width:10px;height:10px;border-width:1.5px;border-top-color:var(--code-action)"></span><span style="color:var(--code-action)">Roughing</span><span style="font-size:9px;color:var(--ink-muted);margin-left:auto">computing...</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-success)"><svg class="icon icon-sm"><use href="#icon-check"/></svg></span><span style="color:var(--code-success)">Finishing</span></div>
-      <div class="tree-item" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-drill"/></svg></span><span style="color:var(--code-tool)">1/4" Drill</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-action)"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></span><span style="color:var(--code-action)">Drill Cycle</span></div>
-      <div class="tree-item" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-turn"/></svg></span><span style="color:var(--code-tool)">1/2" Face Mill</span></div>
-      <div class="tree-item tree-indent"><span class="tree-icon" style="color:var(--code-action)"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></span><span style="color:var(--code-action)">Facing</span></div>
+      <div class="tree-item tree-group-header active" tabindex="0"><span class="tree-icon" style="color:var(--code-view)">◇</span><span>Stock Model</span></div>
+      <div class="tree-item tree-indent tree-child" data-tip="material"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-package"/></svg></span><span>AL-6061</span></div>
+      <div class="tree-item tree-group-header" tabindex="0"><span class="tree-icon" style="color:var(--code-view)">◇</span><span>Geometry</span></div>
+      <div class="tree-item tree-indent tree-child" data-tip="outer-profile"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-line"/></svg></span><span>Outer Profile</span></div>
+      <div class="tree-item tree-indent tree-child" data-tip="holes"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-circle"/></svg></span><span>4× Holes</span></div>
+      <div class="tree-item tree-indent tree-child" data-tip="pocket"><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-arc"/></svg></span><span>Pocket</span></div>
+      <div class="tree-item tree-group-header" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-endmill"/></svg></span><span style="color:var(--code-tool)">3/8" Endmill</span></div>
+      <div class="tree-item tree-indent tree-child loading tree-sortable" tabindex="0"><span class="tree-drag-grip" aria-hidden="true">⠿</span><span class="spinner" style="width:10px;height:10px;border-width:1.5px;border-top-color:var(--code-action)"></span><span class="tree-label" style="color:var(--code-action)">Roughing</span><span style="font-size:9px;color:var(--ink-primary)">computing...</span><span class="tree-move-btns"><button type="button" class="tree-move-btn" data-dir="-1" aria-label="Move Roughing up">▲</button><button type="button" class="tree-move-btn" data-dir="1" aria-label="Move Roughing down">▼</button></span></div>
+      <div class="tree-item tree-indent tree-child tree-sortable" tabindex="0"><span class="tree-drag-grip" aria-hidden="true">⠿</span><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-check"/></svg></span><span class="tree-label">Finishing</span><span class="tree-move-btns"><button type="button" class="tree-move-btn" data-dir="-1" aria-label="Move Finishing up">▲</button><button type="button" class="tree-move-btn" data-dir="1" aria-label="Move Finishing down">▼</button></span></div>
+      <div class="tree-item tree-group-header" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-drill"/></svg></span><span style="color:var(--code-tool)">1/4" Drill</span></div>
+      <div class="tree-item tree-indent tree-child tree-sortable" tabindex="0"><span class="tree-drag-grip" aria-hidden="true">⠿</span><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></span><span class="tree-label">Drill Cycle</span><span class="tree-move-btns"><button type="button" class="tree-move-btn" data-dir="-1" aria-label="Move Drill Cycle up">▲</button><button type="button" class="tree-move-btn" data-dir="1" aria-label="Move Drill Cycle down">▼</button></span></div>
+      <div class="tree-item tree-group-header" tabindex="0"><span class="tree-icon" style="color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-turn"/></svg></span><span style="color:var(--code-tool)">1/2" Face Mill</span></div>
+      <div class="tree-item tree-indent tree-child tree-sortable" tabindex="0"><span class="tree-drag-grip" aria-hidden="true">⠿</span><span class="tree-icon"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></span><span class="tree-label">Facing</span><span class="tree-move-btns"><button type="button" class="tree-move-btn" data-dir="-1" aria-label="Move Facing up">▲</button><button type="button" class="tree-move-btn" data-dir="1" aria-label="Move Facing down">▼</button></span></div>
     </div>
   </div>
 
@@ -352,18 +406,25 @@
     <div class="grid-bg"></div>
     <div class="viewport-content">
       <svg width="320" height="200" viewBox="0 0 320 200">
-        <rect x="60" y="30" width="200" height="140" rx="2" fill="none" stroke="var(--code-view)" stroke-width="1.5" opacity="0.4"/>
-        <path d="M80,50 L240,50 L240,110 L200,110 L200,150 L120,150 L120,110 L80,110 Z" fill="rgba(163,230,53,0.04)" stroke="var(--code-view)" stroke-width="1.5"/>
-        <circle cx="100" cy="75" r="8" fill="none" stroke="var(--code-success)" stroke-width="1.5" stroke-dasharray="3,2"/>
-        <circle cx="220" cy="75" r="8" fill="none" stroke="var(--code-success)" stroke-width="1.5" stroke-dasharray="3,2"/>
-        <circle cx="100" cy="130" r="8" fill="none" stroke="var(--code-success)" stroke-width="1.5" stroke-dasharray="3,2"/>
-        <circle cx="220" cy="130" r="8" fill="none" stroke="var(--code-warning)" stroke-width="1.5" stroke-dasharray="3,2" id="hole-warning"/>
-        <rect x="130" y="115" width="60" height="30" rx="2" fill="rgba(163,230,53,0.06)" stroke="var(--code-view)" stroke-width="1" stroke-dasharray="4,2"/>
+        <rect x="60" y="30" width="200" height="140" rx="2" fill="none" stroke="var(--code-view)" stroke-width="1.5" opacity="0.4" data-clay="1"/>
+        <path class="vp-selectable" data-obj="Outer Profile" tabindex="0" role="button" aria-label="Outer Profile" d="M80,50 L240,50 L240,110 L200,110 L200,150 L120,150 L120,110 L80,110 Z" fill="rgba(163,230,53,0.04)" stroke="var(--code-view)" stroke-width="1.5" data-clay="1"/>
+        <!-- Ø8mm holes (cyan) -->
+        <circle class="vp-selectable" data-obj="Ø8mm Hole 1" tabindex="0" role="button" aria-label="Ø8mm Hole 1" cx="100" cy="75" r="8" fill="none" stroke="var(--code-info)" stroke-width="1.5" data-clay="8"/>
+        <circle class="vp-selectable" data-obj="Ø8mm Hole 2" tabindex="0" role="button" aria-label="Ø8mm Hole 2" cx="220" cy="75" r="8" fill="none" stroke="var(--code-info)" stroke-width="1.5" data-clay="4"/>
+        <circle class="vp-selectable" data-obj="Ø8mm Hole 3" tabindex="0" role="button" aria-label="Ø8mm Hole 3" cx="100" cy="130" r="8" fill="none" stroke="var(--code-info)" stroke-width="1.5" data-clay="3"/>
+        <!-- Ø5mm hole (purple) with warning ring — ring stays untouched by Clay mode and selection, only the inner hole responds -->
+        <circle cx="220" cy="130" r="10" fill="none" stroke="var(--code-warning)" stroke-width="1" stroke-dasharray="3,2"/>
+        <circle class="vp-selectable" data-obj="Ø5mm Hole" tabindex="0" role="button" aria-label="Ø5mm Hole" cx="220" cy="130" r="5" fill="none" stroke="var(--code-accent)" stroke-width="1.5" data-clay="2"/>
+        <rect class="vp-selectable" data-obj="Pocket" tabindex="0" role="button" aria-label="Pocket" x="130" y="115" width="60" height="30" rx="2" fill="rgba(163,230,53,0.06)" stroke="var(--code-view)" stroke-width="1" stroke-dasharray="4,2" data-clay="6"/>
+        <!-- Toolpath line legend sample: rapid (dashed), feed (solid), plunge (dotted) -->
+        <path class="tp-rapid" d="M65,165 L95,165"/>
+        <path class="tp-feed" d="M95,165 L100,130"/>
+        <path class="tp-plunge" d="M100,130 L100,140"/>
         <line x1="60" y1="180" x2="260" y2="180" stroke="var(--ink-muted)" stroke-width="0.5"/>
         <text x="160" y="193" text-anchor="middle" fill="var(--ink-muted)" font-family="var(--font-mono)" font-size="9">100mm</text>
         <line x1="275" y1="30" x2="275" y2="170" stroke="var(--ink-muted)" stroke-width="0.5"/>
         <text x="290" y="104" text-anchor="middle" fill="var(--ink-muted)" font-family="var(--font-mono)" font-size="9" transform="rotate(90,290,104)">80mm</text>
-        <circle cx="160" cy="80" r="4" fill="var(--code-action)" opacity="0.8">
+        <circle class="tp-live" cx="160" cy="80" r="4" opacity="0.8">
           <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
         </circle>
       </svg>
@@ -373,17 +434,21 @@
       <div class="coord-pill">Y: <span id="coordY">80.000</span></div>
       <div class="coord-pill">Z: <span id="coordZ">0.000</span></div>
     </div>
-    <div style="position:absolute;top:8px;left:8px;z-index:2;display:flex;gap:6px;font-size:9px">
-        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-success);border-radius:1px;display:inline-block"></span> Safe</span>
-        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-warning);border-radius:1px;display:inline-block"></span> Warning</span>
-        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--code-danger);border-radius:1px;display:inline-block"></span> Error</span>
-      </div>
+    <div class="vp-legend">
+      <span><span class="vp-legend-dot" style="background:var(--code-success)"></span> Safe</span>
+      <span><span class="vp-legend-dot" style="background:var(--code-warning)"></span> Warning</span>
+      <span><span class="vp-legend-dot" style="background:var(--code-danger)"></span> Error</span>
+      <span><span class="vp-legend-dot" style="background:var(--code-info)"></span> Ø8mm</span>
+      <span><span class="vp-legend-dot" style="background:var(--code-accent)"></span> Ø5mm</span>
+    </div>
+    <div id="vpSelectionStatus" class="sr-only" role="status" aria-live="polite"></div>
     <div class="viewport-modes">
       <div class="mode-btn on" tabindex="0" onclick="cycleMode(this,['Perspective','Top','Front','Side','Iso'])">Perspective</div>
-      <div class="mode-btn on" tabindex="0" onclick="cycleMode(this,['Shaded','Wire','Hidden','X-Ray'])">Shaded</div>
+      <div class="mode-btn on" tabindex="0" onclick="cycleMode(this,['Shaded','Wire','Hidden','X-Ray','Clay'])">Shaded</div>
       <div class="mode-btn" tabindex="0" onclick="this.classList.toggle('on')">Grid</div>
     </div>
-    <div class="viewport-stats">
+    <div class="viewport-stats" id="viewportStats">
+      <div class="drag-grip" title="Drag to reposition">⠿</div>
       <div class="vs-row"><span class="vs-k">Line Length</span><span class="vs-v">160.000 mm</span></div>
       <div class="vs-row"><span class="vs-k">Arc Radius</span><span class="vs-v">—</span></div>
       <div class="vs-sep"></div>
@@ -394,6 +459,10 @@
       <div class="vs-row"><span class="vs-k">mm</span><span class="vs-v" style="color:var(--code-info)">in</span><span class="vs-conv">÷ 25.4</span></div>
       <div class="vs-row"><span class="vs-k">mm²</span><span class="vs-v" style="color:var(--code-info)">in²</span><span class="vs-conv">÷ 645.16</span></div>
       <div class="vs-row"><span class="vs-k">cm³</span><span class="vs-v" style="color:var(--code-info)">in³</span><span class="vs-conv">÷ 16.387</span></div>
+    </div>
+    <div class="dropzone-overlay" id="dropzoneOverlay" aria-hidden="true">
+      <svg class="icon icon-xl"><use href="#icon-import"/></svg>
+      <div class="dropzone-overlay-text">Drop file to import</div>
     </div>
   </div>
 
@@ -478,7 +547,7 @@
   <div class="statusbar-right">
     <span>Feeds: <span style="color:var(--code-success)">OK</span></span>
     <span>Collision: <span style="color:var(--code-success)">Clear</span></span>
-    <span style="color:var(--ink-ghost)">v3.0.1</span>
+    <span style="color:var(--ink-secondary)">v3.0.1</span>
   </div>
 </div>
 
@@ -493,6 +562,8 @@
       <div class="cmd-item sel" onclick="closeCmd()"><div class="cmd-item-icon" style="background:var(--code-action-dim);color:var(--code-action)"><svg class="icon icon-sm"><use href="#icon-generate"/></svg></div><div class="cmd-item-text"><div class="cmd-item-name">Generate Toolpath</div><div class="cmd-item-desc">Create cutting path from geometry</div></div><span class="kbd">Ctrl+G</span></div>
       <div class="cmd-item" onclick="closeCmd()"><div class="cmd-item-icon" style="background:var(--code-success-dim);color:var(--code-success)">▶</div><div class="cmd-item-text"><div class="cmd-item-name">Run Simulation</div><div class="cmd-item-desc">Preview material removal in 3D</div></div><span class="kbd">Ctrl+⇧R</span></div>
       <div class="cmd-item" onclick="closeCmd()"><div class="cmd-item-icon" style="background:var(--code-tool-dim);color:var(--code-tool)"><svg class="icon icon-sm"><use href="#icon-wrench"/></svg></div><div class="cmd-item-text"><div class="cmd-item-name">Post Process</div><div class="cmd-item-desc">Generate G-code for machine</div></div><span class="kbd">Ctrl+⇧P</span></div>
+      <div class="cmd-item" onclick="closeCmd();triggerImport()"><div class="cmd-item-icon" style="background:var(--code-action-dim);color:var(--code-action)"><svg class="icon icon-sm"><use href="#icon-import"/></svg></div><div class="cmd-item-text"><div class="cmd-item-name">Import</div><div class="cmd-item-desc">Load a model or toolpath file</div></div></div>
+      <div class="cmd-item" onclick="closeCmd();exportFile()"><div class="cmd-item-icon" style="background:var(--code-action-dim);color:var(--code-action)"><svg class="icon icon-sm"><use href="#icon-export"/></svg></div><div class="cmd-item-text"><div class="cmd-item-name">Export</div><div class="cmd-item-desc">Save toolpaths and G-code to file</div></div></div>
       <div class="cmd-item" onclick="closeCmd()"><div class="cmd-item-icon" style="background:var(--code-ai-dim);color:var(--code-ai)"><svg class="icon icon-sm"><use href="#icon-robot"/></svg></div><div class="cmd-item-text"><div class="cmd-item-name">AI Optimize</div><div class="cmd-item-desc">ML-powered feed/speed optimization</div></div><span class="kbd">Ctrl+⇧A</span></div>
       <div class="cmd-item" onclick="closeCmd()"><div class="cmd-item-icon" style="background:var(--code-accent-dim);color:var(--code-accent)"><svg class="icon icon-sm"><use href="#icon-settings"/></svg></div><div class="cmd-item-text"><div class="cmd-item-name">Settings</div><div class="cmd-item-desc">Machine and project settings</div></div><span class="kbd">Ctrl+,</span></div>
     </div>
@@ -501,7 +572,7 @@
 
 <!-- TOAST -->
 <div class="toast" id="aiToast">
-  <div class="toast-header"><span class="status-dot ai"></span><span class="toast-title"><svg class="icon icon-sm" style="vertical-align:middle"><use href="#icon-robot"/></svg> AI Suggestion</span></div>
+  <div class="toast-header toast-drag-handle"><span class="status-dot ai"></span><span class="toast-title"><svg class="icon icon-sm" style="vertical-align:middle"><use href="#icon-robot"/></svg> AI Suggestion</span></div>
   <div class="toast-body">Feed rate can increase to 1,400 mm/min — 15% faster. Apply?</div>
   <div class="toast-actions">
     <button class="btn btn-sm" style="background:var(--code-ai);color:#fff" onclick="applyAI()">Apply</button>
@@ -509,8 +580,17 @@
   </div>
 </div>
 
+<!-- CONFIRMATION TOAST (import/export) -->
+<div class="toast toast-alt" id="confirmToast" role="status" aria-live="polite">
+  <div class="toast-header"><span class="status-dot on"></span><span class="toast-title"><svg class="icon icon-sm" style="vertical-align:middle"><use href="#icon-check"/></svg> <span id="confirmToastTitle">Done</span></span></div>
+  <div class="toast-body" id="confirmToastBody"></div>
+</div>
+
 <!-- TOOLTIP CONTAINER (populated by JS) -->
 <div id="tooltipContainer"></div>
+
+<!-- TREE REORDER ANNOUNCEMENTS (visually hidden, for screen readers) -->
+<div id="treeReorderStatus" class="sr-only" role="status" aria-live="polite"></div>
 
 <!-- MOBILE PANEL TOGGLES -->
 <button class="mobile-toggle tree-toggle" onclick="document.getElementById('treePanel').classList.toggle('mobile-open');document.getElementById('inspectorPanel').classList.remove('mobile-open')">☰</button>
@@ -526,7 +606,7 @@ const TIPS = {
     use:'<strong>Use case:</strong> Select a profile to assign a toolpath, or select multiple holes for a drill cycle.',
     video:'Selecting Geometry' },
   pan:        { name:'Pan View', icon:'✥', color:'var(--ink-tertiary)', shortcut:'H',
-    desc:'Click and drag to pan the viewport camera. Works in all view modes.',
+    desc:'Middle-click and drag, or hold Shift and drag, to pan the viewport camera. Left-drag alone orbits. Works in all view modes.',
     use:'<strong>Use case:</strong> Navigate large parts or zoom into specific features without changing zoom level.',
     video:'Viewport Navigation' },
   zoom:       { name:'Zoom', icon:'⊕', color:'var(--ink-tertiary)', shortcut:'Z',
@@ -538,7 +618,12 @@ const TIPS = {
     use:'<strong>Use case:</strong> Create profile boundaries for facing operations or define custom stock outlines.',
     video:'Drawing Lines' },
   arc:        { name:'Arc Tool', icon:'◠', color:'var(--code-view)', shortcut:'A',
+    desc:'Draw arcs between two points. Click start, end, then a third point to define curvature.',
     use:'<strong>Use case:</strong> Define hole locations for drill cycles or create circular pockets.',
+    video:'Drawing Circles' },
+  circle:     { name:'Circle Tool', icon:'○', color:'var(--code-view)', shortcut:'C',
+    desc:'Draw a full circle from center point and radius. Click center, then click or drag to set radius.',
+    use:'<strong>Use case:</strong> Lay out hole centers or circular boss/pocket boundaries before drilling or milling.',
     video:'Drawing Circles' },
   spline:     { name:'Spline Tool', icon:'∿', color:'var(--code-view)', shortcut:'S',
     desc:'Draw smooth curves through control points. Double-click to finish. Edit control points after creation.',
@@ -547,15 +632,21 @@ const TIPS = {
   drill:      { name:'Drill Operation', icon:'⌾', color:'var(--code-tool)', shortcut:'D',
     desc:'Create drill cycles (G81-G89). Select holes, assign tool, set peck depth and retract plane.',
     use:'<strong>Use case:</strong> Drill the 4× mounting holes with chip-breaking peck cycle at 24K RPM.',
-    video:'Drill Cycles' },
+    video:'Drill Cycles',
+    schematic:{ svg:'<svg width="48" height="32" viewBox="0 0 48 32"><rect x="20" y="2" width="8" height="6" rx="1" fill="none" stroke="var(--code-tool)" stroke-width="1.2"/><rect x="22" y="8" width="4" height="22" rx="0.5" fill="none" stroke="var(--code-tool)" stroke-width="1.2"/><line x1="24" y1="30" x2="22" y2="26" stroke="var(--code-tool)" stroke-width="0.8"/><line x1="24" y1="30" x2="26" y2="26" stroke="var(--code-tool)" stroke-width="0.8"/></svg>',
+      specs:'Ø6.35mm (1/4")<br>2-Flute • HSS<br>OAL: 101.6mm' } },
   endmill:    { name:'End Mill Operation', icon:'⊞', color:'var(--code-tool)', shortcut:'E',
     desc:'Create milling toolpaths — roughing, finishing, pocketing, profiling. Set stepover, stepdown, and lead-in/out.',
     use:'<strong>Use case:</strong> Rough out the main pocket with 40% stepover, then finish with spring pass.',
-    video:'Mill Operations' },
+    video:'Mill Operations',
+    schematic:{ svg:'<svg width="48" height="32" viewBox="0 0 48 32"><rect x="19" y="1" width="10" height="20" rx="1" fill="none" stroke="var(--code-tool)" stroke-width="1.2"/><line x1="19" y1="7" x2="29" y2="7" stroke="var(--code-tool)" stroke-width="0.8"/><line x1="19" y1="13" x2="29" y2="13" stroke="var(--code-tool)" stroke-width="0.8"/><rect x="21" y="21" width="6" height="10" rx="0.5" fill="none" stroke="var(--code-tool)" stroke-width="1"/></svg>',
+      specs:'Ø9.525mm (3/8")<br>4-Flute • Carbide<br>OAL: 76.2mm' } },
   turn:       { name:'Turn Operation', icon:'◎', color:'var(--code-tool)', shortcut:'T',
     desc:'Create turning toolpaths for lathe operations — facing, OD/ID turning, threading, grooving.',
     use:'<strong>Use case:</strong> Face the stock to length, then turn the OD to final diameter.',
-    video:'Turn Operations' },
+    video:'Turn Operations',
+    schematic:{ svg:'<svg width="48" height="32" viewBox="0 0 48 32"><polygon points="10,8 38,8 34,24 14,24" fill="none" stroke="var(--code-tool)" stroke-width="1.2"/><line x1="12" y1="12" x2="36" y2="12" stroke="var(--code-tool)" stroke-width="0.6" stroke-dasharray="2,2"/><text x="24" y="19" text-anchor="middle" fill="var(--code-tool)" font-size="6" font-family="var(--font-mono)">CNMG</text></svg>',
+      specs:'CNMG 432 • Carbide<br>80° Diamond<br>0.8mm nose radius' } },
   'ai-optimize':{ name:'AI Optimize', icon:'🤖', color:'var(--code-ai)', shortcut:'Ctrl+⇧A',
     desc:'Machine learning analyzes your setup and suggests optimal feeds, speeds, and toolpath strategies.',
     use:'<strong>Use case:</strong> AI detected 15% efficiency gain by increasing feed rate. One-click apply.',
@@ -576,10 +667,40 @@ const TIPS = {
     desc:'Convert toolpaths to machine-specific G-code using the selected post processor.',
     use:'<strong>Use case:</strong> Generate Haas-compatible G-code ready to load via USB or DNC.',
     video:'Post Processing' },
+  import:     { name:'Import', icon:'⭱', color:'var(--code-action)', shortcut:'',
+    desc:'Load a model or toolpath file into the project. Click to browse, or drag a file anywhere onto the viewport.',
+    use:'<strong>Use case:</strong> Bring in a STEP/IGES model from CAD, or reload a saved toolpath.',
+    video:'Import / Export' },
+  export:     { name:'Export', icon:'⭳', color:'var(--code-action)', shortcut:'',
+    desc:'Save the current toolpaths and generated G-code to a file on disk.',
+    use:'<strong>Use case:</strong> Export is click-only — there is no "drag to export" gesture on desktop or web.',
+    video:'Import / Export' },
   'unit-toggle':{ name:'Unit Toggle', icon:'mm', color:'var(--code-info)', shortcut:'Ctrl+U',
     desc:'Switch the entire project between metric (mm) and imperial (inches). All dimensions, feeds, and stats convert instantly.',
     use:'<strong>Use case:</strong> Switch to inches when working with a customer who specifies imperial dimensions.',
     video:'Unit Conversion' },
+  'material':{ name:'AL-6061-T6', icon:'📦', color:'var(--code-material)', shortcut:'',
+    desc:'Aluminum alloy, precipitation hardened. Excellent machinability, good corrosion resistance.',
+    use:'<strong>Use case:</strong> General structural parts, fixtures, and prototypes.',
+    specs:'Alloy: 6061-T6 • Hardness: 95 HB • Density: 2.70 g/cm³ • UTS: 310 MPa',
+    video:'Material Library',
+    schematic:{ svg:'<svg width="48" height="32" viewBox="0 0 48 32"><rect x="4" y="4" width="40" height="24" rx="2" fill="none" stroke="var(--code-material)" stroke-width="1.5"/><line x1="4" y1="12" x2="44" y2="12" stroke="var(--code-material)" stroke-width="0.5" stroke-dasharray="2,2"/><text x="24" y="22" text-anchor="middle" fill="var(--code-material)" font-size="7" font-family="var(--font-mono)">6061-T6</text></svg>',
+      specs:'Alloy: 6061-T6<br>Hardness: 95 HB<br>Density: 2.70 g/cm³<br>UTS: 310 MPa' } },
+  'outer-profile':{ name:'Outer Profile', icon:'╱', color:'var(--code-view)', shortcut:'',
+    desc:'Closed 2D profile defining the part outer boundary. Used for profiling and contouring toolpaths.',
+    use:'<strong>Use case:</strong> Profile cut to separate the part from stock material.',
+    specs:'Perimeter: 520mm • Area: 11,200mm² • 12 vertices',
+    video:'Profile Geometry' },
+  'holes':{ name:'4× Holes', icon:'⊙', color:'var(--code-view)', shortcut:'',
+    desc:'Four through-holes for mounting. 3× Ø8mm standard, 1× Ø5mm with tight tolerance.',
+    use:'<strong>Use case:</strong> Drill cycle with peck for chip breaking at 24K RPM.',
+    specs:'3× Ø8mm (±0.05mm) • 1× Ø5mm (±0.02mm) • Thru-hole',
+    video:'Hole Geometry' },
+  'pocket':{ name:'Pocket', icon:'◠', color:'var(--code-view)', shortcut:'',
+    desc:'Rectangular pocket feature, 60×30mm, 12mm depth. Roughing + finishing strategy.',
+    use:'<strong>Use case:</strong> Pocketing with 40% stepover endmill, 2.5mm stepdown per pass.',
+    specs:'60×30×12mm • Volume: 21.6cm³ • Corner R: 4.76mm',
+    video:'Pocket Geometry' },
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -617,8 +738,10 @@ document.querySelectorAll('.tip').forEach(el => {
         <div class="tip-name">${t.name}</div>
         <div class="tip-shortcut">${t.shortcut}</div>
       </div>
+      ${t.schematic ? `<div class="tip-schematic">${t.schematic.svg}<div class="tip-specs">${t.schematic.specs}</div></div>` : ''}
       <div class="tip-body">
         <div class="tip-desc">${t.desc}</div>
+        ${t.specs ? `<div class="tip-specs" style="margin-bottom:6px;padding:4px 6px;background:var(--canvas-elevated);border-radius:var(--r-sm)">${t.specs}</div>` : ''}
         <div class="tip-use">${t.use}</div>
       </div>
       <div class="tip-video">
@@ -690,6 +813,56 @@ document.getElementById('viewport').addEventListener('mousemove', e => {
   document.getElementById('coordY').textContent = parseFloat(y).toFixed(3);
 });
 
+// Viewport object selection — click to select, Shift+click/Shift+Enter to
+// multi-select, hover to preview. Mouse and keyboard both fully supported;
+// box-drag multi-select from the tool tooltip's copy is not implemented in
+// this static mock (documented gap, see AUDIT-v6 §6).
+(function () {
+  const shapes = [...document.querySelectorAll('.vp-selectable')];
+  const status = document.getElementById('vpSelectionStatus');
+  let selected = [];
+
+  function render() {
+    shapes.forEach(s => {
+      s.classList.remove('vp-obj-selected', 'vp-obj-multiselect');
+      if (selected.includes(s)) {
+        s.classList.add(selected.length > 1 ? 'vp-obj-multiselect' : 'vp-obj-selected');
+      }
+    });
+  }
+
+  function announce() {
+    if (selected.length === 0) status.textContent = 'Selection cleared';
+    else if (selected.length === 1) status.textContent = selected[0].dataset.obj + ' selected';
+    else status.textContent = selected.length + ' objects selected: ' + selected.map(s => s.dataset.obj).join(', ');
+  }
+
+  function selectOnly(shape) { selected = [shape]; render(); announce(); }
+  function toggleInSelection(shape) {
+    selected = selected.includes(shape) ? selected.filter(s => s !== shape) : [...selected, shape];
+    render(); announce();
+  }
+
+  shapes.forEach(shape => {
+    shape.addEventListener('mouseenter', () => shape.classList.add('vp-obj-hover'));
+    shape.addEventListener('mouseleave', () => shape.classList.remove('vp-obj-hover'));
+    shape.addEventListener('click', e => {
+      e.stopPropagation();
+      if (e.shiftKey) toggleInSelection(shape); else selectOnly(shape);
+    });
+    shape.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (e.shiftKey) toggleInSelection(shape); else selectOnly(shape);
+      }
+    });
+  });
+
+  document.getElementById('viewport').addEventListener('click', e => {
+    if (!e.target.closest('.vp-selectable')) { selected = []; render(); announce(); }
+  });
+})();
+
 // Command palette
 function openCmd() {
   document.getElementById('cmdPalette').classList.add('open');
@@ -717,7 +890,11 @@ function filterCmd(q) {
 }
 
 // Toast
-function showToast() { document.getElementById('aiToast').classList.add('show'); }
+function showToast() {
+  const toast = document.getElementById('aiToast');
+  toast.classList.add('show');
+  restoreDragPosition(toast, 'ds-toast-pos');
+}
 function dismissToast() { document.getElementById('aiToast').classList.remove('show'); }
 function applyAI() {
   dismissToast();
@@ -742,7 +919,280 @@ function applyAI() {
 function cycleMode(el, modes) {
   let i = (modes.indexOf(el.textContent) + 1) % modes.length;
   el.textContent = modes[i];
+  // Shading-mode button cycles through 'Clay' — toggle the viewport's
+  // clay-mode class so the SVG mock can key off it. Gated on modes
+  // actually containing 'Clay' so the camera-view mode button (no
+  // 'Clay' in its list) is never touched.
+  if (modes.indexOf('Clay') !== -1) {
+    const viewport = el.closest('.viewport');
+    if (viewport) viewport.classList.toggle('clay-mode', modes[i] === 'Clay');
+  }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// DRAGGABLE POPUPS
+// ═══════════════════════════════════════════════════════════════
+function makeDraggable(element, handleSelector, storageKey, bounds) {
+  const handle = element.querySelector(handleSelector);
+  if (!handle) return;
+  let dragging = false, startX, startY, origLeft, origTop;
+
+  handle.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dragging = true;
+    element.classList.add('dragging');
+    const rect = element.getBoundingClientRect();
+    startX = e.clientX;
+    startY = e.clientY;
+    origLeft = rect.left;
+    origTop = rect.top;
+    // Switch from fixed positioning to explicit top/left
+    element.style.left = origLeft + 'px';
+    element.style.top = origTop + 'px';
+    element.style.right = 'auto';
+    element.style.bottom = 'auto';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  function onMove(e) {
+    if (!dragging) return;
+    let newLeft = origLeft + (e.clientX - startX);
+    let newTop = origTop + (e.clientY - startY);
+    // Clamp to bounds
+    if (bounds) {
+      newLeft = Math.max(bounds.minX || 0, Math.min((bounds.maxX || window.innerWidth) - element.offsetWidth, newLeft));
+      newTop = Math.max(bounds.minY || 0, Math.min((bounds.maxY || window.innerHeight) - element.offsetHeight, newTop));
+    }
+    element.style.left = newLeft + 'px';
+    element.style.top = newTop + 'px';
+  }
+
+  function onUp() {
+    dragging = false;
+    element.classList.remove('dragging');
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    // Save position
+    localStorage.setItem(storageKey, JSON.stringify({
+      x: parseInt(element.style.left),
+      y: parseInt(element.style.top)
+    }));
+  }
+}
+
+function restoreDragPosition(element, storageKey) {
+  const saved = localStorage.getItem(storageKey);
+  if (!saved) return;
+  try {
+    const pos = JSON.parse(saved);
+    element.style.left = pos.x + 'px';
+    element.style.top = pos.y + 'px';
+    element.style.right = 'auto';
+    element.style.bottom = 'auto';
+  } catch(e) {}
+}
+
+// Wire up draggable popups
+(function() {
+  const toast = document.getElementById('aiToast');
+  const stats = document.getElementById('viewportStats');
+  if (toast) makeDraggable(toast, '.toast-drag-handle', 'ds-toast-pos', { minX: 0, minY: 0 });
+  if (stats) makeDraggable(stats, '.drag-grip', 'ds-stats-pos', { minX: 0, minY: 0 });
+  // Restore stats position on load
+  if (stats) restoreDragPosition(stats, 'ds-stats-pos');
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// SORTABLE TREE ITEMS (feature-tree operation reordering)
+// Mouse drag via .tree-drag-grip, plus a full keyboard/screen-reader
+// alternative: ▲/▼ move buttons and ArrowUp/ArrowDown when a row has
+// focus. Every path funnels through moveTreeItem() so behavior and
+// the ARIA announcement stay identical regardless of input method.
+// Reordering is scoped per operation-group (between one
+// .tree-group-header and the next) — dragging "Facing" above its own
+// "1/2" Face Mill" header would misrepresent which tool it belongs to.
+// ═══════════════════════════════════════════════════════════════
+function treeSortGroup(row) {
+  const siblings = Array.from(row.parentElement.children);
+  const idx = siblings.indexOf(row);
+  let start = idx, end = idx;
+  while (start > 0 && !siblings[start - 1].classList.contains('tree-group-header')) start--;
+  while (end < siblings.length - 1 && !siblings[end + 1].classList.contains('tree-group-header')) end++;
+  return siblings.slice(start, end + 1).filter(el => el.classList.contains('tree-sortable'));
+}
+
+function treeItemLabel(row) {
+  const label = row.querySelector('.tree-label');
+  return label ? label.textContent.trim() : '';
+}
+
+function announceTreeReorder(row) {
+  const group = treeSortGroup(row);
+  const pos = group.indexOf(row) + 1;
+  const status = document.getElementById('treeReorderStatus');
+  if (status) status.textContent = `${treeItemLabel(row)} moved to position ${pos} of ${group.length}`;
+}
+
+function updateTreeMoveButtons(row) {
+  const group = treeSortGroup(row);
+  const idx = group.indexOf(row);
+  const up = row.querySelector('.tree-move-btn[data-dir="-1"]');
+  const down = row.querySelector('.tree-move-btn[data-dir="1"]');
+  if (up) up.disabled = idx <= 0;
+  if (down) down.disabled = idx === -1 || idx >= group.length - 1;
+}
+
+function moveTreeItem(row, dir) {
+  const group = treeSortGroup(row);
+  const idx = group.indexOf(row);
+  const targetIdx = idx + dir;
+  if (targetIdx < 0 || targetIdx >= group.length) return;
+  const targetRow = group[targetIdx];
+  if (dir < 0) row.parentElement.insertBefore(row, targetRow);
+  else row.parentElement.insertBefore(row, targetRow.nextSibling);
+  announceTreeReorder(row);
+  group.forEach(updateTreeMoveButtons);
+}
+
+function makeSortable(container, itemSelector, handleSelector) {
+  if (!container) return;
+  let dragRow = null, dropIndicator = null;
+
+  container.addEventListener('mousedown', e => {
+    const handle = e.target.closest(handleSelector);
+    if (!handle) return;
+    const row = handle.closest(itemSelector);
+    if (!row) return;
+    e.preventDefault();
+    e.stopPropagation();
+    dragRow = row;
+    row.classList.add('dragging');
+    dropIndicator = document.createElement('div');
+    dropIndicator.className = 'tree-drop-indicator';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  function onMove(e) {
+    if (!dragRow) return;
+    const group = treeSortGroup(dragRow).filter(r => r !== dragRow);
+    if (group.length === 0) { if (dropIndicator.parentNode) dropIndicator.remove(); return; }
+    let placed = false;
+    for (const r of group) {
+      const rect = r.getBoundingClientRect();
+      if (e.clientY < rect.top + rect.height / 2) {
+        r.insertAdjacentElement('beforebegin', dropIndicator);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) group[group.length - 1].insertAdjacentElement('afterend', dropIndicator);
+  }
+
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    if (!dragRow) return;
+    dragRow.classList.remove('dragging');
+    if (dropIndicator.parentNode) {
+      dropIndicator.parentNode.insertBefore(dragRow, dropIndicator);
+      announceTreeReorder(dragRow);
+      document.querySelectorAll('.tree-sortable').forEach(updateTreeMoveButtons);
+    }
+    dropIndicator.remove();
+    dragRow = null;
+  }
+}
+
+document.querySelectorAll('.tree-move-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.disabled) return;
+    const row = btn.closest('.tree-sortable');
+    if (row) moveTreeItem(row, parseInt(btn.dataset.dir, 10));
+  });
+});
+
+document.querySelectorAll('.tree-sortable').forEach(row => {
+  row.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp') { e.preventDefault(); moveTreeItem(row, -1); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); moveTreeItem(row, 1); }
+  });
+  updateTreeMoveButtons(row);
+});
+
+makeSortable(document.querySelector('.tree-content'), '.tree-sortable', '.tree-drag-grip');
+
+// ═══════════════════════════════════════════════════════════════
+// IMPORT / EXPORT DROPZONE
+// Import supports two equivalent triggers: dragging a file anywhere onto
+// the viewport, or the keyboard/screen-reader-accessible Import button
+// (toolbar + command palette), which opens a native file picker. Export
+// is click-only — there's no "drag to export" desktop/web convention, so
+// it only gets the .btn path. See README § Drag & Drop.
+// ═══════════════════════════════════════════════════════════════
+function showConfirmToast(title, body) {
+  const t = document.getElementById('confirmToast');
+  if (!t) return;
+  document.getElementById('confirmToastTitle').textContent = title;
+  document.getElementById('confirmToastBody').textContent = body;
+  t.classList.add('show');
+  clearTimeout(t._hideTimer);
+  t._hideTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+function exportFile() {
+  showConfirmToast('Exported', 'toolpath.nc exported');
+}
+
+function handleImportedFile(file) {
+  showConfirmToast('Imported', `${file ? file.name : 'model.step'} imported`);
+}
+
+function triggerImport() {
+  document.getElementById('importFileInput').click();
+}
+
+document.getElementById('importFileInput').addEventListener('change', e => {
+  const file = e.target.files && e.target.files[0];
+  if (file) handleImportedFile(file);
+  e.target.value = '';
+});
+
+(function() {
+  const viewport = document.getElementById('viewport');
+  if (!viewport) return;
+  let dragDepth = 0;
+  const isFileDrag = e => e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.includes('Files');
+
+  window.addEventListener('dragenter', e => {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    dragDepth++;
+    viewport.classList.add('drag-target');
+  });
+
+  window.addEventListener('dragover', e => {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+  });
+
+  window.addEventListener('dragleave', e => {
+    if (!isFileDrag(e)) return;
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (dragDepth === 0) viewport.classList.remove('drag-target');
+  });
+
+  window.addEventListener('drop', e => {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    dragDepth = 0;
+    viewport.classList.remove('drag-target');
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    handleImportedFile(file);
+  });
+})();
 
 // ═══════════════════════════════════════════════════════════════
 // RESIZABLE PANELS
@@ -768,7 +1218,7 @@ document.querySelectorAll('.resize-handle').forEach(handle => {
 document.addEventListener('mousemove', e => {
   if (!resizeState) return;
   const dx = e.clientX - resizeState.startX;
-  const newW = Math.max(120, Math.min(500, resizeState.startW + (resizeState.target === 'tree' ? dx : -dx)));
+  const newW = Math.max(160, Math.min(440, resizeState.startW + (resizeState.target === 'tree' ? dx : -dx)));
   main.style.setProperty(`--${resizeState.target === 'tree' ? 'tree' : 'insp'}-w`, newW + 'px');
 });
 
@@ -783,7 +1233,33 @@ document.addEventListener('mouseup', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// TABS
+// TAB MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+let tabCounter = 2;
+function addTab() {
+  const strip = document.getElementById('tabStrip');
+  const addBtn = strip.querySelector('.tab-add');
+  const names = ['Untitled-' + tabCounter + '.cnc', 'Sketch-' + tabCounter + '.dxf', 'Job-' + tabCounter + '.nc'];
+  const name = names[Math.floor(Math.random() * names.length)];
+  const tab = document.createElement('div');
+  tab.className = 'browser-tab';
+  tab.dataset.tab = tabCounter;
+  tab.innerHTML = '<span class="tab-label">' + name + '</span><span class="tab-close" onclick="closeTab(' + tabCounter + ')">×</span>';
+  tab.onclick = function(e) { if (!e.target.classList.contains('tab-close')) selectTab(tabCounter); };
+  strip.insertBefore(tab, addBtn);
+  selectTab(tabCounter);
+  tabCounter++;
+}
+function closeTab(idx) {
+  const tab = document.querySelector('.browser-tab[data-tab="' + idx + '"]');
+  if (tab) tab.remove();
+}
+function selectTab(idx) {
+  document.querySelectorAll('.browser-tab').forEach(function(t) { t.classList.remove('active'); });
+  const tab = document.querySelector('.browser-tab[data-tab="' + idx + '"]');
+  if (tab) tab.classList.add('active');
+}
+
 // ═══════════════════════════════════════════════════════════════
 // DARK / LIGHT MODE
 // ═══════════════════════════════════════════════════════════════
@@ -791,7 +1267,9 @@ let isDark = true;
 function toggleTheme() {
   isDark = !isDark;
   document.documentElement.classList.toggle('light', !isDark);
+  document.documentElement.classList.toggle('dark', isDark);
   document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀';
+  document.getElementById('themeBtn').setAttribute('aria-checked', isDark);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -871,8 +1349,9 @@ function saveState() {
   localStorage.setItem('ds-insp-w', getComputedStyle(main).getPropertyValue('--insp-w'));
 }
 function loadState() {
-  const theme = localStorage.getItem('ds-theme');
-  if (theme === 'light') { isDark = false; document.documentElement.classList.add('light'); document.getElementById('themeBtn').textContent = '☀'; }
+  isDark = document.documentElement.classList.contains('dark');
+  document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀';
+  document.getElementById('themeBtn').setAttribute('aria-checked', isDark);
   const unit = localStorage.getItem('ds-unit');
   if (unit === 'in' && isMM) toggleUnit();
   const tw = localStorage.getItem('ds-tree-w'); if (tw) main.style.setProperty('--tree-w', tw);
@@ -991,8 +1470,8 @@ toggleTheme = function() {
   const wasDark = isDark;
   pushUndo({
     label: 'Toggle theme',
-    undo: () => { isDark = wasDark; document.documentElement.classList.toggle('light', !isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; },
-    redo: () => { isDark = !wasDark; document.documentElement.classList.toggle('light', !isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; }
+    undo: () => { isDark = wasDark; document.documentElement.classList.toggle('light', !isDark); document.documentElement.classList.toggle('dark', isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; document.getElementById('themeBtn').setAttribute('aria-checked', isDark); },
+    redo: () => { isDark = !wasDark; document.documentElement.classList.toggle('light', !isDark); document.documentElement.classList.toggle('dark', isDark); document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀'; document.getElementById('themeBtn').setAttribute('aria-checked', isDark); }
   });
   origToggleFn();
 };
@@ -1005,8 +1484,8 @@ const wasDisplay = document.querySelectorAll('.num').length;
 origUnitFn();
 pushUndo({
   label: 'Toggle units',
-  undo: () => { isMM = wasMM; toggleUnit(); origUnitFn(); },
-  redo: () => { isMM = !wasMM; toggleUnit(); origUnitFn(); }
+  undo: () => { isMM = wasMM; origUnitFn(); },
+  redo: () => { isMM = !wasMM; origUnitFn(); }
 });
 };
 
@@ -1089,9 +1568,9 @@ function startOnboarding() {
       `<div style="font-size:14px;font-weight:700;margin-bottom:6px">${s.title}</div>` +
       `<div style="font-size:12px;color:var(--ink-tertiary);line-height:1.5;margin-bottom:12px">${s.msg}</div>` +
       `<div style="display:flex;justify-content:space-between;align-items:center">` +
-      `<span style="font-size:10px;color:var(--ink-muted)">${step+1}/${steps.length}</span>` +
+      `<span style="font-size:10px;color:var(--ink-secondary)">${step+1}/${steps.length}</span>` +
       `<div style="display:flex;gap:6px">` +
-      `<button onclick="localStorage.setItem('ds-onboarded','1');this.closest('[style*=fixed]').remove()" style="background:none;border:none;color:var(--ink-muted);cursor:pointer;font-size:11px">Skip</button>` +
+      `<button onclick="localStorage.setItem('ds-onboarded','1');this.closest('[style*=fixed]').remove()" style="background:none;border:none;color:var(--ink-secondary);cursor:pointer;font-size:11px">Skip</button>` +
       `<button class="btn btn-sm btn-primary" onclick="window._nextStep()" style="height:28px">${step<steps.length-1?'Next':'Get Started'}</button>` +
       `</div></div></div>`;
   }

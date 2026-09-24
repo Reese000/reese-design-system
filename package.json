@@ -1,6 +1,6 @@
 {
   "name": "reese-design-system",
-  "version": "1.2.0",
+  "version": "1.3.1",
   "description": "Utilitarian UI design system for CNC CAM software — 13 semantic colors, keyboard-first, dark/light mode, responsive",
   "main": "tokens.css",
   "files": [
@@ -11,9 +11,13 @@
   ],
   "scripts": {
     "validate": "node scripts/validate.js",
-    "preview": "python -m http.server 8321"
+    "preview": "python -m http.server 8321",
+    "test:a11y": "node scripts/test-a11y-axe.js",
+    "test:visual": "node scripts/test-visual.js",
+    "test:visual:update": "node scripts/test-visual.js --update"
   },
-  "keywords": ["design-system", "ui", "cam", "cnc", "dark-mode", "utilitarian"],
-  "author": "Reese",
-  "license": "MIT"
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "playwright": "^1.62.1"
+  }
 }
