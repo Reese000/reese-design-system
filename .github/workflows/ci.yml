@@ -38,10 +38,19 @@ jobs:
           # Extract script blocks and check syntax
           for f in demo.html index.html; do
             echo "Checking $f JS..."
-            # Extract content between <script> and </script>
-            sed -n '/<script>/,/<script>/p; /<script>/,/<\/script>/p' "$f" 2>/dev/null | node --check - 2>&1 || echo "  ⚠ JS syntax issue in $f"
+            # Extract content between <script> and </script>, excluding the tags themselves
+            sed -n '/<script>/,/<\/script>/{
+              /<script>/d
+              /<\/script>/d
+              p
+            }' "$f" 2>/dev/null > /tmp/check.js
+            if [ -s /tmp/check.js ]; then
+              node --check /tmp/check.js 2>&1 && echo "  ✓ $f JS syntax OK" || echo "  ❌ $f JS syntax error"
+            else
+              echo "  ⚠ No JS found in $f"
+            fi
           done
-          echo "  ✓ JS syntax check done"
+          rm -f /tmp/check.js
 
       - name: Check accessibility basics
         run: |
